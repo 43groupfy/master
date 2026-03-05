@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Splitter Studio</title>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-layer-group"></i> Antrean File & Hasil</h2>
+                </div>
+                
+                <div id="file-list-empty" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Pisahkan halaman secara instan</p>
+                </div>
+
+                <div id="file-list"></div>
+                <input type="file" id="pdf-input" accept="application/pdf" style="display:none">
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-sliders"></i> Kontrol Split</h2>
+                </div>
+
+                <div class="form-group">
+                    <label>Atur Halaman / Rentang</label>
+                    <textarea id="range-input" placeholder="Contoh: 1, 3-5, 10"></textarea>
+                    <p class="hint">Gunakan koma untuk memisahkan halaman tunggal atau rentang (misal: 1-5, 8, 10-12).</p>
+                </div>
+
+                <button id="process-btn" class="btn-main" disabled onclick="startSplitting()">
+                    <i class="fa-solid fa-scissors"></i> Pecah PDF Sekarang
+                </button>
+
+                <button id="zip-btn" class="btn-zip" disabled onclick="downloadAllZip()">
+                    <i class="fa-solid fa-file-zipper"></i> Download Semua (.ZIP)
+                </button>
+
+                <button class="btn-reset" onclick="location.reload()">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let originalFile = null;
+    let splitResults = [];
+    let totalPagesInDoc = 0;
+
+    document.getElementById('pdf-input').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        originalFile = file;
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        totalPagesInDoc = pdfDoc.getPageCount();
+        
+        document.getElementById('range-input').value = `1-${totalPagesInDoc}`;
+        document.getElementById('process-btn').disabled = false;
+        
+        document.getElementById('file-list-empty').style.display = 'none';
+        document.getElementById('file-list').innerHTML = `
+            <div class="file-item">
+                <div style="flex:1">
+                    <div style="font-weight:bold; font-size:14px;">${file.name}</div>
+                    <div style="font-size:12px; color:#666;">Total ${totalPagesInDoc} Halaman</div>
+                </div>
+                <span class="status-ready-text"><i class="fa-solid fa-circle-check"></i> SIAP</span>
+            </div>
+        `;
+    };
+
+    function parseRanges(text) {
+        const items = text.split(',').map(item => item.trim()).filter(item => item !== "");
+        const results = [];
+
+        for (const item of items) {
+            if (item.includes('-')) {
+                const parts = item.split('-');
+                const start = parseInt(parts[0]);
+                const end = parseInt(parts[1]);
+                
+                if (isNaN(start) || isNaN(end) || start < 1 || end < start || end > totalPagesInDoc) {
+                    throw new Error(`Rentang "${item}" tidak valid atau melebihi total halaman (${totalPagesInDoc})`);
+                }
+                results.push({ start, end, label: `${start}-${end}` });
+            } else {
+                const val = parseInt(item);
+                if (isNaN(val) || val < 1 || val > totalPagesInDoc) {
+                    throw new Error(`Halaman "${item}" tidak tersedia.`);
+                }
+                results.push({ start: val, end: val, label: `${val}` });
+            }
+        }
+        return results;
+    }
+
+    async function startSplitting() {
+        const rangeText = document.getElementById('range-input').value;
+        let ranges = [];
+        
+        try {
+            ranges = parseRanges(rangeText);
+        } catch (err) {
+            return alert("Kesalahan Format: " + err.message);
+        }
+
+        const list = document.getElementById('file-list');
+        list.innerHTML = ''; 
+        splitResults = [];
+        document.getElementById('process-btn').disabled = true;
+
+        const arrayBuffer = await originalFile.arrayBuffer();
+        const srcDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+        for (let i = 0; i < ranges.length; i++) {
+            const range = ranges[i];
+            const id = `res-${i}`;
+
+            list.innerHTML += `
+                <div class="file-item" id="${id}">
+                    <div style="flex:1">
+                        <div style="font-weight:bold; font-size:14px;">Bagian ${i+1}: Hal ${range.label}</div>
+                    </div>
+                    <div id="act-${id}"><small style="color:#888"><i class="fa-solid fa-spinner fa-spin"></i></small></div>
+                </div>
+            `;
+
+            try {
+                const newPdf = await PDFLib.PDFDocument.create();
+                const pageIndices = [];
+                for (let p = range.start - 1; p < range.end; p++) {
+                    pageIndices.push(p);
+                }
+                
+                const copiedPages = await newPdf.copyPages(srcDoc, pageIndices);
+                copiedPages.forEach(page => newPdf.addPage(page));
+
+                const pdfBytes = await newPdf.save({ useObjectStreams: true });
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const fileName = `${originalFile.name.replace('.pdf', '')}_Hal_${range.label}.pdf`;
+                
+                splitResults.push({ blob, fileName });
+                document.getElementById(`act-${id}`).innerHTML = `
+                    <a href="${url}" download="${fileName}" class="btn-download" style="border-radius:4px"><i class="fa-solid fa-download"></i> Simpan</a>
+                `;
+            } catch (err) {
+                document.getElementById(`act-${id}`).innerHTML = `<span style="color:red; font-size:11px;">Gagal</span>`;
+            }
+        }
+
+        document.getElementById('zip-btn').disabled = false;
+        document.getElementById('process-btn').disabled = false;
+    }
+
+    async function downloadAllZip() {
+        const zip = new JSZip();
+        splitResults.forEach(item => zip.file(item.fileName, item.blob));
+        const content = await zip.generateAsync({ type: "blob" });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(content);
+        a.download = `MASTER_Split_${originalFile.name.replace('.pdf', '')}.zip`;
+        a.click();
+    }
+</script>
+</body>
+</html>

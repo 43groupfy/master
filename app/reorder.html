@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MASTER - PDF Reorder Studio</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+    <div class="container">
+        <div class="main-layout">
+            <div class="main-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-layer-group"></i> Editor Visual</h2>
+                        <div class="page-badge"><span id="pageCount">0</span> Halaman</div>
+                    </div>
+
+                    <div id="previewPlaceholder" class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+						<p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+						<p style="font-size: 12px; color: #888; margin-top: 5px;">Susun ulang urutan halaman</p>
+                    </div>
+
+                    <input type="file" id="file-input" class="hidden" accept="application/pdf" onchange="processFile(this.files[0])">
+                    <div id="pages-container" class="pdf-grid hidden"></div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <div class="card-header"><h2><i class="fa-solid fa-bolt"></i> Kontrol</h2></div>
+                    <button id="btn-save" class="btn-success" onclick="savePDF()" disabled style="width: 100%;">
+                        <i class="fa-solid fa-download"></i> Simpan PDF
+                    </button>
+                    <button class="btn-reset" onclick="location.reload()">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading">
+        <div class="loader"></div>
+        <div id="loading-status" class="progress-text">Memulai...</div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        const container = document.getElementById('pages-container');
+        const loading = document.getElementById('loading');
+        const loadingStatus = document.getElementById('loading-status');
+        let originalPdfBytes = null;
+        let sortableInstance = null;
+
+        function initSortable() {
+            if (sortableInstance) sortableInstance.destroy();
+            sortableInstance = new Sortable(container, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: () => { reorderLabels(); }
+            });
+        }
+
+        function reorderLabels() {
+            container.querySelectorAll('.page-label').forEach((el, idx) => {
+                el.innerText = `HALAMAN ${idx + 1}`;
+            });
+        }
+
+        async function processFile(file) {
+			if (!file) return;
+			loading.style.display = 'flex';
+			loadingStatus.innerText = "Membaca file...";
+			
+			try {
+				// Gunakan slice() untuk memastikan kita punya salinan buffer yang mandiri
+				const buffer = await file.arrayBuffer();
+				originalPdfBytes = buffer; 
+
+				// Gunakan salinan buffer untuk preview agar buffer utama tidak "detached"
+				const pdf = await pdfjsLib.getDocument({ data: originalPdfBytes.slice(0) }).promise;
+				const total = pdf.numPages;
+				container.innerHTML = '';
+				
+				for (let i = 1; i <= total; i++) {
+					loadingStatus.innerText = `Memproses ${i}/${total}`;
+					const page = await pdf.getPage(i);
+					const viewport = page.getViewport({scale: 0.3});
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
+					canvas.height = viewport.height;
+					canvas.width = viewport.width;
+					await page.render({canvasContext: ctx, viewport: viewport}).promise;
+					
+					const div = document.createElement('div');
+					div.setAttribute('data-id', i - 1);
+					div.className = 'page-card';
+					div.innerHTML = `<img src="${canvas.toDataURL()}"><div class="page-label">HALAMAN ${i}</div>`;
+					container.appendChild(div);
+					await new Promise(r => setTimeout(r, 5));
+				}
+				
+				document.getElementById('previewPlaceholder').classList.add('hidden');
+				container.classList.remove('hidden');
+				document.getElementById('btn-save').disabled = false;
+				document.getElementById('pageCount').innerText = total;
+				initSortable();
+			} catch (err) { 
+				alert('Error: ' + err.message); 
+			} finally { 
+				loading.style.display = 'none'; 
+			}
+		}
+
+		async function savePDF() {
+			loading.style.display = 'flex';
+			loadingStatus.innerText = "Menyusun PDF baru...";
+			try {
+				// Gunakan slice(0) untuk membuat salinan buffer saat loading
+				const sourcePdf = await PDFLib.PDFDocument.load(originalPdfBytes.slice(0));
+				const resultPdf = await PDFLib.PDFDocument.create();
+				const indices = Array.from(container.querySelectorAll('.page-card'))
+									 .map(el => parseInt(el.getAttribute('data-id')));
+				
+				const copiedPages = await resultPdf.copyPages(sourcePdf, indices);
+				copiedPages.forEach(p => resultPdf.addPage(p));
+				
+				const bytes = await resultPdf.save();
+				const blob = new Blob([bytes], {type: 'application/pdf'});
+				const url = URL.createObjectURL(blob);
+				
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = `MASTER_Reordered.pdf`;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				URL.revokeObjectURL(url);
+			} catch (err) { 
+				console.error(err);
+				alert("Gagal menyimpan! Error: " + err.message); 
+			} finally { 
+				loading.style.display = 'none'; 
+			}
+		}
+    </script>
+</body>
+</html>

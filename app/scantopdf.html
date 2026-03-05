@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Konversi Gambar ke PDF - MASTER</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	    <link rel="stylesheet" href="style.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', system-ui, -apple-system, sans-serif; }
+        :root { --maroon:#800000; --maroon-light:#a03333; --light:#f8f8f8; --dark:#222; --radius:12px; }
+        body { background:var(--light); color:var(--dark); min-height:100vh; }
+        .container { max-width:1200px; margin:0 auto; padding:0 1.5rem; }
+        
+        header { background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.1); position:sticky; top:0; z-index:1000; }
+        .header-container { max-width:1200px; margin:0 auto; padding:0 1.5rem; display:flex; justify-content:space-between; align-items:center; height:70px; }
+        .logo { display:flex; align-items:center; gap:12px; font-weight:700; font-size:1.4rem; color:var(--maroon); text-decoration:none; }
+        
+        .main-content-grid { display:grid; grid-template-columns:3fr 1fr; gap:1.5rem; margin:2rem 0; }
+        .card { background:#fff; border-radius:var(--radius); padding:1.5rem; box-shadow:0 4px 12px rgba(0,0,0,0.08); height:fit-content; }
+        
+        .form-group { margin-bottom:1.2rem; }
+        .form-input, .form-select { width:100%; padding:10px; background-color:#fff; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; }
+        .form-input:focus, .form-select:focus { outline:none; border-color:var(--maroon); }
+
+        .toolbar { display:flex; justify-content:center; align-items:center; gap:8px; margin-bottom:1.5rem; flex-wrap:wrap; background:#fff; padding:0 0 10px; border-bottom: 1px solid #f0f0f0; }
+        .btn-tool { padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:6px; transition:.2s; color:#333; }
+        .btn-tool:hover { background:#f8fafc; }
+        .btn-tool.active, .btn-tool.primary { background:var(--maroon); color:#fff; border-color:var(--maroon); }
+        .btn-tool.danger { color:#ef4444; }
+        
+        @media (max-width: 650px) { .btn-label { display: none; } .btn-tool { padding: 10px; } }
+
+        .preview-container { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:1rem }
+        .preview-container.list-mode { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 1024px) { .preview-container.list-mode { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .preview-container.list-mode { grid-template-columns: 1fr; } }
+
+
+        .preview-item { width:100%; height:165px; background:#fff; padding:8px; border-radius:10px; border:1px solid #e2e8f0; position:relative; cursor:grab; display:flex; flex-direction:column; align-items:center; }
+        .preview-item.selected { border:2px solid var(--maroon); background:rgba(128,0,0,0.03); }
+        .preview-image { width:100%; height:115px; object-fit:contain; background:#f8fafc; border-radius:4px; margin-bottom: 6px; }
+
+        .preview-checkbox { position:absolute; top:8px; left:8px; z-index:10; width:18px; height:18px; accent-color: var(--maroon); }
+        .preview-actions { position:absolute; top:5px; right:5px; display:flex; gap:4px; opacity:0; }
+        .rotate-bottom { position:absolute; bottom:5px; right:5px; opacity:0; }
+        .preview-item:hover .preview-actions, .preview-item:hover .rotate-bottom { opacity:1; }
+        .preview-item p { width:100%; text-align:center; font-size:11px; color:#475569; white-space:nowrap; overflow:hidden; }
+
+        .act-btn { width:28px; height:28px; border-radius:50%; border:1px solid #e2e8f0; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--maroon); }
+
+        /* LIST VIEW */
+        .preview-item.list-view { height: auto; padding: 12px; align-items: flex-start; }
+        .preview-item.list-view .preview-actions, .preview-item.list-view .rotate-bottom { opacity: 1; position: static; }
+        .preview-item.list-view .list-row-wrapper { display: flex; align-items: center; gap: 10px; width: 100%; justify-content: center; border-top: 1px solid #f1f5f9; padding-top: 8px; margin-top:8px; }
+
+        .loading-overlay { position:fixed; inset:0; background:rgba(255,255,255,0.95); display:none; flex-direction:column; justify-content:center; align-items:center; z-index:9999; }
+        .loading-overlay.active { display:flex; }
+        .loader { width:45px; height:45px; border:4px solid #e2e8f0; border-top:4px solid var(--maroon); border-radius:50%; animation:spin 1s linear infinite; }
+        .progress-container { width: 250px; background: #e2e8f0; border-radius: 10px; margin-top: 15px; height: 8px; overflow: hidden; }
+        .progress-bar { width: 0%; height: 100%; background: var(--maroon); transition: width 0.2s; }
+
+        .btn-generate { background:var(--maroon); color:#fff; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-reset { background:#f1f5f9; color:#475569; padding:10px; border:none; border-radius:8px; font-weight:600; width: 100%; display: none; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
+
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media (max-width:768px){ .main-content-grid { grid-template-columns:1fr; } }
+		
+/* Samakan dengan gaya .upload-area / .dropzone Anda */
+.file-upload-area { 
+    grid-column: 1 / -1;
+    border: 2px dashed var(--maroon-light); 
+    padding: 40px; 
+    border-radius: var(--radius); 
+    text-align: center; 
+    cursor: pointer; 
+    background: #fff; 
+    transition: 0.3s; 
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-upload-area:hover, .file-upload-area.dragover { 
+    background: #fff5f5; 
+    border-color: var(--maroon); 
+}
+
+.file-upload-area i { 
+    font-size: 40px; 
+    color: var(--maroon); 
+    margin-bottom: 15px; 
+}
+    </style>
+</head>
+<body>
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+        <div id="loadStatus" style="margin-top:15px; font-weight:700; color:var(--maroon);">Memproses...</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p style="margin-top: 10px; font-size: 12px; color: #64748b;">Mohon jangan tutup halaman ini</p>
+    </div>
+
+    <div class="container">
+        <div class="main-content-grid">
+            <div class="card">
+                <div class="toolbar">
+                    <button class="btn-tool primary" id="addFileBtn"><i class="fas fa-plus"></i> <span class="btn-label">Tambah</span></button>
+                    <button class="btn-tool" id="togglePreviewMode"><i class="fas fa-th-large"></i> <span class="btn-label">Image Mode</span></button>
+                    <button class="btn-tool" id="sortBtn"><i class="fas fa-sort-alpha-down"></i> <span class="btn-label">Urutkan</span></button>
+                    <button class="btn-tool" id="rotateAllBtn"><i class="fas fa-sync"></i> <span class="btn-label">Putar</span></button>
+                    <button class="btn-tool" id="selectAllBtn"><i class="fas fa-check-double"></i> <span class="btn-label">Semua</span></button>
+                    <button class="btn-tool danger" id="delBtn"><i class="fas fa-trash"></i> <span class="btn-label">Hapus</span></button>
+                </div>
+                <div id="preview" class="preview-container"></div>
+            </div>
+
+            <div class="card">
+                <div style="font-size:14px; font-weight:700; margin-bottom:1.2rem; color:var(--maroon); border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                    <i class="fas fa-cog"></i> PENGATURAN PDF
+                </div>
+                <div class="form-group">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b">Nama File</label>
+                    <input type="text" id="pdfFilename" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b">Ukuran Kertas</label>
+                    <select id="paperSize" class="form-select">
+                        <option value="f4" selected>F4 (210 x 330 mm)</option>
+                        <option value="a4">A4 (210 x 297 mm)</option>
+                        <option value="a3">A3 (297 x 420 mm)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b">Orientasi</label>
+                    <select id="paperOrientation" class="form-select">
+                        <option value="adaptif" selected>Adaptif (Otomatis)</option>
+                        <option value="portrait">Portrait</option>
+                        <option value="landscape">Landscape</option>
+                    </select>
+                </div>
+                <div style="margin-top:1.5rem; display:flex; flex-direction:column; gap:10px">
+                    <button id="generateBtn" class="btn-generate"><i class="fas fa-file-pdf"></i> GENERATE PDF</button>
+                    <button id="clearAllBtn" class="btn-reset"><i class="fas fa-undo"></i> Reset Semua</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <script>
+        let state = { images: [], isPreviewOn: true, sortAsc: true };
+        const { jsPDF } = window.jspdf;
+        let sortableInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const d = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            document.getElementById('pdfFilename').value = `MASTER_${d}`;
+            renderPreview();
+            
+            document.getElementById('sortBtn').onclick = sortFiles;
+            document.getElementById('selectAllBtn').onclick = selectAll;
+            document.getElementById('delBtn').onclick = deleteSelected;
+            document.getElementById('clearAllBtn').onclick = clearAll;
+            document.getElementById('generateBtn').onclick = generatePDF;
+            document.getElementById('rotateAllBtn').onclick = rotateAllSelected;
+            document.getElementById('togglePreviewMode').onclick = togglePreviewMode;
+            
+            document.getElementById('addFileBtn').onclick = () => {
+                const input = document.createElement('input');
+                input.type = 'file'; input.multiple = true; input.accept = "image/*,.pdf";
+                input.onchange = (e) => { handleFiles(e.target.files); e.target.value = ''; };
+                input.click();
+            };
+        });
+
+        function truncateMiddle(str, len = 20) {
+            if (!str || str.length <= len) return str;
+            return str.substring(0, Math.floor(len/2)) + "..." + str.substring(str.length - Math.floor(len/2-2));
+        }
+
+        function renderPreview() {
+            const container = document.getElementById('preview');
+            const resetBtn = document.getElementById('clearAllBtn');
+            if (sortableInstance) sortableInstance.destroy();
+            container.innerHTML = '';
+
+            container.className = `preview-container ${!state.isPreviewOn ? 'list-mode' : ''}`;
+            resetBtn.style.display = state.images.length ? 'flex' : 'none';
+
+            if (!state.images.length) return renderUploadPlaceholder(container);
+
+            state.images.forEach((img, i) => {
+                const item = document.createElement('div');
+                item.className = `preview-item ${img.selected ? 'selected' : ''} ${!state.isPreviewOn ? 'list-view' : ''}`;
+                
+                if (state.isPreviewOn) {
+                    item.innerHTML = `
+                        <input type="checkbox" class="preview-checkbox" ${img.selected?'checked':''} onchange="toggleSelect(${i}, this.checked)">
+                        <img src="${img.src}" class="preview-image" style="transform:rotate(${img.rotation}deg)">
+                        <p title="${img.name}">${truncateMiddle(img.name, 18)}</p>
+                        <div class="preview-actions">
+                            <button class="act-btn" onclick="rotateImg(${i}, event)"><i class="fas fa-redo"></i></button>
+                            <button class="act-btn" style="color:#ef4444" onclick="deleteImg(${i}, event)"><i class="fas fa-times"></i></button>
+                        </div>
+                        <button class="act-btn rotate-bottom" onclick="addAfter(${i}, event)"><i class="fas fa-plus"></i></button>`;
+                } else {
+                    item.innerHTML = `
+                        <div style="display:flex; align-items:center; gap:8px; width:100%">
+                            <input type="checkbox" class="preview-checkbox" ${img.selected?'checked':''} onchange="toggleSelect(${i}, this.checked)">
+                            <p title="${img.name}" style="font-size:12px; font-weight:600">${truncateMiddle(img.name, 25)}</p>
+                        </div>
+                        <div class="list-row-wrapper">
+                            <button class="act-btn" onclick="rotateImg(${i}, event)"><i class="fas fa-redo"></i></button>
+                            <button class="act-btn" onclick="addAfter(${i}, event)"><i class="fas fa-plus"></i></button>
+                            <button class="act-btn" style="color:#ef4444" onclick="deleteImg(${i}, event)"><i class="fas fa-times"></i></button>
+                        </div>`;
+                }
+                container.appendChild(item);
+            });
+
+            sortableInstance = Sortable.create(container, {
+                animation: 200, ghostClass: 'sortable-ghost',
+                onEnd: (evt) => {
+                    const item = state.images.splice(evt.oldIndex, 1)[0];
+                    state.images.splice(evt.newIndex, 0, item);
+                    renderPreview();
+                }
+            });
+        }
+
+        function renderUploadPlaceholder(container) {
+            const area = document.createElement('div');
+            area.className = 'file-upload-area';
+            area.onclick = () => document.getElementById('addFileBtn').click();
+            area.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i>
+						<p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+						<p style="font-size: 12px; color: #888; margin-top: 5px;">Konversikan gambar hasil scan menjadi PDF</p>`;
+            container.appendChild(area);
+        }
+
+        async function handleFiles(files, index = -1) {
+            if (!files.length) return;
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            try {
+                let batch = [];
+                for (let i = 0; i < files.length; i++) {
+                    const f = files[i];
+                    document.getElementById('loadStatus').innerText = `Membaca ${i+1}/${files.length}`;
+                    if (f.type === 'application/pdf') {
+                        const imgs = await convertPdfToImg(f, (p, t) => document.getElementById('loadStatus').innerText = `PDF: ${p}/${t}`);
+                        imgs.forEach((d, idx) => batch.push({name: `${f.name}-p${idx+1}`, ...d, selected:false}));
+                    } else if (f.type.startsWith('image/')) {
+                        const d = await readImgAsData(f);
+                        batch.push({name: f.name, ...d, selected:false});
+                    }
+                }
+                if (index === -1) state.images.push(...batch);
+                else state.images.splice(index+1, 0, ...batch);
+
+                if (state.images.length > 50 && state.isPreviewOn) {
+                    state.isPreviewOn = false;
+                    alert("Mode dialihkan ke List Mode untuk performa.");
+                }
+            } catch (e) { alert("Gagal memuat file"); }
+            overlay.classList.remove('active');
+            renderPreview();
+        }
+
+        async function convertPdfToImg(file, cb) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const pdf = await pdfjsLib.getDocument(await file.arrayBuffer()).promise;
+            const res = [];
+            for(let i=1; i<=pdf.numPages; i++){
+                if(cb) cb(i, pdf.numPages);
+                const page = await pdf.getPage(i);
+                const vp = page.getViewport({scale: 1.5});
+                const cvs = document.createElement('canvas');
+                cvs.width = vp.width; cvs.height = vp.height;
+                await page.render({canvasContext: cvs.getContext('2d'), viewport: vp}).promise;
+                res.push({src: cvs.toDataURL('image/jpeg', 0.8), w: vp.width, h: vp.height, rotation: 0});
+            }
+            return res;
+        }
+
+        async function generatePDF() {
+            if (!state.images.length) return alert('Kosong!');
+            const overlay = document.getElementById('loadingOverlay');
+            const status = document.getElementById('loadStatus');
+            const progress = document.getElementById('progressBar');
+            overlay.classList.add('active');
+
+            const sizeMap = { 'f4': [210, 330], 'a4': [210, 297], 'a3': [297, 420] };
+            const format = sizeMap[document.getElementById('paperSize').value];
+            const orientMode = document.getElementById('paperOrientation').value;
+            let doc = null;
+
+            for (let i = 0; i < state.images.length; i++) {
+                status.innerText = `Menyusun: ${i+1} / ${state.images.length}`;
+                progress.style.width = `${((i+1)/state.images.length)*100}%`;
+                
+                const img = state.images[i];
+                const cleanSrc = await processCanvas(img.src, img.rotation);
+                
+                let orient = orientMode === 'adaptif' ? (img.w > img.h ? 'l' : 'p') : orientMode[0];
+                const finalFmt = (orient === 'l') ? [format[1], format[0]] : [format[0], format[1]];
+
+                if (i === 0) doc = new jsPDF({ orientation: orient, unit: 'mm', format: finalFmt, compress: true });
+                else doc.addPage(finalFmt, orient);
+
+                const pw = doc.internal.pageSize.getWidth(), ph = doc.internal.pageSize.getHeight();
+                const ratio = img.w / img.h, pRatio = pw / ph;
+                let fw, fh;
+                if (ratio > pRatio) { fw = pw; fh = pw / ratio; } else { fh = ph; fw = ph * ratio; }
+                
+                doc.addImage(cleanSrc, 'JPEG', (pw-fw)/2, (ph-fh)/2, fw, fh, undefined, 'FAST');
+                if (i % 5 === 0) await new Promise(r => setTimeout(r, 30));
+            }
+            doc.save(`${document.getElementById('pdfFilename').value || 'export'}.pdf`);
+            overlay.classList.remove('active'); progress.style.width = '0';
+        }
+
+        function processCanvas(src, deg) {
+            return new Promise(res => {
+                const img = new Image();
+                img.onload = () => {
+                    const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d');
+                    if(deg % 180 !== 0) { cvs.width = img.height; cvs.height = img.width; }
+                    else { cvs.width = img.width; cvs.height = img.height; }
+                    ctx.translate(cvs.width/2, cvs.height/2); ctx.rotate(deg * Math.PI / 180);
+                    ctx.drawImage(img, -img.width/2, -img.height/2);
+                    res(cvs.toDataURL('image/jpeg', 0.8));
+                };
+                img.src = src;
+            });
+        }
+
+        function togglePreviewMode() {
+            state.isPreviewOn = !state.isPreviewOn;
+            const btn = document.getElementById('togglePreviewMode');
+            btn.innerHTML = state.isPreviewOn ? '<i class="fas fa-th-large"></i> <span class="btn-label">Image Mode</span>' : '<i class="fas fa-list"></i> <span class="btn-label">List Mode</span>';
+            btn.classList.toggle('active', state.isPreviewOn);
+            renderPreview();
+        }
+
+        function sortFiles() {
+            state.sortAsc = !state.sortAsc;
+            state.images.sort((a,b) => state.sortAsc ? a.name.localeCompare(b.name, undefined, {numeric:true}) : b.name.localeCompare(a.name, undefined, {numeric:true}));
+            document.getElementById('sortBtn').querySelector('i').className = state.sortAsc ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up-alt';
+            renderPreview();
+        }
+
+        function toggleSelect(i, v) { state.images[i].selected = v; renderPreview(); }
+        function rotateImg(i, e) { e.stopPropagation(); state.images[i].rotation = (state.images[i].rotation+90)%360; [state.images[i].w, state.images[i].h] = [state.images[i].h, state.images[i].w]; renderPreview(); }
+        function deleteImg(i, e) { e.stopPropagation(); state.images.splice(i, 1); renderPreview(); }
+        function addAfter(i, e) { e.stopPropagation(); const input = document.createElement('input'); input.type = 'file'; input.multiple = true; input.onchange = (ev) => handleFiles(ev.target.files, i); input.click(); }
+        function rotateAllSelected() { state.images.forEach(img => { if(img.selected) { img.rotation=(img.rotation+90)%360; [img.w, img.h]=[img.h, img.w]; }}); renderPreview(); }
+        function selectAll() { const target = !state.images.every(i => i.selected); state.images.forEach(i => i.selected = target); renderPreview(); }
+        function deleteSelected() { if(state.images.some(i=>i.selected) && confirm('Hapus terpilih?')) { state.images = state.images.filter(i => !i.selected); renderPreview(); }}
+        function clearAll() { if(confirm('Reset semua?')) location.reload(); }
+        function readImgAsData(f) { return new Promise(r => { const reader = new FileReader(); reader.onload = e => { const img = new Image(); img.onload = () => r({src: e.target.result, w: img.width, h: img.height, rotation: 0}); img.src = e.target.result; }; reader.readAsDataURL(f); }); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - Visual PDF Editor</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Visual Editor</h2>
+                    <div class="insert-controls">
+                        <span style="font-size: 10px; font-weight: bold; color: #666;">SETELAH HAL:</span>
+                        <input type="number" id="insertPos" value="0" min="0" class="input-pos">
+                        <button class="btn-insert" onclick="document.getElementById('insertPdf').click()">
+                            <i class="fa-solid fa-plus"></i> SISIPKAN PDF
+                        </button>
+                        <input type="file" id="insertPdf" accept=".pdf" class="hidden" onchange="handleFileUpload(event, 'insert')">
+                    </div>
+                </div>
+                
+                <div id="previewPlaceholder" class="upload-area" onclick="document.getElementById('mainPdf').click()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+						<p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+						<p style="font-size: 12px; color: #888; margin-top: 5px;">Sisipkan halaman baru</p>
+                    <input type="file" id="mainPdf" accept=".pdf" class="hidden" onchange="handleFileUpload(event, 'main')">
+                </div>
+
+                <div id="previewGrid" class="grid-preview hidden"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header"><h2><i class="fa-solid fa-gears"></i> Kontrol</h2></div>
+                <button id="downloadBtn" class="btn-success" onclick="generateFinalPdf()" disabled style="width:100%">
+                    <i class="fa-solid fa-download"></i> SIMPAN HASIL
+                </button>
+                <button class="btn-reset" onclick="location.reload()" style="width:100%; margin-top:10px;">
+                    <i class="fa-solid fa-trash-can"></i> RESET
+                </button>
+                <div class="summary-box" style="margin-top:15px">
+                    <p>Total Halaman: <strong id="pageCount">0</strong></p>
+                </div>
+                <div id="progressBox" class="summary-box hidden">
+                    <p id="statusText" style="font-size:11px; color:var(--maroon); font-weight:bold;">Processing...</p>
+                    <div class="progress-bar"><div id="statusBar" class="progress-fill"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    let virtualDocument = [];
+
+    async function handleFileUpload(event, type) {
+        const file = event.target.files[0];
+        if (!file) return;
+        showProgress(true);
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            const pdfJsDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+            const newPages = [];
+            
+            for (let i = 1; i <= pdfDoc.getPageCount(); i++) {
+                updateProgress(Math.floor((i / pdfDoc.getPageCount()) * 100), `Rendering...`);
+                const page = await pdfJsDoc.getPage(i);
+                const viewport = page.getViewport({ scale: 0.3 });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height; canvas.width = viewport.width;
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
+                newPages.push({ pdfDoc, originalIndex: i - 1, thumbUrl: canvas.toDataURL() });
+            }
+
+            if (type === 'main') virtualDocument = newPages;
+            else {
+                const pos = Math.min(parseInt(document.getElementById('insertPos').value) || 0, virtualDocument.length);
+                virtualDocument.splice(pos, 0, ...newPages);
+            }
+            
+            renderGrid();
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('previewGrid').classList.remove('hidden');
+            document.getElementById('previewPlaceholder').classList.add('hidden');
+        } catch (err) { alert("Error: " + err.message); }
+        finally { showProgress(false); }
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = virtualDocument.map((item, index) => `
+            <div class="page-card">
+                <div class="btn-del-mini" onclick="deletePage(event, ${index})"><i class="fa-solid fa-xmark"></i></div>
+                <div class="canvas-wrapper">
+                    <img src="${item.thumbUrl}">
+                </div>
+                <div class="page-label">HAL ${index + 1}</div>
+            </div>
+        `).join('');
+        document.getElementById('pageCount').innerText = virtualDocument.length;
+        document.getElementById('insertPos').value = virtualDocument.length;
+    }
+
+    function deletePage(e, index) {
+        e.stopPropagation();
+        virtualDocument.splice(index, 1);
+        renderGrid();
+        if(virtualDocument.length === 0) location.reload();
+    }
+
+    async function generateFinalPdf() {
+        showProgress(true);
+        try {
+            const newPdf = await PDFLib.PDFDocument.create();
+            for (let i = 0; i < virtualDocument.length; i++) {
+                updateProgress(Math.floor((i / virtualDocument.length) * 100), `Exporting...`);
+                const [page] = await newPdf.copyPages(virtualDocument[i].pdfDoc, [virtualDocument[i].originalIndex]);
+                newPdf.addPage(page);
+            }
+            const bytes = await newPdf.save();
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+            link.download = `MASTER_Edited.pdf`;
+            link.click();
+        } catch (err) { alert(err.message); }
+        finally { showProgress(false); }
+    }
+
+    function showProgress(s) { document.getElementById('progressBox').classList.toggle('hidden', !s); }
+    function updateProgress(p, t) { 
+        document.getElementById('statusBar').style.width = p + '%'; 
+        document.getElementById('statusText').innerText = t; 
+    }
+</script>
+</body>
+</html>

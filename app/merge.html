@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Merger Studio</title>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-layer-group"></i> Antrean Gabung PDF</h2>
+                    <button class="btn-add-more hidden" id="add-more-btn" onclick="document.getElementById('pdf-input').click()">
+                        <i class="fa-solid fa-plus"></i> TAMBAH FILE
+                    </button>
+                </div>
+
+                <div id="drop-zone" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+					<i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Gabungkan banyak file sekaligus</p>
+                </div>
+                <input type="file" id="pdf-input" accept="application/pdf" multiple style="display:none">
+
+                <div id="sort-tools" class="sort-tools hidden">
+                    <button class="btn-sort" onclick="toggleSort('name')">Nama <i id="icon-name" class="fa-solid fa-sort"></i></button>
+                    <button class="btn-sort" onclick="toggleSort('date')">Tanggal <i id="icon-date" class="fa-solid fa-sort"></i></button>
+                </div>
+
+                <div id="file-list"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-bolt"></i> Kontrol</h2>
+                </div>
+                
+                <button id="merge-btn" class="btn-main" disabled onclick="mergePDFs()" style="width: 100%; margin-top: 0 !important">
+                    <i class="fa-solid fa-object-group"></i> GABUNGKAN PDF
+                </button>
+
+                <div id="prog-area" class="progress-container">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:#666; margin-bottom: 8px;">
+                        <span>Menggabungkan...</span>
+                        <span id="prog-val">0%</span>
+                    </div>
+                    <div class="progress-bar"><div id="prog-fill" class="progress-fill"></div></div>
+                </div>
+
+                <div id="result-area" style="width: 100%"></div>
+
+                <button class="btn-reset" onclick="location.reload()" style="width: 100%">
+                    <i class="fa-solid fa-trash-can"></i> RESET
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let fileQueue = [];
+    let sortState = { name: 'none', date: 'none' };
+    let draggedIndex = null;
+    const pdfInput = document.getElementById('pdf-input');
+    const dropZone = document.getElementById('drop-zone');
+    const addMoreBtn = document.getElementById('add-more-btn');
+    const sortTools = document.getElementById('sort-tools');
+
+    pdfInput.onchange = (e) => handleFiles(e.target.files);
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+    dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+
+    function handleFiles(files) {
+        const added = Array.from(files).filter(f => f.type === "application/pdf");
+        if (added.length > 0) {
+            dropZone.classList.add('hidden');
+            addMoreBtn.classList.remove('hidden');
+            sortTools.classList.remove('hidden');
+        }
+        added.forEach(file => {
+            fileQueue.push({ 
+                id: Math.random().toString(36).substr(2, 9), 
+                file, 
+                name: file.name, 
+                date: file.lastModified,
+                size: (file.size / 1024).toFixed(0)
+            });
+        });
+        renderList();
+        pdfInput.value = '';
+    }
+
+    function renderList() {
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+        
+        fileQueue.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.draggable = true;
+            div.innerHTML = `
+                <div class="file-main">
+                    <i class="fa-solid fa-grip-lines drag-handle"></i>
+                    <div class="file-info">
+                        <span class="file-name">${item.name}</span>
+                        <span class="file-meta">${item.size} KB</span>
+                    </div>
+                </div>
+                <div class="file-actions">
+                    <button class="btn-delete-mini" onclick="removeFile('${item.id}')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            `;
+            
+            div.ondragstart = () => { draggedIndex = index; setTimeout(() => div.classList.add('dragging'), 0); };
+            div.ondragover = (e) => e.preventDefault();
+            div.ondrop = (e) => { e.preventDefault(); handleReorder(index); };
+            div.ondragend = () => div.classList.remove('dragging');
+            
+            list.appendChild(div);
+        });
+
+        document.getElementById('merge-btn').disabled = fileQueue.length < 2;
+    }
+
+    function handleReorder(targetIndex) {
+        const draggedItem = fileQueue.splice(draggedIndex, 1)[0];
+        fileQueue.splice(targetIndex, 0, draggedItem);
+        renderList();
+    }
+
+    function removeFile(id) {
+        fileQueue = fileQueue.filter(f => f.id !== id);
+        if (fileQueue.length === 0) {
+            dropZone.classList.remove('hidden');
+            addMoreBtn.classList.add('hidden');
+            sortTools.classList.add('hidden');
+        }
+        renderList();
+    }
+
+    function toggleSort(prop) {
+        const next = sortState[prop] === 'asc' ? 'desc' : 'asc';
+        sortState = { name: 'none', date: 'none' };
+        sortState[prop] = next;
+        fileQueue.sort((a, b) => {
+            if (prop === 'name') return next === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            return next === 'asc' ? a.date - b.date : b.date - a.date;
+        });
+        updateSortIcons(prop, next);
+        renderList();
+    }
+
+    function updateSortIcons(prop, order) {
+        document.getElementById('icon-name').className = 'fa-solid fa-sort';
+        document.getElementById('icon-date').className = 'fa-solid fa-sort';
+        document.getElementById(`icon-${prop}`).className = order === 'asc' ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+    }
+
+    async function mergePDFs() {
+        const btn = document.getElementById('merge-btn');
+        const progArea = document.getElementById('prog-area');
+        const resultArea = document.getElementById('result-area');
+        
+        btn.disabled = true;
+        progArea.style.display = 'block';
+        resultArea.innerHTML = '';
+
+        try {
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            for (let i = 0; i < fileQueue.length; i++) {
+                const bytes = await fileQueue[i].file.arrayBuffer();
+                const pdf = await PDFLib.PDFDocument.load(bytes);
+                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                pages.forEach(p => mergedPdf.addPage(p));
+                
+                let p = Math.round(((i + 1) / fileQueue.length) * 100);
+                document.getElementById('prog-fill').style.width = p + '%';
+                document.getElementById('prog-val').innerText = p + '%';
+            }
+
+            const bytes = await mergedPdf.save();
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            
+            progArea.style.display = 'none';
+            
+            // Perbaikan tampilan tombol download
+            resultArea.innerHTML = `
+                <a href="${url}" download="MASTER_Merged_${Date.now()}.pdf" style="text-decoration: none; display: block; width: 100%;">
+                    <button class="btn-main" style="width: 100%; background-color: #27ae60; cursor: pointer;">
+                        <i class="fa-solid fa-file-arrow-down"></i> UNDUH HASIL PDF
+                    </button>
+                </a>`;
+                
+            btn.style.display = 'none'; // Sembunyikan tombol gabung setelah sukses
+        } catch (e) {
+            console.error(e);
+            alert("Gagal menggabung PDF! Pastikan file tidak terenkripsi.");
+            progArea.style.display = 'none';
+        }
+        btn.disabled = false;
+    }
+</script>
+</body>
+</html>

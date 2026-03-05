@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Rotator Studio</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+    </style>
+</head>
+<body>
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-arrows-rotate"></i> Preview & Rotasi</h2>
+                    <button class="btn-add-more hidden" id="btn-reupload" onclick="location.reload()">
+                        <i class="fa-solid fa-rotate"></i> GANTI FILE
+                    </button>
+                </div>
+
+                <div id="upload-box" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Ubah orientasi halaman secara fleksibel</p>
+                    <input type="file" id="pdf-input" accept="application/pdf" style="display:none">
+                </div>
+
+                <div id="loading-state" class="hidden" style="flex-direction: column; align-items: center; padding: 40px;">
+                    <div class="loader"></div>
+                    <p style="margin-top:15px; font-size:13px; color:#666;">Membangun preview...</p>
+                </div>
+
+                <div id="grid-output" class="grid-preview"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header"><h2><i class="fa-solid fa-screwdriver-wrench"></i> Alat</h2></div>
+
+                <div style="display:flex; gap:10px; margin-top: -10px">
+                    <button id="btn-rotate-l" class="btn-reset" style="flex:1; margin-top:0;" onclick="rotateSelected(-90)" disabled>
+                        <i class="fa-solid fa-rotate-left"></i> -90°
+                    </button>
+                    <button id="btn-rotate-r" class="btn-reset" style="flex:1; margin-top:0;" onclick="rotateSelected(90)" disabled>
+                        <i class="fa-solid fa-rotate-right"></i> +90°
+                    </button>
+                </div>
+
+                <button id="btn-select-all" class="btn-reset" style="width:100%; margin-bottom:15px; border:1px solid #ddd" onclick="toggleSelectAll()" disabled>
+                    <i class="fa-solid fa-check-double"></i> PILIH SEMUA
+                </button>
+                
+                <button id="btn-download" class="btn-main" disabled onclick="savePDF()" style="width:100%">
+                    <i class="fa-solid fa-file-arrow-down"></i> SIMPAN PDF
+                </button>
+
+                <div id="prog-area" class="progress-container hidden">
+                    <div class="progress-bar"><div id="prog-fill" class="progress-fill"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let currentFile = null;
+    let pageRotations = [];
+    let selectedPages = new Set();
+    let totalPages = 0;
+
+    const pdfInput = document.getElementById('pdf-input');
+    const gridOutput = document.getElementById('grid-output');
+    const loadingState = document.getElementById('loading-state');
+    const uploadBox = document.getElementById('upload-box');
+
+    pdfInput.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        currentFile = file;
+        uploadBox.classList.add('hidden');
+        document.getElementById('btn-reupload').classList.remove('hidden');
+        loadingState.style.display = 'flex';
+
+        const buffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+        totalPages = pdf.numPages;
+        pageRotations = Array(totalPages).fill(0);
+
+        for (let i = 1; i <= totalPages; i++) {
+            const page = await pdf.getPage(i);
+            const viewport = page.getViewport({ scale: 0.5 });
+            const card = document.createElement('div');
+            card.className = 'page-card';
+            card.innerHTML = `<div class="check-badge"><i class="fa-solid fa-check"></i></div><div class="canvas-wrapper"></div><div class="file-meta" style="text-align:center">Hal ${i}</div>`;
+            const canvas = document.createElement('canvas');
+            canvas.width = viewport.width; canvas.height = viewport.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            card.querySelector('.canvas-wrapper').appendChild(canvas);
+            card.onclick = () => {
+                if(selectedPages.has(i-1)) { selectedPages.delete(i-1); card.classList.remove('selected'); }
+                else { selectedPages.add(i-1); card.classList.add('selected'); }
+                updateUI();
+            };
+            gridOutput.appendChild(card);
+        }
+        loadingState.style.display = 'none';
+        toggleControls(true);
+    };
+
+    function rotateSelected(deg) {
+        selectedPages.forEach(idx => {
+            pageRotations[idx] = (pageRotations[idx] + deg + 360) % 360;
+            gridOutput.children[idx].querySelector('canvas').style.transform = `rotate(${pageRotations[idx]}deg)`;
+        });
+    }
+
+    function toggleSelectAll() {
+        const isAll = selectedPages.size === totalPages;
+        selectedPages.clear();
+        Array.from(gridOutput.children).forEach((card, i) => {
+            if (!isAll) { selectedPages.add(i); card.classList.add('selected'); }
+            else { card.classList.remove('selected'); }
+        });
+        updateUI();
+    }
+
+    async function savePDF() {
+        const { degrees, PDFDocument } = PDFLib;
+        const bytes = await currentFile.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(bytes);
+        pdfDoc.getPages().forEach((page, i) => {
+            if (pageRotations[i] !== 0) page.setRotation(degrees(page.getRotation().angle + pageRotations[i]));
+        });
+        const savedBytes = await pdfDoc.save();
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([savedBytes], { type: 'application/pdf' }));
+        link.download = `Rotated_${currentFile.name}`;
+        link.click();
+    }
+
+    function updateUI() {
+        document.getElementById('btn-select-all').innerHTML = selectedPages.size === totalPages ? 
+            '<i class="fa-solid fa-xmark"></i> BATAL SEMUA' : '<i class="fa-solid fa-check-double"></i> PILIH SEMUA';
+    }
+
+    function toggleControls(en) {
+        ['btn-rotate-l', 'btn-rotate-r', 'btn-select-all', 'btn-download'].forEach(id => document.getElementById(id).disabled = !en);
+    }
+</script>
+</body>
+</html>

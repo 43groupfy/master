@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF to Image Studio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <div class="header-container">
+        <a href="#" class="logo">
+            <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+            <span>MASTER APP</span>
+        </a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-images"></i> Preview Halaman</h2>
+                    <div class="page-badge"><span id="pageCountDisplay">0</span> HAL</div>
+                </div>
+
+                <div id="upload-box" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Ubah semua halaman jadi gambar</p>
+                    <input type="file" id="pdf-input" accept="application/pdf" style="display:none">
+                </div>
+
+                <div id="file-ready" class="file-ready hidden">
+                    <div class="file-icon"><i class="fa-solid fa-file-pdf"></i></div>
+                    <div style="flex:1; overflow:hidden;">
+                        <div id="file-name-display" style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+                        <div id="file-info-display" style="font-size:12px; color:#666;"></div>
+                    </div>
+                    <button class="btn-change" onclick="location.reload()">GANTI</button>
+                </div>
+
+                <div id="grid-output" class="grid-preview"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-bolt"></i> Status</h2>
+                </div>
+                
+                <div id="prog-area" class="progress-container hidden">
+                    <div style="display:flex; justify-content:space-between; font-size:11px; font-weight:bold; color:#666; margin-bottom: 5px;">
+                        <span>Mengonversi...</span>
+                        <span id="prog-val">0%</span>
+                    </div>
+                    <div class="progress-bar"><div id="prog-fill" class="progress-fill"></div></div>
+                </div>
+
+                <a id="zip-btn" class="btn-zip hidden">
+                    <i class="fa-solid fa-file-zipper"></i> UNDUH SEMUA (.ZIP)
+                </a>
+
+                <button class="btn-reset" onclick="location.reload()" style="width:100%">
+                    <i class="fa-solid fa-rotate-right"></i> RESET
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    let pdfDoc = null;
+    let fileNameBase = "MASTER_export";
+
+    document.getElementById('pdf-input').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        fileNameBase = file.name.replace(/\.[^/.]+$/, "");
+        document.getElementById('upload-box').classList.add('hidden');
+        document.getElementById('file-ready').classList.remove('hidden');
+        document.getElementById('file-name-display').innerText = file.name;
+
+        const reader = new FileReader();
+        reader.onload = async function() {
+            pdfDoc = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
+            document.getElementById('file-info-display').innerText = `${pdfDoc.numPages} Halaman`;
+            document.getElementById('pageCountDisplay').innerText = pdfDoc.numPages;
+            startAutoConversion();
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    async function startAutoConversion() {
+        const progArea = document.getElementById('prog-area');
+        const grid = document.getElementById('grid-output');
+        progArea.classList.remove('hidden');
+        grid.innerHTML = '';
+        
+        const imgs = [];
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const vp = page.getViewport({ scale: 1.5 });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.height = vp.height; canvas.width = vp.width;
+            
+            await page.render({ canvasContext: ctx, viewport: vp }).promise;
+            const data = canvas.toDataURL('image/jpeg', 0.85);
+            const name = `${fileNameBase}_Hal_${i}.jpg`;
+            imgs.push({ name, data });
+
+            // Render menggunakan class .page-card dan .img-item
+            const pageCard = document.createElement('div');
+            pageCard.className = 'page-card';
+            pageCard.innerHTML = `
+                <div class="canvas-wrapper">
+                    <div class="img-item">
+                        <img src="${data}">
+                        <a href="${data}" download="${name}" class="btn-float-dl"><i class="fa-solid fa-download"></i></a>
+                    </div>
+                </div>
+                <div class="page-tag">HALAMAN ${i}</div>
+            `;
+            grid.appendChild(pageCard);
+            
+            const p = Math.round((i / pdfDoc.numPages) * 100);
+            document.getElementById('prog-fill').style.width = p + '%';
+            document.getElementById('prog-val').innerText = p + '%';
+            await new Promise(r => setTimeout(r, 10));
+        }
+        progArea.classList.add('hidden');
+        prepareZip(imgs);
+    }
+
+    async function prepareZip(list) {
+        const zip = new JSZip();
+        list.forEach(img => zip.file(img.name, img.data.split(',')[1], {base64: true}));
+        const blob = await zip.generateAsync({type:"blob"});
+        const btn = document.getElementById('zip-btn');
+        btn.href = URL.createObjectURL(blob);
+        btn.download = `${fileNameBase}_images.zip`;
+        btn.classList.remove('hidden');
+        btn.classList.add('inline-flex');
+		btn.style.display = 'inline-flex'; // Pastikan display-nya flex
+    }
+</script>
+</body>
+</html>

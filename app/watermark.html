@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Watermarker Studio</title>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-stamp"></i> Antrean Watermark</h2>
+                    <button class="btn-add-more hidden" id="add-more-btn" onclick="document.getElementById('pdf-input').click()">
+                        <i class="fa-solid fa-plus"></i> TAMBAH PDF
+                    </button>
+                </div>
+                
+                <div id="upload-box" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Beri watermark ke seluruh file</p>
+                    <input type="file" id="pdf-input" accept="application/pdf" multiple style="display:none">
+                </div>
+
+                <div id="file-list"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-gear"></i> Kontrol</h2>
+                </div>
+
+                <button id="zip-btn" class="btn-main" disabled style="width: 100%; margin-top: 0px !important;">
+                    <i class="fa-solid fa-file-zipper"></i> UNDUH SEMUA (.ZIP)
+                </button>
+
+                <button class="btn-reset" onclick="location.reload()" style="width: 100%;">
+                    <i class="fa-solid fa-rotate-right"></i> RESET
+                </button>
+
+                <div class="summary-box" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; font-size: 13px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>Status:</span> <strong id="sys-status" style="color:var(--maroon)">Idle</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>Selesai:</span> <span id="count-done" style="font-weight: bold;">0</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Total Antrean:</span> <span id="count-total" style="font-weight: bold;">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<canvas id="preview-canvas"></canvas>
+
+<script>
+    const SVG_PORT = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzk0IiBoZWlnaHQ9IjEyNDgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxnPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSI3OTQiIGhlaWdodD0iMTI0OCIgZmlsbD0iI0ZGRkZGRiIgZmlsbC1vcGFjaXR5PSIwIi8+PHRleHQgZmlsbD0iIzdGN0Y3RiIgZm9udC1mYW1pbHk9IlRpbWVzIE5ldyBSb21hbixUaW1lcyBOZXcgUm9tYW5fTVNGb250U2VydmljZSxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiBmb250LXNpemU9IjgwIiB0cmFuc2Zvcm09Im1hdHJpeCgwLjUzNjQwMSAtMC44NDM5NjMgMC44NDM5NjMgMC41MzY0MDEgMTQzLjk4NiAxMDc1KSI+S09NSVNJIFBFTUlMSUhBTiBVTVVNPC90ZXh0PjwvZz48L3N2Zz4=`;
+    const SVG_LAND = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI0OCIgaGVpZ2h0PSI3OTQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxnPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxMjQ4IiBoZWlnaHQ9Ijc5NCIgZmlsbD0iI0ZGRkZGRiIgZmlsbC1vcGFjaXR5PSIwIi8+PHRleHQgZmlsbD0iIzdGN0Y3RiIgZm9udC1mYW1pbHk9IlRpbWVzIE5ldyBSb21hbixUaW1lcyBOZXcgUm9tYW5fTVNGb250U2VydmljZSxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiBmb250LXNpemU9IjgwIiB0cmFuc2Zvcm09Im1hdHJpeCgwLjg0MTI0IC0wLjU0MDY2MiAwLjU0MDY2MiAwLjg0MTI0IDIwNC44OTYgNzAwKSI+S09NSVNJIFBFTUlMSUhBTiBVTVVNPC90ZXh0PjwvZz48L3N2Zz4=`;
+    
+    let fileQueue = [];
+    let isProcessing = false;
+    let wmAssets = null;
+
+    async function getAssets() {
+        if (wmAssets) return wmAssets;
+        const port = await imgToBytes(SVG_PORT);
+        const land = await imgToBytes(SVG_LAND);
+        wmAssets = { port, land };
+        return wmAssets;
+    }
+
+    function imgToBytes(base64) {
+        return new Promise(res => {
+            const img = new Image();
+            img.onload = () => {
+                const cvs = document.getElementById('preview-canvas');
+                cvs.width = img.width; cvs.height = img.height;
+                const ctx = cvs.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                cvs.toBlob(b => b.arrayBuffer().then(res));
+            };
+            img.src = base64;
+        });
+    }
+
+    document.getElementById('pdf-input').onchange = (e) => {
+        const added = Array.from(e.target.files).filter(f => f.type === "application/pdf");
+        if(added.length > 0) {
+            document.getElementById('upload-box').classList.add('hidden');
+            document.getElementById('add-more-btn').classList.remove('hidden');
+        }
+        added.forEach(file => {
+            fileQueue.push({ id: Math.random().toString(36).substr(2,9), file, status: 'waiting', current: 0, total: 0, result: null });
+        });
+        renderList();
+        if (!isProcessing) processQueue();
+        e.target.value = '';
+    };
+
+    function renderList() {
+        const list = document.getElementById('file-list');
+        list.innerHTML = fileQueue.map(item => `
+            <div class="file-item">
+                <div class="file-info">
+                    <span class="file-name">${item.file.name}</span>
+                    <div class="file-status-text">
+                        ${item.status === 'processing' ? 
+                            `<span class="status-processing"><i class="fa-solid fa-spinner fa-spin"></i> Hal ${item.current}/${item.total}</span>` : 
+                            `<span class="badge-status">${item.status.toUpperCase()}</span>`}
+                    </div>
+                </div>
+                <div class="file-actions">
+                    ${item.status === 'processing' ? `<button class="btn-reset" style="padding:4px 8px; font-size:10px; margin:0;" onclick="cancelItem('${item.id}')">BATAL</button>` : ''}
+                    ${item.status === 'done' ? `<a href="${URL.createObjectURL(new Blob([item.result]))}" download="WM_${item.file.name}" class="btn-dl-mini">UNDUH</a>` : ''}
+                    ${item.status !== 'processing' ? `<button class="btn-delete-mini" onclick="removeItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>` : ''}
+                </div>
+            </div>
+        `).join('');
+        updateSummary();
+    }
+
+    async function processQueue() {
+        const next = fileQueue.find(f => f.status === 'waiting');
+        if (!next) {
+            isProcessing = false;
+            document.getElementById('sys-status').innerText = 'Idle';
+            return;
+        }
+        isProcessing = true;
+        document.getElementById('sys-status').innerText = 'Processing...';
+        next.status = 'processing';
+        renderList();
+
+        try {
+            const assets = await getAssets();
+            const pdfDoc = await PDFLib.PDFDocument.load(await next.file.arrayBuffer());
+            const pages = pdfDoc.getPages();
+            next.total = pages.length;
+            const wmPort = await pdfDoc.embedPng(assets.port);
+            const wmLand = await pdfDoc.embedPng(assets.land);
+
+            for (let i = 0; i < pages.length; i++) {
+                if (next.status !== 'processing') break;
+                next.current = i + 1;
+                if (i % 3 === 0) renderList();
+                
+                const page = pages[i];
+                const { width, height } = page.getSize();
+                const img = height >= width ? wmPort : wmLand;
+                const scale = Math.min(width / img.width, height / img.height);
+                const fw = img.width * scale;
+                const fh = img.height * scale;
+                
+                page.drawImage(img, { x: (width-fw)/2, y: (height-fh)/2, width: fw, height: fh, opacity: 0.5 });
+                if (i % 10 === 0) await new Promise(r => setTimeout(r, 5));
+            }
+            if (next.status === 'processing') {
+                next.result = await pdfDoc.save();
+                next.status = 'done';
+            }
+        } catch (err) {
+            next.status = 'error';
+        }
+        isProcessing = false;
+        renderList();
+        processQueue();
+    }
+
+    window.cancelItem = (id) => {
+        const item = fileQueue.find(f => f.id === id);
+        if (item) { item.status = 'cancelled'; renderList(); }
+    };
+
+    window.removeItem = (id) => {
+        fileQueue = fileQueue.filter(f => f.id !== id);
+        if(fileQueue.length === 0) {
+            document.getElementById('upload-box').classList.remove('hidden');
+            document.getElementById('add-more-btn').classList.add('hidden');
+        }
+        renderList();
+        if (!isProcessing) processQueue();
+    };
+
+    function updateSummary() {
+        const done = fileQueue.filter(f => f.status === 'done').length;
+        document.getElementById('count-done').innerText = done;
+        document.getElementById('count-total').innerText = fileQueue.length;
+        document.getElementById('zip-btn').disabled = (done === 0);
+    }
+
+    document.getElementById('zip-btn').onclick = async () => {
+        const zip = new JSZip();
+        fileQueue.forEach(f => { if(f.result) zip.file(`WM_${f.file.name}`, f.result); });
+        const blob = await zip.generateAsync({type:"blob"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "MASTER_Watermarked_Batch.zip";
+        a.click();
+    };
+</script>
+</body>
+</html>

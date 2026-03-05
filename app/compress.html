@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Sequential Studio</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-list-check"></i> Antrean Konversi</h2>
+                    <button class="btn-add-more hidden" id="addMoreBtn" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-plus"></i> TAMBAH FILE
+                    </button>
+                </div>
+
+                <div class="dropzone" id="dropZone">
+                    <input type="file" id="fileInput" multiple accept="application/pdf" class="hidden">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Konversi batch otomatis</p>
+                </div>
+
+                <div class="file-list" id="fileList"></div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header"><h2><i class="fa-solid fa-sliders"></i> Opsi</h2></div>
+                
+                <div class="setting-group" style="margin-bottom:15px">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; margin-bottom:8px">
+                        <span>Resolusi</span> <span id="dpiVal" style="color:var(--maroon)">170 DPI</span>
+                    </div>
+                    <input type="range" id="dpiIn" min="72" max="300" value="170" style="width:100%">
+                </div>
+
+                <div class="setting-group">
+                    <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; margin-bottom:8px">
+                        <span>Kualitas</span> <span id="qualVal" style="color:var(--maroon)">60%</span>
+                    </div>
+                    <input type="range" id="qualIn" min="10" max="100" value="60" style="width:100%">
+                </div>
+
+                <div style="margin-top: 25px; display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-main hidden" id="zipBtn" style="width: 100%;">
+                        <i class="fa-solid fa-file-zipper"></i> UNDUH ZIP
+                    </button>
+                    <button class="btn-reset" id="resetBtn" style="width: 100%;">
+                        <i class="fa-solid fa-rotate-right"></i> RESET
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { PDFDocument } = PDFLib;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let batchStore = [];
+    let fileQueue = [];
+    let isProcessing = false;
+    let masterFileStore = new Map();
+
+    const fileIn = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const fileList = document.getElementById('fileList');
+    const zipBtn = document.getElementById('zipBtn');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+
+    dropZone.onclick = () => fileIn.click();
+    fileIn.onchange = async (e) => {
+        const selected = Array.from(e.target.files).filter(f => f.type === 'application/pdf');
+        if(selected.length > 0) {
+            dropZone.classList.add('hidden');
+            addMoreBtn.classList.remove('hidden');
+        }
+        for (const file of selected) { await addFileToQueue(file); }
+        fileIn.value = '';
+    };
+
+    async function addFileToQueue(file) {
+        const id = 'f-' + Math.random().toString(36).substr(2, 9);
+        const arr = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arr }).promise;
+        masterFileStore.set(id, file);
+        
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        div.id = `row-${id}`;
+        div.innerHTML = `
+            <div class="file-info">
+                <span class="file-name">${file.name}</span>
+                <span class="file-meta">${pdf.numPages} Hal • ${(file.size/1024).toFixed(0)} KB</span>
+            </div>
+            <div class="file-status">
+                <div class="file-size-result" id="size-${id}">Menunggu...</div>
+                <div class="action-group" id="action-${id}">
+                    <span class="badge-status">ANTRE</span>
+                </div>
+            </div>
+        `;
+        fileList.appendChild(div);
+        fileQueue.push({ id, file, row: div });
+        processQueue();
+    }
+
+    async function processQueue() {
+        if (isProcessing || fileQueue.length === 0) return;
+        isProcessing = true;
+        
+        const { file, id } = fileQueue[0];
+        const actionArea = document.getElementById(`action-${id}`);
+        const sizeArea = document.getElementById(`size-${id}`);
+
+        try {
+            actionArea.innerHTML = `<span class="badge-status" style="color:var(--maroon)">PROSES...</span>`;
+            
+            // Tambahkan callback untuk update teks progres
+            const blob = await processPDF(
+                file, 
+                parseInt(document.getElementById('dpiIn').value), 
+                parseInt(document.getElementById('qualIn').value)/100,
+                (p) => { sizeArea.innerHTML = `<span style="color:var(--maroon); font-weight:bold">${p}%</span>`; }
+            );
+
+            batchStore.push({ id, name: file.name, blob });
+            
+            const saving = ((file.size - blob.size) / file.size * 100).toFixed(0);
+            sizeArea.innerHTML = `${(blob.size/1024).toFixed(0)} KB <small style="color:var(--success)">(${saving}%)</small>`;
+            actionArea.innerHTML = `
+                <button class="btn-reset" style="padding:7px 8px; margin-top:0; font-size:12px" onclick="removeFile('${id}')"><i class="fa-solid fa-trash"></i></button>
+                <a href="${URL.createObjectURL(blob)}" download="MASTER_${file.name}" class="btn-unduh-mini">UNDUH</a>
+            `;
+            zipBtn.classList.remove('hidden');
+        } catch (err) {
+            console.error(err);
+            actionArea.innerHTML = `<span class="badge-status" style="color:var(--danger)">ERROR</span>`;
+        }
+
+        fileQueue.shift();
+        isProcessing = false;
+        processQueue();
+    }
+
+    async function processPDF(file, dpi, quality, onProgress) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const outDoc = await PDFDocument.create();
+        const scale = dpi / 72;
+        const totalPages = pdfDoc.numPages;
+
+        for (let n = 1; n <= totalPages; n++) {
+            // Hitung dan kirim persentase progres
+            const percent = Math.round((n / totalPages) * 100);
+            if (onProgress) onProgress(percent);
+
+            const page = await pdfDoc.getPage(n);
+            const view = page.getViewport({ scale: 1 });
+            const renderView = page.getViewport({ scale });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = renderView.width; 
+            canvas.height = renderView.height;
+            
+            await page.render({ canvasContext: ctx, viewport: renderView }).promise;
+            const imgData = canvas.toDataURL('image/jpeg', quality);
+            const jpg = await outDoc.embedJpg(imgData);
+            const newPage = outDoc.addPage([view.width, view.height]);
+            newPage.drawImage(jpg, { x: 0, y: 0, width: view.width, height: view.height });
+            
+            // Hapus canvas dari memori setelah digunakan
+            canvas.width = 0; canvas.height = 0;
+        }
+        return new Blob([await outDoc.save()], { type: 'application/pdf' });
+    }
+
+    window.removeFile = (id) => {
+        document.getElementById(`row-${id}`)?.remove();
+        batchStore = batchStore.filter(b => b.id != id);
+        if(batchStore.length === 0 && fileQueue.length === 0) {
+            zipBtn.classList.add('hidden');
+            dropZone.classList.remove('hidden');
+            addMoreBtn.classList.add('hidden');
+        }
+    };
+
+    zipBtn.onclick = async () => {
+        const zip = new JSZip();
+        batchStore.forEach(p => zip.file("MASTER_" + p.name, p.blob));
+        const content = await zip.generateAsync({ type: "blob" });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = `MASTER_Batch.zip`;
+        link.click();
+    };
+
+    document.getElementById('resetBtn').onclick = () => location.reload();
+    document.getElementById('dpiIn').oninput = (e) => document.getElementById('dpiVal').innerText = e.target.value + ' DPI';
+    document.getElementById('qualIn').oninput = (e) => document.getElementById('qualVal').innerText = e.target.value + '%';
+</script>
+</body>
+</html>

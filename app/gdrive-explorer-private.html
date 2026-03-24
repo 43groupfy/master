@@ -128,8 +128,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .grid-item .gmeta { font-family: 'JetBrains Mono', monospace; font-size: .6rem; color: var(--ink3); }
 /* path label for search results */
 .grid-item .gpath { font-family: 'JetBrains Mono', monospace; font-size: .58rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-.grid-item .gactions { display: flex; gap: .25rem; width: 100%; opacity: 0; transition: opacity .15s; }
-.grid-item:hover .gactions { opacity: 1; }
+.grid-item .gactions { display: flex; gap: .25rem; width: 100%; }
 .ga-btn { flex: 1; padding: .28rem .2rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .6rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; white-space: nowrap; }
 .ga-btn:hover { background: var(--acc-l); border-color: var(--accent); color: var(--accent); }
 
@@ -147,8 +146,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .list-name { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-meta { font-family: 'JetBrains Mono', monospace; font-size: .67rem; color: var(--ink3); margin-top: .1rem; }
 .list-path { font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--accent); margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.list-acts { display: flex; gap: .35rem; flex-shrink: 0; opacity: 0; transition: opacity .15s; }
-.list-item:hover .list-acts { opacity: 1; }
+.list-acts { display: flex; gap: .35rem; flex-shrink: 0; }
 .la-btn { padding: .28rem .55rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .67rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: .2rem; white-space: nowrap; }
 .la-btn:hover { background: var(--acc-l); border-color: var(--accent); color: var(--accent); }
 .folder-tag { font-size: .6rem; background: #fff8e1; color: #92650a; border: 1px solid #fde68a; border-radius: 4px; padding: .1rem .35rem; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
@@ -183,10 +181,105 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .toast { position: fixed; bottom: 1.3rem; right: 1.3rem; z-index: 999; background: var(--ink); color: #fff; border-radius: 7px; padding: .6rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: .75rem; transform: translateY(70px); opacity: 0; transition: all .22s; pointer-events: none; }
 .toast.on { transform: translateY(0); opacity: 1; }
 
+/* ── RESPONSIVE ── */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .header-search { width: 200px; }
+  .file-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .6rem; }
+  .list-item { padding: .6rem .8rem; gap: .6rem; }
+  .la-btn { padding: .25rem .45rem; font-size: .62rem; }
+}
+
+/* Mobile */
 @media (max-width: 600px) {
-  .header-search { width: 160px; }
-  .file-grid { grid-template-columns: repeat(3, 1fr); }
-  .list-acts { display: none; }
+  /* Header: pindah search ke bawah header */
+  header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: .6rem 1rem;
+    gap: .5rem;
+  }
+  .logo { font-size: .9rem; }
+  .hspace { display: none; }
+  .header-search {
+    width: 100%;
+    order: 10; /* taruh di baris kedua */
+  }
+  .header-search input {
+    font-size: .85rem;
+    padding: .55rem .7rem .55rem 2.2rem;
+  }
+  .user-pill { font-size: .72rem; }
+  .user-pill span { display: none; } /* sembunyikan nama, tampilkan hanya avatar */
+
+  /* Breadcrumb */
+  .breadcrumb-bar { padding: .4rem .8rem; gap: .2rem; }
+  .bc-item { font-size: .75rem; padding: .15rem .3rem; }
+
+  /* Toolbar */
+  .toolbar-bar { padding: .4rem .8rem; }
+  .sort-sel { font-size: .68rem; padding: .25rem .45rem; }
+  .stat-lbl { font-size: .65rem; }
+
+  /* Main padding */
+  main { padding: .8rem; }
+
+  /* Grid: 2 kolom di mobile */
+  .file-grid { grid-template-columns: repeat(2, 1fr); gap: .55rem; }
+  .grid-item { padding: .75rem .6rem; gap: .4rem; }
+  .grid-item .thumb { width: 44px; height: 44px; font-size: 1.6rem; }
+  .grid-item .gname { font-size: .7rem; }
+  .grid-item .gmeta { font-size: .58rem; }
+  .grid-item .gpath { font-size: .56rem; }
+  .ga-btn { font-size: .58rem; padding: .25rem .15rem; }
+
+  /* List: lebih compact, wrap tombol ke bawah */
+  .list-item {
+    flex-wrap: wrap;
+    padding: .6rem .75rem;
+    gap: .4rem;
+  }
+  .list-icon { font-size: 1.1rem; width: 22px; }
+  .list-info { flex: 1; min-width: 0; }
+  .list-name { font-size: .8rem; }
+  .list-meta { font-size: .62rem; }
+  .list-path { font-size: .6rem; }
+  .list-acts {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: .3rem;
+  }
+  .la-btn {
+    font-size: .65rem;
+    padding: .28rem .5rem;
+    flex: 1;
+    justify-content: center;
+  }
+  .folder-tag { font-size: .58rem; }
+
+  /* Search banner */
+  .search-banner { font-size: .75rem; padding: .5rem .75rem; }
+
+  /* Preview modal full screen di mobile */
+  .pv-head { padding: .65rem .8rem; gap: .5rem; }
+  .pv-head h3 { font-size: .82rem; }
+  .btn-acc { font-size: .72rem; padding: .28rem .65rem; }
+  .pv-body { padding: .5rem; }
+
+  /* Toast */
+  .toast { bottom: .8rem; right: .8rem; left: .8rem; text-align: center; font-size: .72rem; }
+
+  /* Login card */
+  .login-wrap { margin: 2rem auto; padding: 0 .5rem; }
+  .login-card { padding: 1.75rem 1.25rem; }
+}
+
+/* Sangat kecil (< 380px) */
+@media (max-width: 380px) {
+  .file-grid { grid-template-columns: repeat(2, 1fr); gap: .4rem; }
+  .grid-item .thumb { width: 36px; height: 36px; font-size: 1.3rem; }
+  .badge { display: none; }
 }
 </style>
 </head>

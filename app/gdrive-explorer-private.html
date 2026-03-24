@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MasterKPU</title>
+<title>DriveVault</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,7 +20,6 @@
   --red-l:   #fdecea;
   --shadow:  0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
   --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
-  --folder:  #f0c040;
 }
 body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
 
@@ -37,7 +36,7 @@ header {
 .hspace { flex: 1; }
 
 /* search in header */
-.header-search { position: relative; width: 260px; }
+.header-search { position: relative; width: 300px; }
 .header-search svg { position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); color: var(--ink3); pointer-events: none; }
 .header-search input {
   width: 100%; background: var(--bg); border: 1px solid var(--border);
@@ -47,6 +46,14 @@ header {
 }
 .header-search input:focus { border-color: var(--accent); background: var(--card); }
 .header-search input::placeholder { color: var(--ink3); }
+
+/* search loading spinner inline */
+.search-spinner {
+  position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+  width: 14px; height: 14px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .5s linear infinite; display: none;
+}
 
 .user-pill { display: none; align-items: center; gap: .5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: .25rem .25rem .25rem .65rem; font-size: .78rem; font-weight: 600; flex-shrink: 0; }
 .user-pill img { width: 22px; height: 22px; border-radius: 50%; }
@@ -74,6 +81,7 @@ header {
 .toolbar-bar {
   display: none; align-items: center; gap: .5rem;
   padding: .6rem 1.25rem; background: var(--bg);
+  border-bottom: 1px solid var(--border);
 }
 .sort-sel { background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: .3rem .6rem; font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--ink2); cursor: pointer; outline: none; }
 .stat-lbl { font-family: 'JetBrains Mono', monospace; font-size: .7rem; color: var(--ink3); margin-left: auto; }
@@ -94,6 +102,16 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .google-btn:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(44,110,73,.15); }
 .login-note { margin-top: .9rem; font-size: .7rem; color: var(--ink3); font-family: 'JetBrains Mono', monospace; line-height: 1.5; }
 
+/* ── SEARCH RESULTS BANNER ── */
+.search-banner {
+  background: var(--acc-l); border: 1px solid #b2d8c4; border-radius: 9px;
+  padding: .6rem 1rem; margin-bottom: .9rem;
+  display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
+  font-size: .8rem; font-family: 'JetBrains Mono', monospace; color: var(--accent);
+}
+.search-banner .clr-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: .75rem; margin-left: auto; font-family: 'JetBrains Mono', monospace; text-decoration: underline; white-space: nowrap; }
+.search-progress { font-size: .72rem; color: var(--ink2); font-style: italic; }
+
 /* ── GRID VIEW ── */
 .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: .7rem; }
 .grid-item {
@@ -103,18 +121,16 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
   cursor: pointer; transition: all .18s; text-align: center; position: relative;
 }
 .grid-item:hover { border-color: var(--accent); box-shadow: 0 3px 16px rgba(44,110,73,.1); transform: translateY(-1px); }
-.grid-item .thumb {
-  width: 64px; height: 64px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; flex-shrink: 0; overflow: hidden;
-}
+.grid-item .thumb { width: 56px; height: 56px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.9rem; flex-shrink: 0; overflow: hidden; }
 .grid-item .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
 .grid-item .thumb.folder-thumb { background: #fff8e1; }
-.grid-item .gname { font-size: .75rem; font-weight: 600; line-height: 1.3; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
-.grid-item .gmeta { font-family: 'JetBrains Mono', monospace; font-size: .62rem; color: var(--ink3); }
-.grid-item .gactions { display: flex; gap: .3rem; width: 100%; opacity: 0; transition: opacity .15s; }
+.grid-item .gname { font-size: .72rem; font-weight: 600; line-height: 1.3; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
+.grid-item .gmeta { font-family: 'JetBrains Mono', monospace; font-size: .6rem; color: var(--ink3); }
+/* path label for search results */
+.grid-item .gpath { font-family: 'JetBrains Mono', monospace; font-size: .58rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.grid-item .gactions { display: flex; gap: .25rem; width: 100%; opacity: 0; transition: opacity .15s; }
 .grid-item:hover .gactions { opacity: 1; }
-.ga-btn { flex: 1; padding: .3rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .65rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; }
+.ga-btn { flex: 1; padding: .28rem .2rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .6rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; white-space: nowrap; }
 .ga-btn:hover { background: var(--acc-l); border-color: var(--accent); color: var(--accent); }
 
 /* ── LIST VIEW ── */
@@ -130,11 +146,15 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .list-info { flex: 1; min-width: 0; }
 .list-name { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-meta { font-family: 'JetBrains Mono', monospace; font-size: .67rem; color: var(--ink3); margin-top: .1rem; }
+.list-path { font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--accent); margin-top: .15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list-acts { display: flex; gap: .35rem; flex-shrink: 0; opacity: 0; transition: opacity .15s; }
 .list-item:hover .list-acts { opacity: 1; }
-.la-btn { padding: .28rem .6rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .67rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: .2rem; }
+.la-btn { padding: .28rem .55rem; border-radius: 5px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .67rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: .2rem; white-space: nowrap; }
 .la-btn:hover { background: var(--acc-l); border-color: var(--accent); color: var(--accent); }
 .folder-tag { font-size: .6rem; background: #fff8e1; color: #92650a; border: 1px solid #fde68a; border-radius: 4px; padding: .1rem .35rem; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+
+/* highlight matched text */
+.hl { background: #fef08a; border-radius: 2px; padding: 0 1px; font-weight: 700; color: var(--ink); }
 
 /* ── STATES ── */
 .state-box { text-align: center; padding: 4rem 2rem; }
@@ -143,15 +163,6 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .state-box p { color: var(--ink2); font-size: .82rem; font-family: 'JetBrains Mono', monospace; }
 .spinner { width: 32px; height: 32px; margin: 0 auto .9rem; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .55s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── SEARCH RESULTS BANNER ── */
-.search-banner {
-  background: var(--acc-l); border: 1px solid #b2d8c4;
-  border-radius: 9px; padding: .6rem 1rem; margin-bottom: .9rem;
-  display: none; align-items: center; gap: .6rem;
-  font-size: .8rem; font-family: 'JetBrains Mono', monospace; color: var(--accent);
-}
-.search-banner button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: .75rem; margin-left: auto; font-family: 'JetBrains Mono', monospace; text-decoration: underline; }
 
 /* ── PREVIEW MODAL ── */
 .overlay { position: fixed; inset: 0; z-index: 300; background: rgba(15,15,12,.78); backdrop-filter: blur(8px); display: none; flex-direction: column; }
@@ -173,7 +184,7 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 .toast.on { transform: translateY(0); opacity: 1; }
 
 @media (max-width: 600px) {
-  .header-search { display: none; }
+  .header-search { width: 160px; }
   .file-grid { grid-template-columns: repeat(3, 1fr); }
   .list-acts { display: none; }
 }
@@ -183,11 +194,12 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 
 <!-- HEADER -->
 <header>
-  <div class="logo"><div class="logo-mark">🔒</div>Drive KPU</div>
+  <div class="logo"><div class="logo-mark">🔒</div>DriveVault</div>
   <span class="badge">PRIVATE</span>
   <div class="header-search" id="headerSearch" style="display:none">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="search" id="searchInput" placeholder="Cari di folder ini... (Ctrl+K)" oninput="handleSearch()">
+    <input type="search" id="searchInput" placeholder="Cari semua file... (Ctrl+K)" oninput="handleSearch(this.value)">
+    <div class="search-spinner" id="searchSpinner"></div>
   </div>
   <div class="hspace"></div>
   <div class="user-pill" id="userPill">
@@ -202,9 +214,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
 
 <!-- TOOLBAR -->
 <div class="toolbar-bar" id="toolbarBar">
-  <select class="sort-sel" id="sortSel" onchange="activeSort=this.value; renderArea()">
-    <option value="name">Nama A–Z</option>
+  <select class="sort-sel" id="sortSel" onchange="activeSort=this.value; refreshView()">
     <option value="type">Folder dulu</option>
+    <option value="name">Nama A–Z</option>
     <option value="date">Terbaru</option>
     <option value="size">Ukuran</option>
   </select>
@@ -243,19 +255,25 @@ const CFG = {
 // ═══════════════════════════════════════════════════════
 
 // ── STATE ──────────────────────────────────────────────
-let accessToken = '';
-let userInfo    = null;
-let activeView  = 'grid';
-let activeSort  = 'name';
-let searchQuery = '';
-let pvFileId    = '';
-let pvFileName  = '';
+let accessToken  = '';
+let userInfo     = null;
+let activeView   = 'grid';
+let activeSort   = 'type';
+let pvFileId     = '';
+let pvFileName   = '';
 
-// Stack navigasi: [{id, name}]
+// Nav stack: [{id, name}]
 let navStack = [];
 
-// Cache per folder: folderId → [{...file}]
+// Cache folder contents: folderId → [items]
 const folderCache = {};
+
+// Search state
+let searchDebounce   = null;
+let searchAbort      = null;   // AbortController for in-flight recursive search
+let isSearchMode     = false;
+let searchResults    = [];
+let searchQuery      = '';
 
 // ── INIT ───────────────────────────────────────────────
 document.title = CFG.appName;
@@ -330,30 +348,25 @@ function signOut() {
 
 // ── FOLDER NAVIGATION ─────────────────────────────────
 async function openFolder(folderId, name) {
-  // Reset search
-  searchQuery = '';
-  const si = document.getElementById('searchInput');
-  if (si) si.value = '';
+  // Cancel any ongoing search
+  cancelSearch();
+  clearSearchInput();
 
   // Update nav stack
   const existing = navStack.findIndex(n => n.id === folderId);
-  if (existing >= 0) {
-    navStack = navStack.slice(0, existing + 1);
-  } else {
-    navStack.push({ id: folderId, name });
-  }
+  if (existing >= 0) navStack = navStack.slice(0, existing + 1);
+  else navStack.push({ id: folderId, name });
 
   renderBreadcrumb();
   renderLoading();
 
-  // Show UI chrome
   document.getElementById('headerSearch').style.display = '';
   document.getElementById('breadcrumbBar').style.display = 'flex';
   document.getElementById('toolbarBar').style.display = 'flex';
 
   try {
     const items = await fetchFolderContents(folderId);
-    renderArea(items);
+    renderFolderView(items);
   } catch (e) {
     renderError(e.message);
     if (e.message.includes('401') || e.message.includes('403')) {
@@ -363,10 +376,9 @@ async function openFolder(folderId, name) {
   }
 }
 
+// Fetch single folder (with cache)
 async function fetchFolderContents(folderId) {
-  // Return cache if available
   if (folderCache[folderId]) return folderCache[folderId];
-
   const items = [];
   let pageToken = '';
   do {
@@ -381,7 +393,6 @@ async function fetchFolderContents(folderId) {
     items.push(...data.files);
     pageToken = data.nextPageToken || '';
   } while (pageToken);
-
   folderCache[folderId] = items;
   return items;
 }
@@ -405,84 +416,205 @@ function renderBreadcrumb() {
   });
 }
 
-// ── SEARCH ────────────────────────────────────────────
-function handleSearch() {
-  searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-  const currentFolderId = navStack[navStack.length - 1]?.id;
-  const items = folderCache[currentFolderId] || [];
-  renderArea(items);
-}
-
-// ── RENDER AREA ───────────────────────────────────────
-function renderArea(items) {
-  if (!items) {
-    const currentFolderId = navStack[navStack.length - 1]?.id;
-    items = folderCache[currentFolderId] || [];
-  }
-
-  // Filter by search
-  let display = searchQuery
-    ? items.filter(f => f.name.toLowerCase().includes(searchQuery))
-    : items;
-
-  // Sort
-  display = [...display].sort((a, b) => {
-    if (activeSort === 'type') {
-      const aF = isFolder(a) ? 0 : 1;
-      const bF = isFolder(b) ? 0 : 1;
-      if (aF !== bF) return aF - bF;
-      return a.name.localeCompare(b.name);
-    }
-    if (activeSort === 'name') return a.name.localeCompare(b.name);
-    if (activeSort === 'date') return new Date(b.modifiedTime) - new Date(a.modifiedTime);
-    if (activeSort === 'size') return (parseInt(b.size)||0) - (parseInt(a.size)||0);
-    return 0;
-  });
-
-  // Stat
+// ── RENDER NORMAL FOLDER VIEW ─────────────────────────
+function renderFolderView(items) {
+  isSearchMode = false;
+  let display = sortItems([...items]);
   const folders = display.filter(isFolder).length;
   const files   = display.length - folders;
   document.getElementById('statLbl').textContent =
-    `${folders ? folders + ' folder' : ''}${folders && files ? ', ' : ''}${files ? files + ' file' : ''}` || '0 item';
+    [folders && `${folders} folder`, files && `${files} file`].filter(Boolean).join(', ') || '0 item';
 
-  // Search banner
   const main = document.getElementById('mainArea');
-  let bannerHTML = '';
-  if (searchQuery) {
-    bannerHTML = `<div class="search-banner" style="display:flex">
-      🔍 Hasil pencarian "<b>${esc(searchQuery)}</b>" — ${display.length} ditemukan
-      <button onclick="clearSearch()">✕ Hapus</button>
-    </div>`;
-  }
-
   if (!display.length) {
-    main.innerHTML = bannerHTML + `<div class="state-box"><div class="ico">${searchQuery ? '🔍' : '📭'}</div>
-      <h3>${searchQuery ? 'Tidak ditemukan' : 'Folder kosong'}</h3>
-      <p>${searchQuery ? 'Coba kata kunci lain' : 'Belum ada file di folder ini'}</p></div>`;
+    main.innerHTML = `<div class="state-box"><div class="ico">📭</div><h3>Folder kosong</h3><p>Belum ada file di sini</p></div>`;
     return;
   }
+
+  const container = buildItemContainer(display, false, '');
+  main.innerHTML = '';
+  main.appendChild(container);
+}
+
+// ── SEARCH ────────────────────────────────────────────
+function handleSearch(val) {
+  clearTimeout(searchDebounce);
+  searchQuery = val.trim();
+
+  if (!searchQuery) {
+    cancelSearch();
+    const currentFolderId = navStack[navStack.length - 1]?.id;
+    renderFolderView(folderCache[currentFolderId] || []);
+    return;
+  }
+
+  // Debounce 400ms
+  searchDebounce = setTimeout(() => startRecursiveSearch(searchQuery), 400);
+}
+
+function cancelSearch() {
+  if (searchAbort) { searchAbort.cancelled = true; searchAbort = null; }
+  clearTimeout(searchDebounce);
+  setSearchSpinner(false);
+}
+
+function clearSearchInput() {
+  const si = document.getElementById('searchInput');
+  if (si) si.value = '';
+  searchQuery = '';
+}
+
+async function startRecursiveSearch(query) {
+  cancelSearch();
+
+  // Create cancellation token
+  const token = { cancelled: false };
+  searchAbort = token;
+
+  isSearchMode = true;
+  searchResults = [];
+  setSearchSpinner(true);
+
+  // Show live results panel immediately
+  renderSearchPanel(query, [], true);
+
+  const rootFolderId = navStack[navStack.length - 1]?.id;
+
+  try {
+    await recursiveSearch(rootFolderId, query, token, (results) => {
+      if (token.cancelled) return;
+      searchResults = results;
+      renderSearchPanel(query, results, true);
+    });
+    if (!token.cancelled) {
+      renderSearchPanel(query, searchResults, false);
+      setSearchSpinner(false);
+    }
+  } catch (e) {
+    if (!token.cancelled) {
+      setSearchSpinner(false);
+      toast('❌ Pencarian gagal: ' + e.message);
+    }
+  }
+}
+
+// Recursive search through folder tree
+// onPartialResult called progressively with running results
+async function recursiveSearch(folderId, query, token, onPartialResult) {
+  if (token.cancelled) return;
+
+  const items = await fetchFolderContents(folderId);
+  if (token.cancelled) return;
+
+  const q = query.toLowerCase();
+
+  for (const item of items) {
+    if (token.cancelled) return;
+    if (!isFolder(item) && item.name.toLowerCase().includes(q)) {
+      // Find path label for this file
+      item._searchPath = buildPathLabel(folderId);
+      item._parentId   = folderId;
+      searchResults.push(item);
+      onPartialResult([...searchResults]);
+    }
+  }
+
+  // Recurse into subfolders
+  const subfolders = items.filter(isFolder);
+  for (const sub of subfolders) {
+    if (token.cancelled) return;
+    await recursiveSearch(sub.id, query, token, onPartialResult);
+  }
+}
+
+// Build human-readable path for a folder id using navStack + cache
+function buildPathLabel(folderId) {
+  // If it's the current root folder
+  const rootId = navStack[navStack.length - 1]?.id;
+  if (folderId === rootId) return navStack[navStack.length - 1]?.name || 'Home';
+
+  // Walk cache to find ancestors
+  const path = findPathInCache(rootId, folderId, []);
+  if (path) return path.map(n => n.name).join(' › ');
+  return '...';
+}
+
+function findPathInCache(currentId, targetId, pathSoFar) {
+  const items = folderCache[currentId];
+  if (!items) return null;
+  for (const item of items) {
+    if (!isFolder(item)) continue;
+    const newPath = [...pathSoFar, { id: item.id, name: item.name }];
+    if (item.id === targetId) return newPath;
+    const deeper = findPathInCache(item.id, targetId, newPath);
+    if (deeper) return deeper;
+  }
+  return null;
+}
+
+// ── RENDER SEARCH PANEL ───────────────────────────────
+function renderSearchPanel(query, results, isLoading) {
+  const main = document.getElementById('mainArea');
+  const q = query.toLowerCase();
+
+  // Stat
+  if (!isLoading) {
+    document.getElementById('statLbl').textContent = results.length + ' hasil';
+  } else {
+    document.getElementById('statLbl').textContent = results.length + ' ditemukan...';
+  }
+
+  const bannerDiv = document.createElement('div');
+  bannerDiv.className = 'search-banner';
+  bannerDiv.innerHTML = isLoading
+    ? `🔍 Mencari "<b>${esc(query)}</b>"… <span class="search-progress">${results.length} file ditemukan</span><button class="clr-btn" onclick="clearSearch()">✕ Batal</button>`
+    : `🔍 Hasil untuk "<b>${esc(query)}</b>" — <b>${results.length}</b> file ditemukan<button class="clr-btn" onclick="clearSearch()">✕ Hapus</button>`;
+
+  main.innerHTML = '';
+  main.appendChild(bannerDiv);
+
+  if (!results.length) {
+    if (!isLoading) {
+      const empty = document.createElement('div');
+      empty.className = 'state-box';
+      empty.innerHTML = `<div class="ico">🔍</div><h3>Tidak ditemukan</h3><p>Coba kata kunci lain</p>`;
+      main.appendChild(empty);
+    }
+    return;
+  }
+
+  const container = buildItemContainer(results, true, q);
+  main.appendChild(container);
+}
+
+function clearSearch() {
+  cancelSearch();
+  clearSearchInput();
+  const currentFolderId = navStack[navStack.length - 1]?.id;
+  renderFolderView(folderCache[currentFolderId] || []);
+}
+
+// ── BUILD ITEM CONTAINER (grid or list) ───────────────
+function buildItemContainer(items, isSearch, highlightQ) {
+  const sorted = isSearch ? items : sortItems([...items]);
 
   if (activeView === 'grid') {
     const grid = document.createElement('div');
     grid.className = 'file-grid';
-    display.forEach(f => grid.appendChild(isFolder(f) ? mkFolderGrid(f) : mkFileGrid(f)));
-    main.innerHTML = bannerHTML;
-    main.appendChild(grid);
+    sorted.forEach(f => {
+      if (isFolder(f) && !isSearch) grid.appendChild(mkFolderGrid(f));
+      else if (!isFolder(f)) grid.appendChild(mkFileGrid(f, isSearch, highlightQ));
+    });
+    return grid;
   } else {
     const list = document.createElement('div');
     list.className = 'file-list';
-    display.forEach(f => list.appendChild(isFolder(f) ? mkFolderRow(f) : mkFileRow(f)));
-    main.innerHTML = bannerHTML;
-    main.appendChild(list);
+    sorted.forEach(f => {
+      if (isFolder(f) && !isSearch) list.appendChild(mkFolderRow(f));
+      else if (!isFolder(f)) list.appendChild(mkFileRow(f, isSearch, highlightQ));
+    });
+    return list;
   }
-}
-
-function clearSearch() {
-  searchQuery = '';
-  const si = document.getElementById('searchInput');
-  if (si) si.value = '';
-  const currentFolderId = navStack[navStack.length - 1]?.id;
-  renderArea(folderCache[currentFolderId] || []);
 }
 
 // ── GRID ITEMS ────────────────────────────────────────
@@ -493,32 +625,33 @@ function mkFolderGrid(f) {
   el.innerHTML = `
     <div class="thumb folder-thumb">📁</div>
     <div class="gname">${esc(f.name)}</div>
-    <div class="gmeta">Folder</div>`;
-  el.ondblclick = () => openFolder(f.id, f.name);
-  el.onclick = (e) => { if (e.detail === 2) openFolder(f.id, f.name); };
-
-  // Single click on mobile = open
-  let tapTimer;
-  el.addEventListener('touchend', () => {
-    clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => openFolder(f.id, f.name), 200);
-  });
+    <div class="gmeta">Folder · ${fmtDate(f.modifiedTime)}</div>
+    <div class="gactions">
+      <button class="ga-btn" onclick="event.stopPropagation();openFolder('${f.id}','${ea(f.name)}')">📂 Buka</button>
+    </div>`;
+  el.onclick = () => openFolder(f.id, f.name);
   return el;
 }
 
-function mkFileGrid(f) {
+function mkFileGrid(f, isSearch, q) {
   const el = document.createElement('div');
   el.className = 'grid-item';
   el.title = f.name;
   const isImg = f.mimeType.startsWith('image/');
+  const displayName = q ? hlText(f.name, q) : esc(f.name);
+  const pathRow = isSearch && f._searchPath
+    ? `<div class="gpath" title="${esc(f._searchPath)}">📂 ${esc(f._searchPath)}</div>` : '';
+
   el.innerHTML = `
     <div class="thumb">${isImg && f.thumbnailLink
       ? `<img src="${f.thumbnailLink}" alt="" loading="lazy">`
       : emoji(f.mimeType)}</div>
-    <div class="gname">${esc(f.name)}</div>
+    <div class="gname">${displayName}</div>
     <div class="gmeta">${fmtSize(f.size)}</div>
+    ${pathRow}
     <div class="gactions">
       <button class="ga-btn" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁</button>
+      ${isSearch && f._parentId ? `<button class="ga-btn" onclick="event.stopPropagation();goToParent('${f._parentId}','${ea(f._searchPath || 'Folder')}')">📂</button>` : ''}
       <button class="ga-btn" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">⬇</button>
     </div>`;
   el.ondblclick = () => openPv(f.id, f.name, f.mimeType);
@@ -543,21 +676,59 @@ function mkFolderRow(f) {
   return el;
 }
 
-function mkFileRow(f) {
+function mkFileRow(f, isSearch, q) {
   const el = document.createElement('div');
   el.className = 'list-item';
+  const displayName = q ? hlText(f.name, q) : esc(f.name);
+  const pathRow = isSearch && f._searchPath
+    ? `<div class="list-path">📂 ${esc(f._searchPath)}</div>` : '';
+  const openFolderBtn = isSearch && f._parentId
+    ? `<button class="la-btn" onclick="event.stopPropagation();goToParent('${f._parentId}','${ea(f._searchPath || 'Folder')}')">📂 Buka Folder</button>`
+    : '';
+
   el.innerHTML = `
     <div class="list-icon">${emoji(f.mimeType)}</div>
     <div class="list-info">
-      <div class="list-name">${esc(f.name)}</div>
+      <div class="list-name">${displayName}</div>
       <div class="list-meta">${fmtSize(f.size)} · ${fmtDate(f.modifiedTime)}</div>
+      ${pathRow}
     </div>
     <div class="list-acts">
       <button class="la-btn" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁 Preview</button>
+      ${openFolderBtn}
       <button class="la-btn" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">⬇ Unduh</button>
     </div>`;
   el.onclick = () => openPv(f.id, f.name, f.mimeType);
   return el;
+}
+
+// Open the parent folder of a search result
+async function goToParent(parentId, pathLabel) {
+  cancelSearch();
+  clearSearchInput();
+
+  // Build nav stack to this folder by finding path from root
+  const rootId = navStack[0]?.id;
+  const rootName = navStack[0]?.name || 'Home';
+
+  // Find ancestors chain from root to parentId
+  const chain = findPathInCache(rootId, parentId, []);
+  navStack = [{ id: rootId, name: rootName }];
+  if (chain) {
+    chain.forEach(node => navStack.push({ id: node.id, name: node.name }));
+  } else {
+    navStack.push({ id: parentId, name: pathLabel });
+  }
+
+  renderBreadcrumb();
+  renderLoading();
+
+  try {
+    const items = await fetchFolderContents(parentId);
+    renderFolderView(items);
+  } catch (e) {
+    renderError(e.message);
+  }
 }
 
 // ── PREVIEW ───────────────────────────────────────────
@@ -592,7 +763,6 @@ function openPv(id, name, mime) {
   }
   document.getElementById('pvModal').classList.add('on');
 }
-
 function closePv() {
   document.getElementById('pvModal').classList.remove('on');
   document.getElementById('pvBody').innerHTML = '';
@@ -623,8 +793,30 @@ function setView(v) {
   activeView = v;
   document.getElementById('vGrid').classList.toggle('on', v === 'grid');
   document.getElementById('vList').classList.toggle('on', v === 'list');
-  const currentFolderId = navStack[navStack.length - 1]?.id;
-  renderArea(folderCache[currentFolderId] || []);
+  refreshView();
+}
+
+function refreshView() {
+  if (isSearchMode) {
+    renderSearchPanel(searchQuery, searchResults, false);
+  } else {
+    const currentFolderId = navStack[navStack.length - 1]?.id;
+    renderFolderView(folderCache[currentFolderId] || []);
+  }
+}
+
+function sortItems(items) {
+  return items.sort((a, b) => {
+    if (activeSort === 'type') {
+      const af = isFolder(a) ? 0 : 1, bf = isFolder(b) ? 0 : 1;
+      if (af !== bf) return af - bf;
+      return a.name.localeCompare(b.name);
+    }
+    if (activeSort === 'name') return a.name.localeCompare(b.name);
+    if (activeSort === 'date') return new Date(b.modifiedTime) - new Date(a.modifiedTime);
+    if (activeSort === 'size') return (parseInt(b.size)||0) - (parseInt(a.size)||0);
+    return 0;
+  });
 }
 
 // ── STATE RENDERS ─────────────────────────────────────
@@ -635,12 +827,25 @@ function renderLoading() {
 }
 function renderError(msg) {
   document.getElementById('mainArea').innerHTML =
-    `<div class="state-box"><div class="ico">⚠️</div><h3>Gagal Memuat</h3>
-     <p>${esc(msg)}</p></div>`;
+    `<div class="state-box"><div class="ico">⚠️</div><h3>Gagal Memuat</h3><p>${esc(msg)}</p></div>`;
 }
 
 // ── HELPERS ───────────────────────────────────────────
 function isFolder(f) { return f.mimeType === 'application/vnd.google-apps.folder'; }
+
+function setSearchSpinner(on) {
+  document.getElementById('searchSpinner').style.display = on ? 'block' : 'none';
+}
+
+function hlText(text, q) {
+  // Highlight matching part
+  const escaped = esc(text);
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx < 0) return escaped;
+  return esc(text.slice(0, idx))
+    + `<span class="hl">${esc(text.slice(idx, idx + q.length))}</span>`
+    + esc(text.slice(idx + q.length));
+}
 
 function emoji(mime) {
   if (mime.startsWith('image/')) return '🖼';
@@ -651,7 +856,7 @@ function emoji(mime) {
   if (mime.includes('spreadsheet') || mime.includes('excel')) return '📊';
   if (mime.includes('presentation') || mime.includes('powerpoint')) return '🖥';
   if (mime.includes('zip') || mime.includes('rar')) return '📦';
-  if (mime.includes('text/')) return '📃';
+  if (mime.startsWith('text/')) return '📃';
   return '📎';
 }
 
@@ -671,17 +876,19 @@ function ea(s)  { return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 
 let _tid;
 function toast(msg, ms=3000) {
-  clearTimeout(_tid);
-  const t = document.getElementById('toast');
+  clearTimeout(_tid); const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('on');
   _tid = setTimeout(() => t.classList.remove('on'), ms);
 }
 
-// Keyboard
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     if (document.getElementById('pvModal').classList.contains('on')) { closePv(); return; }
-    if (navStack.length > 1) openFolder(navStack[navStack.length-2].id, navStack[navStack.length-2].name);
+    if (isSearchMode) { clearSearch(); return; }
+    if (navStack.length > 1) {
+      const prev = navStack[navStack.length - 2];
+      openFolder(prev.id, prev.name);
+    }
   }
   if ((e.ctrlKey||e.metaKey) && e.key === 'k') {
     e.preventDefault();

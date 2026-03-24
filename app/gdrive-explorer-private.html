@@ -4,292 +4,172 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DriveVault</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:        #0d0d0f;
-  --surface:   #141416;
-  --card:      #1a1a1e;
-  --card2:     #202026;
-  --border:    rgba(255,255,255,.07);
-  --border2:   rgba(255,255,255,.13);
-  --ink:       #f0efe8;
-  --ink2:      #8a8880;
-  --ink3:      #4a4845;
-  --accent:    #e8c547;
-  --acc-dim:   rgba(232,197,71,.12);
-  --acc-dim2:  rgba(232,197,71,.06);
-  --red:       #e05252;
-  --red-dim:   rgba(224,82,82,.12);
-  --green:     #52c97a;
-  --radius:    10px;
-  --shadow:    0 2px 8px rgba(0,0,0,.4);
-  --shadow-lg: 0 12px 48px rgba(0,0,0,.6);
+  --bg:      #f4f3ef;
+  --card:    #ffffff;
+  --border:  #e2dfd8;
+  --border2: #ccc9c0;
+  --ink:     #1a1915;
+  --ink2:    #6b6860;
+  --ink3:    #a8a49c;
+  --accent:  #7a1c2e;
+  --acc-l:   #f3dde1;
+  --acc-dim: rgba(122,28,46,.08);
+  --red:     #c0392b;
+  --red-l:   #fdecea;
+  --shadow:  0 1px 3px rgba(0,0,0,.07),0 4px 16px rgba(0,0,0,.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+  --radius:  10px;
 }
 
-body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
-
-/* scrollbar */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
-
-/* ── LAYOUT ── */
-.app{display:grid;grid-template-rows:auto auto 1fr;min-height:100vh}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
 
 /* ── TOPBAR ── */
 .topbar{
-  background:rgba(13,13,15,.9);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 1.25rem;height:54px;
-  display:flex;align-items:center;gap:.75rem;
+  background:var(--card);border-bottom:1px solid var(--border);
+  height:58px;display:flex;align-items:center;
+  padding:0 1.25rem;gap:.75rem;
   position:sticky;top:0;z-index:200;
 }
-.logo{display:flex;align-items:center;gap:.5rem;flex-shrink:0;text-decoration:none}
-.logo-icon{
-  width:28px;height:28px;border-radius:7px;
-  background:var(--accent);display:flex;align-items:center;justify-content:center;
-  font-size:13px;color:#000;font-weight:800;font-family:'JetBrains Mono',monospace;
-}
-.logo-text{font-family:'Instrument Serif',serif;font-size:1.1rem;color:var(--ink);letter-spacing:-.01em}
-.logo-text em{color:var(--accent);font-style:italic}
-
-.topbar-divider{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:.45rem;font-weight:800;font-size:1rem;letter-spacing:-.02em;flex-shrink:0}
+.logo-mark{width:26px;height:26px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px}
+.topbar-div{width:1px;height:18px;background:var(--border);flex-shrink:0}
 
 /* search */
-.search-box{
-  flex:1;max-width:480px;position:relative;
-}
-.search-box svg{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none;transition:color .15s}
+.search-box{flex:1;max-width:420px;position:relative;display:none}
+.search-box svg{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);color:var(--ink3);pointer-events:none;transition:color .15s}
 .search-box:focus-within svg{color:var(--accent)}
 #searchInput{
-  width:100%;background:var(--card);
-  border:1px solid var(--border);border-radius:8px;
-  padding:.45rem .75rem .45rem 2.25rem;
-  font-family:'Instrument Sans',sans-serif;font-size:.82rem;
+  width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;
+  padding:.45rem .7rem .45rem 2.2rem;
+  font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;
   color:var(--ink);outline:none;transition:all .15s;
 }
-#searchInput:focus{border-color:rgba(232,197,71,.4);background:var(--card2);box-shadow:0 0 0 3px var(--acc-dim2)}
+#searchInput:focus{border-color:rgba(122,28,46,.4);background:var(--card);box-shadow:0 0 0 3px var(--acc-dim)}
 #searchInput::placeholder{color:var(--ink3)}
-.search-shortcut{
-  position:absolute;right:.6rem;top:50%;transform:translateY(-50%);
-  font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--ink3);
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:4px;padding:.1rem .35rem;pointer-events:none;
-}
+.search-kbd{position:absolute;right:.6rem;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--ink3);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:.1rem .3rem;pointer-events:none}
 
 .hspace{flex:1}
-
-/* user */
-.user-pill{display:none;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:.25rem .35rem .25rem .7rem;flex-shrink:0}
-.user-pill img{width:22px;height:22px;border-radius:50%;border:1px solid var(--border2)}
+.user-pill{display:none;align-items:center;gap:.5rem;background:var(--bg);border:1px solid var(--border);border-radius:99px;padding:.25rem .35rem .25rem .7rem;flex-shrink:0}
+.user-pill img{width:22px;height:22px;border-radius:50%}
 .user-name{font-size:.75rem;font-weight:600;color:var(--ink2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sign-out-btn{background:transparent;border:1px solid var(--border);border-radius:99px;padding:.15rem .55rem;font-size:.65rem;font-family:'JetBrains Mono',monospace;cursor:pointer;color:var(--ink3);transition:all .15s}
-.sign-out-btn:hover{background:var(--red-dim);color:var(--red);border-color:rgba(224,82,82,.3)}
+.sign-out-btn:hover{background:var(--red-l);color:var(--red);border-color:rgba(192,57,43,.3)}
 
-/* ── SUBBAR (breadcrumb + toolbar) ── */
+/* ── SUBBAR ── */
 .subbar{
-  display:none;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:.5rem 1.25rem;
-  align-items:center;gap:.5rem;flex-wrap:wrap;
-  min-height:42px;
+  display:none;background:var(--card);border-bottom:1px solid var(--border);
+  padding:.5rem 1.25rem;align-items:center;gap:.5rem;flex-wrap:wrap;min-height:42px;
 }
-
-/* breadcrumb */
 .bc{display:flex;align-items:center;gap:.2rem;flex-wrap:wrap;flex:1}
-.bc-node{
-  display:inline-flex;align-items:center;gap:.3rem;
-  font-size:.78rem;font-weight:500;color:var(--ink3);
-  cursor:pointer;border-radius:5px;padding:.18rem .4rem;
-  transition:all .15s;white-space:nowrap;
-}
-.bc-node:hover{color:var(--accent);background:var(--acc-dim2)}
+.bc-node{display:inline-flex;align-items:center;gap:.3rem;font-size:.78rem;font-weight:500;color:var(--ink3);cursor:pointer;border-radius:5px;padding:.18rem .4rem;transition:all .15s;white-space:nowrap}
+.bc-node:hover{color:var(--accent);background:var(--acc-dim)}
 .bc-node.last{color:var(--ink2);cursor:default;font-weight:600}
 .bc-node.last:hover{background:transparent;color:var(--ink2)}
 .bc-sep{color:var(--ink3);font-size:.65rem;opacity:.5}
 
 .subbar-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
-.sort-sel{
-  background:var(--card);border:1px solid var(--border);border-radius:6px;
-  padding:.28rem .55rem;font-family:'JetBrains Mono',monospace;font-size:.67rem;
-  color:var(--ink2);cursor:pointer;outline:none;transition:all .15s;
-}
-.sort-sel:focus{border-color:rgba(232,197,71,.3)}
+.sort-sel{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:.28rem .55rem;font-family:'JetBrains Mono',monospace;font-size:.67rem;color:var(--ink2);cursor:pointer;outline:none}
 .view-btns{display:flex;gap:.2rem}
-.vbtn{
-  width:26px;height:26px;border-radius:5px;border:1px solid var(--border);
-  background:transparent;color:var(--ink3);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:.75rem;
-  transition:all .15s;
-}
+.vbtn{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .15s}
 .vbtn:hover{border-color:var(--border2);color:var(--ink2)}
-.vbtn.on{background:var(--acc-dim);border-color:rgba(232,197,71,.3);color:var(--accent)}
+.vbtn.on{background:var(--acc-l);border-color:rgba(122,28,46,.3);color:var(--accent)}
 
 /* ── MAIN ── */
-main{padding:1.25rem;overflow:auto}
+main{max-width:1100px;margin:0 auto;padding:1.25rem}
 
 /* ── LOGIN ── */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 54px);padding:2rem}
-.login-card{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:360px;
-  box-shadow:var(--shadow-lg);text-align:center;
-  animation:fadeUp .4s ease;
-}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.login-lock{font-size:2rem;margin-bottom:1rem;display:block}
-.login-card h2{font-family:'Instrument Serif',serif;font-size:1.5rem;margin-bottom:.4rem;letter-spacing:-.02em}
-.login-card p{color:var(--ink2);font-size:.82rem;line-height:1.6;margin-bottom:1.5rem}
-.google-btn{
-  width:100%;background:var(--card2);border:1px solid var(--border2);
-  border-radius:9px;padding:.75rem 1rem;
-  display:flex;align-items:center;justify-content:center;gap:.65rem;
-  font-family:'Instrument Sans',sans-serif;font-size:.875rem;font-weight:600;
-  color:var(--ink);cursor:pointer;transition:all .2s;
-}
-.google-btn:hover{border-color:rgba(232,197,71,.4);background:#222226;box-shadow:0 0 0 3px var(--acc-dim2)}
-.login-note{margin-top:.9rem;font-size:.68rem;color:var(--ink3);font-family:'JetBrains Mono',monospace;line-height:1.5}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 58px);padding:2rem}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.2rem 2rem;width:100%;max-width:360px;box-shadow:var(--shadow-lg);text-align:center}
+.login-card .ico{font-size:2.2rem;margin-bottom:.8rem;display:block}
+.login-card h2{font-size:1.25rem;font-weight:800;margin-bottom:.35rem}
+.login-card p{color:var(--ink2);font-size:.82rem;line-height:1.6;margin-bottom:1.3rem}
+.google-btn{width:100%;background:var(--card);border:1px solid var(--border2);border-radius:9px;padding:.72rem 1rem;display:flex;align-items:center;justify-content:center;gap:.65rem;font-family:'Plus Jakarta Sans',sans-serif;font-size:.875rem;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.google-btn:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 20px var(--acc-dim)}
+.login-note{margin-top:.9rem;font-size:.7rem;color:var(--ink3);font-family:'JetBrains Mono',monospace;line-height:1.5}
 
-/* ── SEARCH RESULTS BANNER ── */
-.search-bar{
-  display:none;align-items:center;gap:.75rem;
-  background:var(--acc-dim2);border:1px solid rgba(232,197,71,.15);
-  border-radius:8px;padding:.55rem .9rem;margin-bottom:1rem;
-  font-size:.78rem;font-family:'JetBrains Mono',monospace;color:var(--acc-dim);
-}
-.search-bar.on{display:flex}
-.search-bar strong{color:var(--accent)}
-.search-bar .clr{margin-left:auto;background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.75rem;font-family:inherit;transition:color .15s}
-.search-bar .clr:hover{color:var(--accent)}
-.searching-indicator{display:none;align-items:center;gap:.6rem;font-size:.75rem;font-family:'JetBrains Mono',monospace;color:var(--ink3)}
-.searching-indicator.on{display:flex}
-.mini-spin{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .5s linear infinite;flex-shrink:0}
+/* ── SEARCH BANNER ── */
+.search-banner{display:none;align-items:center;gap:.75rem;background:var(--acc-dim);border:1px solid rgba(122,28,46,.15);border-radius:8px;padding:.55rem .9rem;margin-bottom:1rem;font-size:.78rem;font-family:'JetBrains Mono',monospace;color:var(--ink2)}
+.search-banner.on{display:flex}
+.search-banner strong{color:var(--accent)}
+.search-banner .clr{margin-left:auto;background:none;border:none;color:var(--ink3);cursor:pointer;font-size:.73rem;font-family:inherit;transition:color .15s}
+.search-banner .clr:hover{color:var(--accent)}
+
+/* ── STATES ── */
+.state-box{text-align:center;padding:4rem 2rem}
+.state-box .ico{font-size:2rem;margin-bottom:.8rem;display:block}
+.state-box h3{font-weight:700;margin-bottom:.35rem}
+.state-box p{color:var(--ink3);font-size:.78rem;font-family:'JetBrains Mono',monospace;line-height:1.6}
+.spinner{width:30px;height:30px;margin:0 auto .9rem;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .55s linear infinite}
+.mini-spin{width:12px;height:12px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .5s linear infinite;flex-shrink:0;display:inline-block;vertical-align:middle;margin-right:.4rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── STAT ROW ── */
+.stat-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.9rem;flex-wrap:wrap}
+.stat-chip{display:inline-flex;align-items:center;gap:.3rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--ink3);background:var(--card);border:1px solid var(--border);border-radius:99px;padding:.2rem .6rem}
+.stat-chip span{color:var(--ink2);font-weight:500}
 
 /* ── GRID ── */
-.file-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
-  gap:.6rem;
-}
-.grid-item{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--radius);padding:.9rem .75rem .75rem;
-  display:flex;flex-direction:column;align-items:center;gap:.5rem;
-  cursor:pointer;transition:all .18s;text-align:center;
-  animation:fadeUp .25s ease;
-}
-.grid-item:hover{border-color:rgba(232,197,71,.3);background:var(--card2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,0,0,.3)}
-.grid-item.folder-item:hover{border-color:rgba(232,197,71,.5);box-shadow:0 4px 20px var(--acc-dim)}
-
-.grid-thumb{
-  width:56px;height:56px;border-radius:9px;
-  display:flex;align-items:center;justify-content:center;font-size:1.75rem;
-  background:var(--surface);overflow:hidden;flex-shrink:0;
-}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:.6rem}
+.grid-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem .75rem .75rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;cursor:pointer;transition:all .18s;text-align:center}
+.grid-item:hover{border-color:rgba(122,28,46,.35);background:#fdf9f9;transform:translateY(-1px);box-shadow:0 4px 16px var(--acc-dim)}
+.folder-item:hover{border-color:rgba(122,28,46,.4)}
+.grid-thumb{width:56px;height:56px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.75rem;background:var(--bg);overflow:hidden;flex-shrink:0}
 .grid-thumb img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.folder-item .grid-thumb{background:var(--acc-dim2)}
-
-.grid-name{
-  font-size:.72rem;font-weight:600;line-height:1.3;
-  word-break:break-word;display:-webkit-box;
-  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-  width:100%;color:var(--ink);
-}
+.folder-item .grid-thumb{background:#fdf0f2}
+.grid-name{font-size:.72rem;font-weight:600;line-height:1.3;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;width:100%;color:var(--ink)}
 .grid-meta{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--ink3)}
-.grid-path{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(232,197,71,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
-
+.grid-path{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--accent);opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;cursor:pointer;text-decoration:underline;text-underline-offset:2px;transition:opacity .15s}
+.grid-path:hover{opacity:1}
 .grid-actions{display:flex;gap:.3rem;width:100%;margin-top:.1rem;opacity:0;transition:opacity .15s}
 .grid-item:hover .grid-actions{opacity:1}
-.gab{
-  flex:1;padding:.28rem;border-radius:5px;border:1px solid var(--border);
-  background:transparent;color:var(--ink3);font-size:.62rem;
-  font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .15s;
-}
-.gab:hover{background:var(--acc-dim);border-color:rgba(232,197,71,.3);color:var(--accent)}
+.gab{flex:1;padding:.28rem;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);font-size:.62rem;font-family:'JetBrains Mono',monospace;cursor:pointer;transition:all .15s}
+.gab:hover{background:var(--acc-l);border-color:rgba(122,28,46,.3);color:var(--accent)}
 
 /* ── LIST ── */
-.file-list{display:flex;flex-direction:column;gap:.25rem}
-.list-item{
-  background:var(--card);border:1px solid var(--border);
-  border-radius:var(--radius);padding:.6rem 1rem;
-  display:flex;align-items:center;gap:.8rem;
-  cursor:pointer;transition:all .15s;
-  animation:fadeUp .2s ease;
-}
-.list-item:hover{border-color:rgba(255,255,255,.12);background:var(--card2)}
-.list-item.folder-item:hover{border-color:rgba(232,197,71,.3);background:var(--acc-dim2)}
+.file-list{display:flex;flex-direction:column;gap:.28rem}
+.list-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.6rem 1rem;display:flex;align-items:center;gap:.8rem;cursor:pointer;transition:all .15s}
+.list-item:hover{border-color:rgba(122,28,46,.25);background:#fdf9f9}
+.folder-item.list-item:hover{border-color:rgba(122,28,46,.35)}
 .list-icon{font-size:1.1rem;flex-shrink:0;width:24px;text-align:center}
 .list-info{flex:1;min-width:0}
 .list-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .list-sub{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--ink3);margin-top:.1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.list-sub .path-hint{color:rgba(232,197,71,.4)}
-.folder-tag{
-  font-size:.58rem;background:var(--acc-dim2);color:rgba(232,197,71,.7);
-  border:1px solid rgba(232,197,71,.15);border-radius:4px;
-  padding:.1rem .35rem;font-family:'JetBrains Mono',monospace;flex-shrink:0;
-}
+.path-link{color:var(--accent);opacity:.8;cursor:pointer;text-decoration:underline;text-underline-offset:2px;transition:opacity .15s}
+.path-link:hover{opacity:1}
+.folder-tag{font-size:.58rem;background:var(--acc-dim);color:var(--accent);border:1px solid rgba(122,28,46,.15);border-radius:4px;padding:.1rem .35rem;font-family:'JetBrains Mono',monospace;flex-shrink:0}
 .list-acts{display:flex;gap:.3rem;flex-shrink:0;opacity:0;transition:opacity .15s}
 .list-item:hover .list-acts{opacity:1}
-.lab{
-  padding:.25rem .55rem;border-radius:5px;border:1px solid var(--border);
-  background:transparent;color:var(--ink3);font-size:.63rem;
-  font-family:'JetBrains Mono',monospace;cursor:pointer;
-  display:flex;align-items:center;gap:.2rem;transition:all .15s;
-}
-.lab:hover{background:var(--acc-dim);border-color:rgba(232,197,71,.3);color:var(--accent)}
-
-/* ── STATE BOXES ── */
-.state-box{text-align:center;padding:5rem 2rem;animation:fadeUp .3s ease}
-.state-icon{font-size:2rem;margin-bottom:.9rem;display:block}
-.state-box h3{font-family:'Instrument Serif',serif;font-size:1.2rem;margin-bottom:.4rem;letter-spacing:-.01em}
-.state-box p{color:var(--ink3);font-size:.78rem;font-family:'JetBrains Mono',monospace;line-height:1.6}
-.spinner{width:30px;height:30px;margin:0 auto .9rem;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .5s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── STAT BAR ── */
-.stat-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;flex-wrap:wrap}
-.stat-chip{
-  display:inline-flex;align-items:center;gap:.3rem;
-  font-family:'JetBrains Mono',monospace;font-size:.65rem;
-  color:var(--ink3);background:var(--card);border:1px solid var(--border);
-  border-radius:99px;padding:.2rem .6rem;
-}
-.stat-chip span{color:var(--ink2);font-weight:500}
+.lab{padding:.25rem .55rem;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--ink3);font-size:.63rem;font-family:'JetBrains Mono',monospace;cursor:pointer;display:flex;align-items:center;gap:.2rem;transition:all .15s}
+.lab:hover{background:var(--acc-l);border-color:rgba(122,28,46,.3);color:var(--accent)}
 
 /* ── PREVIEW MODAL ── */
-.overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.88);backdrop-filter:blur(12px);display:none;flex-direction:column}
-.overlay.on{display:flex;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.pv-head{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:.75rem 1.1rem;display:flex;align-items:center;gap:.7rem;flex-shrink:0;
-}
+.overlay{position:fixed;inset:0;z-index:300;background:rgba(20,20,18,.78);backdrop-filter:blur(10px);display:none;flex-direction:column}
+.overlay.on{display:flex}
+.pv-head{background:var(--card);border-bottom:1px solid var(--border);padding:.8rem 1.1rem;display:flex;align-items:center;gap:.7rem;flex-shrink:0}
 .pv-icon{font-size:1.1rem;flex-shrink:0}
-.pv-title{flex:1;font-size:.875rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.pv-title{flex:1;font-size:.875rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pv-body{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:.9rem}
 .pv-frame{width:100%;height:100%;max-width:960px;border:none;border-radius:10px;background:#fff}
 .pv-img{max-width:100%;max-height:100%;border-radius:10px;object-fit:contain;box-shadow:var(--shadow-lg)}
-.pv-none{text-align:center;color:var(--ink3)}
+.pv-none{text-align:center;color:var(--ink2)}
 .pv-none .big{font-size:2rem;margin-bottom:.7rem;display:block}
 .pv-none p{font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6}
-
-.x-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;font-size:.8rem}
-.x-btn:hover{background:var(--red-dim);border-color:rgba(224,82,82,.3);color:var(--red)}
-.dl-btn{background:var(--accent);color:#000;border:none;border-radius:6px;padding:.3rem .8rem;font-family:'Instrument Sans',sans-serif;font-weight:700;font-size:.75rem;cursor:pointer;flex-shrink:0;transition:all .15s}
-.dl-btn:hover{background:#f0cf5a;transform:translateY(-1px)}
+.x-btn{width:30px;height:30px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--ink2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;font-size:.8rem}
+.x-btn:hover{background:var(--red-l);border-color:rgba(192,57,43,.3);color:var(--red)}
+.dl-btn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:.32rem .85rem;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;flex-shrink:0;transition:all .15s}
+.dl-btn:hover{background:#5e1522;transform:translateY(-1px)}
 
 /* ── TOAST ── */
-.toast{position:fixed;bottom:1.2rem;right:1.2rem;z-index:999;background:var(--card2);border:1px solid var(--border2);color:var(--ink);border-radius:8px;padding:.6rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.73rem;transform:translateY(60px);opacity:0;transition:all .2s;pointer-events:none;box-shadow:var(--shadow-lg)}
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;z-index:999;background:var(--ink);color:#fff;border-radius:8px;padding:.6rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.73rem;transform:translateY(60px);opacity:0;transition:all .2s;pointer-events:none;box-shadow:var(--shadow-lg)}
 .toast.on{transform:translateY(0);opacity:1}
 
-/* ── RESPONSIVE ── */
 @media(max-width:600px){
-  .search-shortcut{display:none}
+  .search-kbd{display:none}
   .file-grid{grid-template-columns:repeat(3,1fr)}
   .list-acts{display:none!important}
   .subbar-right .sort-sel{display:none}
@@ -297,19 +177,18 @@ main{padding:1.25rem;overflow:auto}
 </style>
 </head>
 <body>
-<div class="app">
 
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="logo">
-    <div class="logo-icon">DV</div>
-    <span class="logo-text">Drive<em>KPU</em></span>
+    <div class="logo-mark">🔒</div>
+    DriveVault
   </div>
-  <div class="topbar-divider"></div>
-  <div class="search-box" id="searchBox" style="display:none">
+  <div class="topbar-div"></div>
+  <div class="search-box" id="searchBox">
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="search" id="searchInput" placeholder="Cari file di semua subfolder..." autocomplete="off">
-    <span class="search-shortcut">⌘K</span>
+    <span class="search-kbd">⌘K</span>
   </div>
   <div class="hspace"></div>
   <div class="user-pill" id="userPill">
@@ -340,7 +219,7 @@ main{padding:1.25rem;overflow:auto}
   </div>
 </div>
 
-<!-- PREVIEW -->
+<!-- PREVIEW MODAL -->
 <div class="overlay" id="pvModal">
   <div class="pv-head">
     <span class="pv-icon" id="pvIcon"></span>
@@ -353,7 +232,6 @@ main{padding:1.25rem;overflow:auto}
 
 <main id="main"></main>
 <div class="toast" id="toast"></div>
-</div><!-- .app -->
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -368,36 +246,38 @@ const CFG = {
 };
 // ═══════════════════════════════════════════════════════
 
-// ── STATE ──
 let token      = '';
 let userInfo   = null;
-let navStack   = [];           // [{id,name}]
-let cache      = {};           // folderId → [items] (hanya direct children)
-let flatCache  = {};           // folderId → [semua file rekursif untuk search]
+let navStack   = [];
+let cache      = {};
+let flatCache  = {};
 let activeView = 'grid';
 let activeSort = 'type';
 let searchQ    = '';
-let pvId='', pvName='';
+let pvId = '', pvName = '';
 let searchDebounce;
-let searchAbort = null;        // AbortController untuk cancel search lama
+let searchAbort = null;
 
-// ── INIT ──
 document.title = CFG.appName;
+
 window.addEventListener('load', () => {
   const t = sessionStorage.getItem('dvToken');
   const u = sessionStorage.getItem('dvUser');
-  if (t && u) { token = t; userInfo = JSON.parse(u); showPill(); openFolder(CFG.folderId,'Home'); }
-  else renderLogin();
+  if (t && u) {
+    token = t; userInfo = JSON.parse(u);
+    showPill(); openFolder(CFG.folderId, 'Home');
+  } else { renderLogin(); }
 });
 
 // ── LOGIN ──
 function renderLogin() {
-  hide('searchBox'); hide('subbar');
+  document.getElementById('searchBox').style.display = 'none';
+  document.getElementById('subbar').style.display = 'none';
   document.getElementById('main').innerHTML = `
     <div class="login-wrap"><div class="login-card">
-      <span class="login-lock">🔐</span>
+      <span class="ico">🔐</span>
       <h2>${CFG.appName}</h2>
-      <p>Akses terbatas hanya untuk pengguna<br>yang telah diberi izin administrator.</p>
+      <p>Akses terbatas hanya untuk pengguna yang<br>telah diberi izin oleh administrator.</p>
       <button class="google-btn" onclick="startLogin()">
         <svg width="17" height="17" viewBox="0 0 48 48">
           <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
@@ -416,50 +296,49 @@ function startLogin() {
     client_id: CFG.clientId,
     scope: 'https://www.googleapis.com/auth/drive.readonly profile email',
     callback: async r => {
-      if (r.error) { toast('❌ '+r.error); return; }
+      if (r.error) { toast('❌ Login gagal: ' + r.error); return; }
       token = r.access_token;
       sessionStorage.setItem('dvToken', token);
       await fetchUser();
       showPill();
-      openFolder(CFG.folderId,'Home');
+      openFolder(CFG.folderId, 'Home');
     }
   }).requestAccessToken();
 }
 
 async function fetchUser() {
   try {
-    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+token}});
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: 'Bearer ' + token } });
     userInfo = await r.json();
     sessionStorage.setItem('dvUser', JSON.stringify(userInfo));
-  } catch { userInfo = {name:'User',picture:''}; }
+  } catch { userInfo = { name: 'User', picture: '' }; }
 }
 
 function showPill() {
-  const p = document.getElementById('userPill'); p.style.display='flex';
-  document.getElementById('userAvatar').src = userInfo?.picture||'';
-  document.getElementById('userName').textContent = userInfo?.name||'';
+  document.getElementById('userPill').style.display = 'flex';
+  document.getElementById('userAvatar').src = userInfo?.picture || '';
+  document.getElementById('userName').textContent = userInfo?.name || '';
 }
 
 function signOut() {
-  token=''; userInfo=null; navStack=[]; cache={}; flatCache={};
+  token = ''; userInfo = null; navStack = []; cache = {}; flatCache = {};
   sessionStorage.clear();
-  document.getElementById('userPill').style.display='none';
+  document.getElementById('userPill').style.display = 'none';
   renderLogin(); toast('👋 Berhasil keluar');
 }
 
-// ── FOLDER NAV ──
+// ── FOLDER NAVIGATION ──
 async function openFolder(id, name) {
-  // clear search
   searchQ = '';
   const si = document.getElementById('searchInput');
   if (si) si.value = '';
   if (searchAbort) { searchAbort.abort(); searchAbort = null; }
 
-  // nav stack
-  const ex = navStack.findIndex(n=>n.id===id);
-  navStack = ex >= 0 ? navStack.slice(0,ex+1) : [...navStack,{id,name}];
+  const ex = navStack.findIndex(n => n.id === id);
+  navStack = ex >= 0 ? navStack.slice(0, ex + 1) : [...navStack, { id, name }];
 
-  show('searchBox'); show('subbar');
+  document.getElementById('searchBox').style.display = '';
+  document.getElementById('subbar').style.display = 'flex';
   renderBC();
   renderLoading();
 
@@ -468,352 +347,110 @@ async function openFolder(id, name) {
     renderArea(items);
   } catch(e) {
     renderError(e.message);
-    if (e.message.includes('401')||e.message.includes('403')) {
+    if (e.message.includes('401') || e.message.includes('403')) {
       sessionStorage.removeItem('dvToken');
-      setTimeout(renderLogin,1500);
+      setTimeout(renderLogin, 1500);
     }
   }
 }
 
-// Fetch DIRECT children only (for folder view)
 async function fetchDirect(folderId) {
   if (cache[folderId]) return cache[folderId];
-  const items=[]; let pt='';
+  const items = []; let pt = '';
   do {
-    const url = apiUrl(folderId, pt);
-    const r = await fetch(url,{headers:{Authorization:'Bearer '+token}});
-    if (!r.ok) { const e=await r.json(); throw new Error(`${r.status}: ${e.error?.message}`); }
+    const url = `https://www.googleapis.com/drive/v3/files`
+      + `?q='${folderId}'+in+parents+and+trashed=false`
+      + `&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,thumbnailLink)`
+      + `&pageSize=100&key=${CFG.apiKey}`
+      + (pt ? '&pageToken=' + pt : '');
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) { const e = await r.json(); throw new Error(`${r.status}: ${e.error?.message}`); }
     const d = await r.json();
     items.push(...d.files);
-    pt = d.nextPageToken||'';
-  } while(pt);
+    pt = d.nextPageToken || '';
+  } while (pt);
   cache[folderId] = items;
   return items;
 }
 
-// Fetch ALL files recursively (for search), with cancel support
 async function fetchAllRecursive(rootId, signal) {
   if (flatCache[rootId]) return flatCache[rootId];
   const allFiles = [];
+
   async function recurse(folderId, pathParts) {
-    if (signal?.aborted) throw new DOMException('Aborted','AbortError');
+    if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
     let items;
-    try { items = await fetchDirect(folderId); } 
-    catch(e) { if (e.name==='AbortError') throw e; return; }
+    try { items = await fetchDirect(folderId); }
+    catch(e) { if (e.name === 'AbortError') throw e; return; }
     for (const f of items) {
-      if (signal?.aborted) throw new DOMException('Aborted','AbortError');
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
       if (isFolder(f)) {
         await recurse(f.id, [...pathParts, f.name]);
       } else {
-        allFiles.push({...f, _path: pathParts.join(' / ')});
+        allFiles.push({ ...f, _path: pathParts.join(' / ') });
       }
     }
   }
+
   await recurse(rootId, []);
   flatCache[rootId] = allFiles;
   return allFiles;
 }
 
-function apiUrl(folderId, pageToken='') {
-  return `https://www.googleapis.com/drive/v3/files`
-    +`?q='${folderId}'+in+parents+and+trashed=false`
-    +`&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,thumbnailLink)`
-    +`&pageSize=100&key=${CFG.apiKey}`
-    +(pageToken?'&pageToken='+pageToken:'');
-}
-
 // ── SEARCH ──
-function handleSearch() {
-  const q = (document.getElementById('searchInput').value||'').trim();
+document.getElementById('searchInput').addEventListener('input', () => {
+  const q = document.getElementById('searchInput').value.trim();
   clearTimeout(searchDebounce);
   searchDebounce = setTimeout(() => doSearch(q), 320);
-}
+});
 
 async function doSearch(q) {
   searchQ = q.toLowerCase();
   if (!searchQ) {
-    // back to normal folder view
-    if (searchAbort) { searchAbort.abort(); searchAbort=null; }
-    const id = navStack[navStack.length-1]?.id;
-    renderArea(cache[id]||[]);
+    if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+    const id = navStack[navStack.length - 1]?.id;
+    renderArea(cache[id] || []);
     return;
   }
-
-  // cancel previous search
   if (searchAbort) searchAbort.abort();
   searchAbort = new AbortController();
   const signal = searchAbort.signal;
-  const rootId = navStack[navStack.length-1]?.id;
+  const rootId = navStack[navStack.length - 1]?.id;
 
-  // show searching indicator
   renderSearching();
-
   try {
     const allFiles = await fetchAllRecursive(rootId, signal);
     if (signal.aborted) return;
-
     const results = allFiles.filter(f => f.name.toLowerCase().includes(searchQ));
     renderSearchResults(results);
   } catch(e) {
-    if (e.name==='AbortError') return;
+    if (e.name === 'AbortError') return;
     renderError(e.message);
   }
 }
 
 function clearSearch() {
   searchQ = '';
-  document.getElementById('searchInput').value='';
-  if (searchAbort) { searchAbort.abort(); searchAbort=null; }
-  const id = navStack[navStack.length-1]?.id;
-  renderArea(cache[id]||[]);
+  document.getElementById('searchInput').value = '';
+  if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+  const id = navStack[navStack.length - 1]?.id;
+  renderArea(cache[id] || []);
 }
 
-// ── RENDER ──
-function renderBC() {
-  const bc = document.getElementById('bc');
-  bc.innerHTML='';
-  navStack.forEach((n,i)=>{
-    const last = i===navStack.length-1;
-    const el=document.createElement('span');
-    el.className='bc-node'+(last?' last':'');
-    el.textContent = (i===0?'⌂ ':'')+n.name;
-    if(!last) el.onclick=()=>openFolder(n.id,n.name);
-    bc.appendChild(el);
-    if(!last){const s=document.createElement('span');s.className='bc-sep';s.textContent='›';bc.appendChild(s);}
-  });
-}
-
-function renderLoading() {
-  document.getElementById('main').innerHTML=
-    `<div class="state-box"><div class="spinner"></div>
-     <p>Memuat isi folder...</p></div>`;
-}
-
-function renderSearching() {
-  document.getElementById('main').innerHTML=
-    `<div class="state-box">
-       <div class="searching-indicator on" style="justify-content:center;margin-bottom:.5rem">
-         <div class="mini-spin"></div>
-         <span>Mencari di semua subfolder...</span>
-       </div>
-       <p style="color:var(--ink3);font-family:'JetBrains Mono',monospace;font-size:.7rem">Sedang membuka subfolder satu per satu</p>
-     </div>`;
-}
-
-function renderError(msg) {
-  document.getElementById('main').innerHTML=
-    `<div class="state-box"><span class="state-icon">⚠</span>
-     <h3>Gagal Memuat</h3><p>${esc(msg)}</p></div>`;
-}
-
-function renderSearchResults(results) {
-  const main = document.getElementById('main');
-  const sorted = sortItems(results);
-
-  let html = `<div class="search-bar on">
-    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <span>Hasil untuk <strong>"${esc(searchQ)}"</strong> — <strong style="color:var(--ink)">${results.length}</strong> file ditemukan di semua subfolder</span>
-    <button class="clr" onclick="clearSearch()">✕ Hapus pencarian</button>
-  </div>`;
-
-  main.innerHTML = html;
-
-  if (!sorted.length) {
-    main.innerHTML += `<div class="state-box"><span class="state-icon">🔍</span><h3>Tidak ditemukan</h3><p>Coba kata kunci lain</p></div>`;
-    return;
-  }
-
-  const container = document.createElement('div');
-  container.className = activeView==='grid' ? 'file-grid' : 'file-list';
-  // In search results, files have _path, always show as files
-  sorted.forEach(f => container.appendChild(mkFileEl(f, true)));
-  main.appendChild(container);
-}
-
-function renderArea(items) {
-  const main = document.getElementById('main');
-  const sorted = sortItems(items);
-
-  const folders = sorted.filter(isFolder);
-  const files   = sorted.filter(f=>!isFolder(f));
-  const total   = sorted.length;
-
-  // stat
-  let statHtml = `<div class="stat-row">
-    ${folders.length?`<span class="stat-chip">📁 <span>${folders.length}</span> folder</span>`:''}
-    ${files.length?`<span class="stat-chip">📄 <span>${files.length}</span> file</span>`:''}
-    ${!total?'':''}
-  </div>`;
-
-  if (!total) {
-    main.innerHTML = `<div class="state-box"><span class="state-icon">📭</span><h3>Folder kosong</h3><p>Belum ada file atau subfolder di sini</p></div>`;
-    return;
-  }
-
-  main.innerHTML = statHtml;
-  const container = document.createElement('div');
-  container.className = activeView==='grid' ? 'file-grid' : 'file-list';
-  sorted.forEach(f => {
-    container.appendChild(isFolder(f) ? mkFolderEl(f) : mkFileEl(f, false));
-  });
-  main.appendChild(container);
-}
-
-function sortItems(items) {
-  return [...items].sort((a,b)=>{
-    if(activeSort==='type'){
-      const af=isFolder(a)?0:1, bf=isFolder(b)?0:1;
-      if(af!==bf) return af-bf;
-      return a.name.localeCompare(b.name);
-    }
-    if(activeSort==='name') return a.name.localeCompare(b.name);
-    if(activeSort==='date') return new Date(b.modifiedTime)-new Date(a.modifiedTime);
-    if(activeSort==='size') return (parseInt(b.size)||0)-(parseInt(a.size)||0);
-    return 0;
-  });
-}
-
-// ── ELEMENTS ──
-function mkFolderEl(f) {
-  if (activeView==='grid') {
-    const el=div('grid-item folder-item');
-    el.title=f.name;
-    el.innerHTML=`
-      <div class="grid-thumb">📁</div>
-      <div class="grid-name">${esc(f.name)}</div>
-      <div class="grid-meta">Folder</div>`;
-    el.onclick=()=>openFolder(f.id,f.name);
-    return el;
-  } else {
-    const el=div('list-item folder-item');
-    el.innerHTML=`
-      <div class="list-icon">📁</div>
-      <div class="list-info">
-        <div class="list-name">${esc(f.name)}</div>
-        <div class="list-sub">${fmtDate(f.modifiedTime)}</div>
-      </div>
-      <span class="folder-tag">folder</span>
-      <div class="list-acts">
-        <button class="lab" onclick="event.stopPropagation();openFolder('${f.id}','${ea(f.name)}')">📂 Buka</button>
-      </div>`;
-    el.onclick=()=>openFolder(f.id,f.name);
-    return el;
-  }
-}
-
-function mkFileEl(f, showPath) {
-  const pathHint = showPath && f._path
-    ? `<span class="path-hint"> · 📂 ${esc(f._path)}</span>` : '';
-  const pathHint = showPath && f._path
-	? ` · <span class="path-hint" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="event.stopPropagation();navigateToPath('${ea(f._path)}')" title="Buka folder ini">📂 ${esc(f._path)}</span>` : '';
-
-  if (activeView==='grid') {
-    const el=div('grid-item');
-    el.title=f.name;
-    const isImg=f.mimeType.startsWith('image/');
-    el.innerHTML=`
-      <div class="grid-thumb">${isImg&&f.thumbnailLink?`<img src="${f.thumbnailLink}" alt="" loading="lazy">`:emoji(f.mimeType)}</div>
-      <div class="grid-name">${esc(f.name)}</div>
-      <div class="grid-meta">${fmtSize(f.size)}</div>
-      ${showPath&&f._path?`<div class="grid-path">📂 ${esc(f._path)}</div>`:''}
-	  ${showPath&&f._path?`<div class="grid-path" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="event.stopPropagation();navigateToPath('${ea(f._path)}')" title="Buka folder ini">📂 ${esc(f._path)}</span>`:''}
-      <div class="grid-actions">
-        <button class="gab" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁</button>
-        <button class="gab" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">↓</button>
-      </div>`;
-    el.ondblclick=()=>openPv(f.id,f.name,f.mimeType);
-    return el;
-  } else {
-    const el=div('list-item');
-    el.innerHTML=`
-      <div class="list-icon">${emoji(f.mimeType)}</div>
-      <div class="list-info">
-        <div class="list-name">${esc(f.name)}</div>
-        <div class="list-sub">${fmtSize(f.size)} · ${fmtDate(f.modifiedTime)}${pathHint}</div>
-      </div>
-      <div class="list-acts">
-        <button class="lab" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁 Preview</button>
-        <button class="lab" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">↓ Unduh</button>
-      </div>`;
-    el.onclick=()=>openPv(f.id,f.name,f.mimeType);
-    return el;
-  }
-}
-
-// ── PREVIEW ──
-function openPv(id,name,mime) {
-  pvId=id; pvName=name;
-  document.getElementById('pvIcon').textContent=emoji(mime);
-  document.getElementById('pvTitle').textContent=name;
-  const body=document.getElementById('pvBody');
-  body.innerHTML='';
-
-  if(mime.startsWith('image/')){
-    const img=document.createElement('img');
-    img.className='pv-img';
-    img.src=`https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
-    img.alt=name; body.appendChild(img);
-  } else if(mime==='application/pdf'||mime.includes('document')||mime.includes('spreadsheet')||
-            mime.includes('presentation')||mime.startsWith('video/')||mime.startsWith('audio/')){
-    const iframe=document.createElement('iframe');
-    iframe.className='pv-frame';
-    iframe.src=`https://drive.google.com/file/d/${id}/preview`;
-    iframe.allow='autoplay'; body.appendChild(iframe);
-  } else {
-    body.innerHTML=`<div class="pv-none"><span class="big">${emoji(mime)}</span>
-      <p>Preview tidak tersedia untuk tipe file ini.<br>Silakan unduh untuk membuka.</p></div>`;
-  }
-  document.getElementById('pvModal').classList.add('on');
-}
-function closePv(){
-  document.getElementById('pvModal').classList.remove('on');
-  document.getElementById('pvBody').innerHTML='';
-}
-function dlCurrent(){dlFile(pvId,pvName);}
-document.getElementById('pvModal').addEventListener('click',e=>{
-  if(e.target===document.getElementById('pvModal'))closePv();
-});
-
-// ── DOWNLOAD ──
-function dlFile(id,name) {
-  toast('⏳ Menyiapkan unduhan...');
-  fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{headers:{Authorization:'Bearer '+token}})
-  .then(r=>{if(!r.ok)throw new Error(r.status);return r.blob();})
-  .then(blob=>{
-    const url=URL.createObjectURL(blob);
-    Object.assign(document.createElement('a'),{href:url,download:name}).click();
-    URL.revokeObjectURL(url);
-    toast('↓ Mengunduh '+name);
-  })
-  .catch(()=>toast('❌ Gagal mengunduh'));
-}
-
-// ── VIEW ──
-function setView(v){
-  activeView=v;
-  document.getElementById('vGrid').classList.toggle('on',v==='grid');
-  document.getElementById('vList').classList.toggle('on',v==='list');
-  if(searchQ) doSearch(searchQ);
-  else { const id=navStack[navStack.length-1]?.id; renderArea(cache[id]||[]); }
-}
-
+// ── NAVIGATE TO PATH (klik alamat di hasil search) ──
 async function navigateToPath(pathStr) {
-  // pathStr = "2026 / Januari / SK" → pecah jadi array nama folder
   const parts = pathStr.split(' / ').map(s => s.trim()).filter(Boolean);
   closePv();
 
-  // mulai dari root folder di nav stack paling bawah
   let currentId = navStack[0].id;
-  let currentName = navStack[0].name;
-  navStack = [{ id: currentId, name: currentName }];
+  navStack = [{ id: currentId, name: navStack[0].name }];
 
   for (const part of parts) {
     const items = await fetchDirect(currentId);
     const folder = items.find(f => isFolder(f) && f.name === part);
     if (!folder) { toast('⚠ Folder tidak ditemukan: ' + part); return; }
     currentId = folder.id;
-    currentName = folder.name;
-    navStack.push({ id: currentId, name: currentName });
+    navStack.push({ id: currentId, name: folder.name });
   }
 
   searchQ = '';
@@ -824,58 +461,284 @@ async function navigateToPath(pathStr) {
   renderArea(items);
 }
 
-// ── UTILS ──
-function isFolder(f){return f.mimeType==='application/vnd.google-apps.folder';}
-function div(cls){const e=document.createElement('div');e.className=cls;return e;}
-function show(id){document.getElementById(id).style.display='';}
-function hide(id){document.getElementById(id).style.display='none';}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function ea(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
-function emoji(m){
-  if(m.startsWith('image/'))return'🖼';
-  if(m.startsWith('video/'))return'🎬';
-  if(m.startsWith('audio/'))return'🎵';
-  if(m==='application/pdf')return'📄';
-  if(m.includes('document')||m.includes('word'))return'📝';
-  if(m.includes('spreadsheet')||m.includes('excel'))return'📊';
-  if(m.includes('presentation')||m.includes('powerpoint'))return'🖥';
-  if(m.includes('zip')||m.includes('rar'))return'📦';
-  if(m.startsWith('text/'))return'📃';
-  return'📎';
-}
-function fmtSize(b){
-  if(!b)return'—';b=parseInt(b);
-  if(b<1024)return b+' B';
-  if(b<1048576)return(b/1024).toFixed(1)+' KB';
-  if(b<1073741824)return(b/1048576).toFixed(1)+' MB';
-  return(b/1073741824).toFixed(1)+' GB';
-}
-function fmtDate(iso){
-  if(!iso)return'—';
-  return new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+// ── RENDER ──
+function renderBC() {
+  const bc = document.getElementById('bc');
+  bc.innerHTML = '';
+  navStack.forEach((n, i) => {
+    const last = i === navStack.length - 1;
+    const el = document.createElement('span');
+    el.className = 'bc-node' + (last ? ' last' : '');
+    el.textContent = (i === 0 ? '⌂ ' : '') + n.name;
+    if (!last) el.onclick = () => openFolder(n.id, n.name);
+    bc.appendChild(el);
+    if (!last) {
+      const s = document.createElement('span');
+      s.className = 'bc-sep'; s.textContent = '›';
+      bc.appendChild(s);
+    }
+  });
 }
 
-let _tid;
-function toast(msg,ms=3000){
-  clearTimeout(_tid);
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('on');
-  _tid=setTimeout(()=>t.classList.remove('on'),ms);
+function renderLoading() {
+  document.getElementById('main').innerHTML =
+    `<div class="state-box"><div class="spinner"></div><p>Memuat isi folder...</p></div>`;
 }
 
-// keyboard
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    if(document.getElementById('pvModal').classList.contains('on')){closePv();return;}
-    if(searchQ){clearSearch();return;}
-    if(navStack.length>1){const p=navStack[navStack.length-2];openFolder(p.id,p.name);}
+function renderSearching() {
+  document.getElementById('main').innerHTML =
+    `<div class="state-box">
+       <p style="margin-bottom:.4rem"><span class="mini-spin"></span>Mencari di semua subfolder...</p>
+       <p>Membuka subfolder satu per satu, harap tunggu</p>
+     </div>`;
+}
+
+function renderError(msg) {
+  document.getElementById('main').innerHTML =
+    `<div class="state-box"><span class="ico">⚠</span><h3>Gagal Memuat</h3><p>${esc(msg)}</p></div>`;
+}
+
+function renderSearchResults(results) {
+  const main = document.getElementById('main');
+  const sorted = sortItems(results);
+
+  main.innerHTML = `
+    <div class="search-banner on">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Hasil "<strong>${esc(searchQ)}</strong>" — <strong>${results.length}</strong> file ditemukan
+      <button class="clr" onclick="clearSearch()">✕ Hapus</button>
+    </div>`;
+
+  if (!sorted.length) {
+    main.innerHTML += `<div class="state-box"><span class="ico">🔍</span><h3>Tidak ditemukan</h3><p>Coba kata kunci lain</p></div>`;
+    return;
   }
-  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();document.getElementById('searchInput')?.focus();}
+
+  const container = document.createElement('div');
+  container.className = activeView === 'grid' ? 'file-grid' : 'file-list';
+  sorted.forEach(f => container.appendChild(mkFileEl(f, true)));
+  main.appendChild(container);
+}
+
+function renderArea(items) {
+  const main = document.getElementById('main');
+  const sorted = sortItems(items);
+  const folders = sorted.filter(isFolder).length;
+  const files   = sorted.length - folders;
+
+  if (!sorted.length) {
+    main.innerHTML = `<div class="state-box"><span class="ico">📭</span><h3>Folder kosong</h3><p>Belum ada file atau subfolder di sini</p></div>`;
+    return;
+  }
+
+  main.innerHTML = `
+    <div class="stat-row">
+      ${folders ? `<span class="stat-chip">📁 <span>${folders}</span> folder</span>` : ''}
+      ${files   ? `<span class="stat-chip">📄 <span>${files}</span> file</span>` : ''}
+    </div>`;
+
+  const container = document.createElement('div');
+  container.className = activeView === 'grid' ? 'file-grid' : 'file-list';
+  sorted.forEach(f => container.appendChild(isFolder(f) ? mkFolderEl(f) : mkFileEl(f, false)));
+  main.appendChild(container);
+}
+
+function sortItems(items) {
+  return [...items].sort((a, b) => {
+    if (activeSort === 'type') {
+      const af = isFolder(a) ? 0 : 1, bf = isFolder(b) ? 0 : 1;
+      if (af !== bf) return af - bf;
+      return a.name.localeCompare(b.name);
+    }
+    if (activeSort === 'name') return a.name.localeCompare(b.name);
+    if (activeSort === 'date') return new Date(b.modifiedTime) - new Date(a.modifiedTime);
+    if (activeSort === 'size') return (parseInt(b.size)||0) - (parseInt(a.size)||0);
+    return 0;
+  });
+}
+
+// ── ELEMENTS ──
+function mkFolderEl(f) {
+  if (activeView === 'grid') {
+    const el = mkDiv('grid-item folder-item');
+    el.title = f.name;
+    el.innerHTML = `
+      <div class="grid-thumb">📁</div>
+      <div class="grid-name">${esc(f.name)}</div>
+      <div class="grid-meta">Folder</div>`;
+    el.onclick = () => openFolder(f.id, f.name);
+    return el;
+  } else {
+    const el = mkDiv('list-item folder-item');
+    el.innerHTML = `
+      <div class="list-icon">📁</div>
+      <div class="list-info">
+        <div class="list-name">${esc(f.name)}</div>
+        <div class="list-sub">${fmtDate(f.modifiedTime)}</div>
+      </div>
+      <span class="folder-tag">folder</span>
+      <div class="list-acts">
+        <button class="lab" onclick="event.stopPropagation();openFolder('${f.id}','${ea(f.name)}')">📂 Buka</button>
+      </div>`;
+    el.onclick = () => openFolder(f.id, f.name);
+    return el;
+  }
+}
+
+function mkFileEl(f, showPath) {
+  const pathAttr = f._path
+    ? `onclick="event.stopPropagation();navigateToPath('${ea(f._path)}')" title="Klik untuk buka folder ini"` : '';
+
+  if (activeView === 'grid') {
+    const el = mkDiv('grid-item');
+    el.title = f.name;
+    const isImg = f.mimeType.startsWith('image/');
+    el.innerHTML = `
+      <div class="grid-thumb">${isImg && f.thumbnailLink ? `<img src="${f.thumbnailLink}" alt="" loading="lazy">` : emoji(f.mimeType)}</div>
+      <div class="grid-name">${esc(f.name)}</div>
+      <div class="grid-meta">${fmtSize(f.size)}</div>
+      ${showPath && f._path ? `<div class="grid-path" ${pathAttr}>📂 ${esc(f._path)}</div>` : ''}
+      <div class="grid-actions">
+        <button class="gab" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁</button>
+        <button class="gab" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">↓</button>
+      </div>`;
+    el.ondblclick = () => openPv(f.id, f.name, f.mimeType);
+    return el;
+  } else {
+    const el = mkDiv('list-item');
+    const pathHtml = showPath && f._path
+      ? ` · <span class="path-link" ${pathAttr}>📂 ${esc(f._path)}</span>` : '';
+    el.innerHTML = `
+      <div class="list-icon">${emoji(f.mimeType)}</div>
+      <div class="list-info">
+        <div class="list-name">${esc(f.name)}</div>
+        <div class="list-sub">${fmtSize(f.size)} · ${fmtDate(f.modifiedTime)}${pathHtml}</div>
+      </div>
+      <div class="list-acts">
+        <button class="lab" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁 Preview</button>
+        <button class="lab" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">↓ Unduh</button>
+      </div>`;
+    el.onclick = () => openPv(f.id, f.name, f.mimeType);
+    return el;
+  }
+}
+
+// ── PREVIEW ──
+function openPv(id, name, mime) {
+  pvId = id; pvName = name;
+  document.getElementById('pvIcon').textContent = emoji(mime);
+  document.getElementById('pvTitle').textContent = name;
+  const body = document.getElementById('pvBody');
+  body.innerHTML = '';
+
+  if (mime.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.className = 'pv-img';
+    img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+    img.alt = name; body.appendChild(img);
+  } else if (
+    mime === 'application/pdf' || mime.includes('document') ||
+    mime.includes('spreadsheet') || mime.includes('presentation') ||
+    mime.startsWith('video/') || mime.startsWith('audio/')
+  ) {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'pv-frame';
+    iframe.src = `https://drive.google.com/file/d/${id}/preview`;
+    iframe.allow = 'autoplay'; body.appendChild(iframe);
+  } else {
+    body.innerHTML = `<div class="pv-none"><span class="big">${emoji(mime)}</span>
+      <p>Preview tidak tersedia untuk tipe file ini.<br>Silakan unduh untuk membuka.</p></div>`;
+  }
+  document.getElementById('pvModal').classList.add('on');
+}
+
+function closePv() {
+  document.getElementById('pvModal').classList.remove('on');
+  document.getElementById('pvBody').innerHTML = '';
+}
+
+function dlCurrent() { dlFile(pvId, pvName); }
+
+document.getElementById('pvModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('pvModal')) closePv();
 });
 
-// wire search input
-document.getElementById('searchInput').addEventListener('input', handleSearch);
+// ── DOWNLOAD ──
+function dlFile(id, name) {
+  toast('⏳ Menyiapkan unduhan...');
+  fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
+    headers: { Authorization: 'Bearer ' + token }
+  })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), { href: url, download: name }).click();
+    URL.revokeObjectURL(url);
+    toast('↓ Mengunduh ' + name);
+  })
+  .catch(() => toast('❌ Gagal mengunduh'));
+}
+
+// ── VIEW ──
+function setView(v) {
+  activeView = v;
+  document.getElementById('vGrid').classList.toggle('on', v === 'grid');
+  document.getElementById('vList').classList.toggle('on', v === 'list');
+  if (searchQ) doSearch(searchQ);
+  else { const id = navStack[navStack.length - 1]?.id; renderArea(cache[id] || []); }
+}
+
+// ── UTILS ──
+function isFolder(f) { return f.mimeType === 'application/vnd.google-apps.folder'; }
+function mkDiv(cls) { const e = document.createElement('div'); e.className = cls; return e; }
+function emoji(m) {
+  if (m.startsWith('image/')) return '🖼';
+  if (m.startsWith('video/')) return '🎬';
+  if (m.startsWith('audio/')) return '🎵';
+  if (m === 'application/pdf') return '📄';
+  if (m.includes('document') || m.includes('word')) return '📝';
+  if (m.includes('spreadsheet') || m.includes('excel')) return '📊';
+  if (m.includes('presentation') || m.includes('powerpoint')) return '🖥';
+  if (m.includes('zip') || m.includes('rar')) return '📦';
+  if (m.startsWith('text/')) return '📃';
+  return '📎';
+}
+function fmtSize(b) {
+  if (!b) return '—'; b = parseInt(b);
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+  return (b / 1073741824).toFixed(1) + ' GB';
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ea(s)  { return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+let _tid;
+function toast(msg, ms = 3000) {
+  clearTimeout(_tid);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  _tid = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('pvModal').classList.contains('on')) { closePv(); return; }
+    if (searchQ) { clearSearch(); return; }
+    if (navStack.length > 1) {
+      const p = navStack[navStack.length - 2];
+      openFolder(p.id, p.name);
+    }
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('searchInput')?.focus();
+  }
+});
 </script>
 </body>
 </html>
-

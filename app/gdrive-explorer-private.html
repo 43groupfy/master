@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drive Explorer — Private</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #f4f3ef;
+  --card:     #ffffff;
+  --border:   #e2dfd8;
+  --border2:  #ccc9c0;
+  --ink:      #1a1915;
+  --ink2:     #6b6860;
+  --ink3:     #a8a49c;
+  --accent:   #2c6e49;
+  --accent-l: #d8ede2;
+  --red:      #c0392b;
+  --red-l:    #fdecea;
+  --shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+}
+
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+header { background: var(--card); border-bottom: 1px solid var(--border); height: 60px; display: flex; align-items: center; padding: 0 1.5rem; gap: 1rem; position: sticky; top: 0; z-index: 100; }
+.logo { display: flex; align-items: center; gap: .5rem; font-weight: 800; font-size: 1.05rem; letter-spacing: -.02em; }
+.logo-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.lock-badge { background: #fef3c7; color: #b45309; font-family: 'JetBrains Mono', monospace; font-size: .65rem; padding: .2rem .5rem; border-radius: 4px; border: 1px solid #fde68a; }
+.hspace { flex: 1; }
+.user-pill { align-items: center; gap: .5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: .3rem .3rem .3rem .7rem; font-size: .8rem; font-weight: 500; display: none; }
+.user-pill img { width: 24px; height: 24px; border-radius: 50%; }
+.user-pill button { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: .2rem .6rem; font-size: .72rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; color: var(--ink2); transition: all .15s; }
+.user-pill button:hover { background: var(--red-l); color: var(--red); border-color: var(--red); }
+
+/* LOGIN */
+.login-card { max-width: 400px; margin: 6rem auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; box-shadow: var(--shadow-lg); text-align: center; }
+.login-card .shield { font-size: 2.5rem; margin-bottom: 1rem; }
+.login-card h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: .4rem; }
+.login-card p { color: var(--ink2); font-size: .875rem; line-height: 1.6; margin-bottom: 1.5rem; }
+.google-btn { width: 100%; background: var(--card); border: 1px solid var(--border2); border-radius: 10px; padding: .8rem 1.2rem; display: flex; align-items: center; justify-content: center; gap: .7rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: .9rem; font-weight: 600; cursor: pointer; transition: all .2s; box-shadow: var(--shadow); }
+.google-btn:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(44,110,73,.15); transform: translateY(-1px); }
+.login-note { margin-top: 1rem; font-size: .73rem; color: var(--ink3); font-family: 'JetBrains Mono', monospace; line-height: 1.5; }
+
+/* MAIN */
+main { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.search-row { display: flex; gap: .75rem; margin-bottom: 1.25rem; }
+.search-wrap { position: relative; flex: 1; }
+.search-wrap svg { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--ink3); }
+#searchInput { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .75rem .9rem .75rem 2.6rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: .9rem; color: var(--ink); outline: none; transition: border-color .15s; }
+#searchInput:focus { border-color: var(--accent); }
+#searchInput::placeholder { color: var(--ink3); }
+.refresh-btn { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 0 1rem; cursor: pointer; color: var(--ink2); font-size: 1.1rem; transition: all .15s; }
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.filter-bar { display: flex; align-items: center; gap: .5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.chip { padding: .3rem .8rem; border-radius: 999px; border: 1px solid var(--border); background: var(--card); font-size: .75rem; font-weight: 600; cursor: pointer; color: var(--ink2); transition: all .15s; }
+.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip:not(.active):hover { border-color: var(--accent); color: var(--accent); }
+.stat-text { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--ink3); }
+
+.toolbar { display: flex; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+.sort-sel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .35rem .7rem; font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--ink2); cursor: pointer; outline: none; }
+.view-toggle { margin-left: auto; display: flex; gap: .3rem; }
+.vtb { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--border); background: var(--card); color: var(--ink3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: .85rem; transition: all .15s; }
+.vtb.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* GRID */
+.file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: .9rem; }
+.file-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; display: flex; flex-direction: column; gap: .6rem; transition: all .2s; }
+.file-card:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgba(44,110,73,.1); transform: translateY(-1px); }
+.card-thumb { width: 100%; height: 100px; border-radius: 8px; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; overflow: hidden; flex-shrink: 0; }
+.card-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; }
+.card-name { font-size: .85rem; font-weight: 600; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-meta { font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: var(--ink3); }
+.card-path { font-family: 'JetBrains Mono', monospace; font-size: .65rem; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-actions { display: flex; gap: .4rem; margin-top: auto; }
+.cta { flex: 1; padding: .4rem; border-radius: 7px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .72rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .3rem; transition: all .15s; }
+.cta:hover { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+
+/* LIST */
+.file-list { display: flex; flex-direction: column; gap: .4rem; }
+.file-row { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .8rem 1.1rem; display: flex; align-items: center; gap: .9rem; transition: all .15s; }
+.file-row:hover { border-color: var(--accent); }
+.row-icon { font-size: 1.3rem; flex-shrink: 0; }
+.row-info { flex: 1; min-width: 0; }
+.row-name { font-size: .875rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row-meta { font-family: 'JetBrains Mono', monospace; font-size: .68rem; color: var(--ink3); margin-top: .15rem; }
+.row-acts { display: flex; gap: .4rem; flex-shrink: 0; }
+.rta { padding: .3rem .7rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .72rem; font-family: 'JetBrains Mono', monospace; cursor: pointer; display: flex; align-items: center; gap: .25rem; transition: all .15s; }
+.rta:hover { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+
+/* STATES */
+.center-state { text-align: center; padding: 4rem 2rem; }
+.center-state .big { font-size: 2.5rem; margin-bottom: .8rem; }
+.center-state h3 { font-weight: 700; margin-bottom: .4rem; }
+.spinner { width: 36px; height: 36px; margin: 0 auto 1rem; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* PREVIEW */
+.overlay { position: fixed; inset: 0; z-index: 300; background: rgba(20,20,18,.75); backdrop-filter: blur(8px); display: none; flex-direction: column; }
+.overlay.on { display: flex; }
+.pv-header { background: var(--card); border-bottom: 1px solid var(--border); padding: .9rem 1.2rem; display: flex; align-items: center; gap: .8rem; }
+.pv-header h3 { flex: 1; font-size: .95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pv-body { flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.pv-frame { width: 100%; height: 100%; max-width: 960px; border: none; border-radius: 10px; background: #fff; }
+.pv-img { max-width: 100%; max-height: 100%; border-radius: 10px; object-fit: contain; box-shadow: var(--shadow-lg); }
+.pv-none { text-align: center; color: var(--ink2); }
+.pv-none .em { font-size: 2.5rem; margin-bottom: .8rem; }
+.x-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+.x-btn:hover { background: var(--red-l); border-color: var(--red); color: var(--red); }
+.btn-p { background: var(--accent); color: #fff; border: none; border-radius: 7px; padding: .35rem .9rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: .8rem; cursor: pointer; display: inline-flex; align-items: center; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 999; background: var(--ink); color: #fff; border-radius: 8px; padding: .65rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: .78rem; transform: translateY(80px); opacity: 0; transition: all .25s; pointer-events: none; }
+.toast.on { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 580px) {
+  main { padding: 1rem; }
+  .file-grid { grid-template-columns: 1fr 1fr; }
+  .row-acts { display: none; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">🔒</div>
+    Drive<b>Vault</b>
+  </div>
+  <span class="lock-badge">PRIVATE</span>
+  <div class="hspace"></div>
+  <div class="user-pill" id="userPill">
+    <img id="userAvatar" src="" alt="">
+    <span id="userName"></span>
+    <button onclick="signOut()">Keluar</button>
+  </div>
+</header>
+
+<div class="overlay" id="pvModal">
+  <div class="pv-header">
+    <span id="pvIcon" style="font-size:1.3rem"></span>
+    <h3 id="pvTitle"></h3>
+    <button class="btn-p" onclick="dlCurrent()">⬇ Download</button>
+    <button class="x-btn" onclick="closePv()">✕</button>
+  </div>
+  <div class="pv-body" id="pvBody"></div>
+</div>
+
+<main id="mainArea"></main>
+<div class="toast" id="toast"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// ╔══════════════════════════════════════════════════════╗
+// ║  ⚙️  KONFIGURASI — EDIT SEBELUM UPLOAD KE HOSTING   ║
+// ╚══════════════════════════════════════════════════════╝
+const CFG = {
+  clientId : '754185320971-e5vkssncnojm7es2nrnah6e4l59igihq.apps.googleusercontent.com',      // xxxx.apps.googleusercontent.com
+  apiKey   : 'AIzaSyAL285bxJ9x_JBtCQCaJodUfYosLz0uInA',              // AIzaSy...
+  folderId : '1WiDe-NDazsMXRXgTnxcctdwMxxvUt0ZL',            // ID folder Google Drive
+  appName  : 'MasterKPU',                 // Nama aplikasi (bebas diganti)
+};
+// ═══════════════════════════════════════════════════════
+
+let accessToken  = '';
+let allFiles     = [];
+let filtered     = [];
+let activeFilter = 'all';
+let activeView   = 'grid';
+let activeSort   = 'name';
+let userInfo     = null;
+let currentFileId = '';
+let currentFileName = '';
+
+document.title = CFG.appName;
+
+window.addEventListener('load', () => {
+  const t = sessionStorage.getItem('dvToken');
+  const u = sessionStorage.getItem('dvUser');
+  if (t && u) {
+    accessToken = t; userInfo = JSON.parse(u);
+    showUserPill(); loadFiles();
+  } else {
+    renderLogin();
+  }
+});
+
+// ── LOGIN ─────────────────────────────────────────────
+function renderLogin() {
+  document.getElementById('mainArea').innerHTML = `
+    <div class="login-card">
+      <div class="shield">🔐</div>
+      <h2>${CFG.appName}</h2>
+      <p>Akses terbatas hanya untuk pengguna<br>yang telah diberi izin oleh administrator.</p>
+      <button class="google-btn" onclick="startLogin()">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+          <path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+          <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
+          <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
+        </svg>
+        Masuk dengan Google
+      </button>
+      <p class="login-note">Hubungi administrator jika tidak bisa masuk.</p>
+    </div>`;
+}
+
+function startLogin() {
+  google.accounts.oauth2.initTokenClient({
+    client_id: CFG.clientId,
+    scope: 'https://www.googleapis.com/auth/drive.readonly profile email',
+    callback: async (resp) => {
+      if (resp.error) { toast('❌ Login gagal: ' + resp.error); return; }
+      accessToken = resp.access_token;
+      sessionStorage.setItem('dvToken', accessToken);
+      await fetchUserInfo();
+      showUserPill();
+      loadFiles();
+    }
+  }).requestAccessToken();
+}
+
+async function fetchUserInfo() {
+  try {
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    userInfo = await r.json();
+    sessionStorage.setItem('dvUser', JSON.stringify(userInfo));
+  } catch { userInfo = { name: 'Pengguna', picture: '' }; }
+}
+
+function showUserPill() {
+  const pill = document.getElementById('userPill');
+  pill.style.display = 'flex';
+  document.getElementById('userAvatar').src = userInfo?.picture || '';
+  document.getElementById('userName').textContent = userInfo?.name || '';
+}
+
+function signOut() {
+  accessToken = ''; userInfo = null; allFiles = [];
+  sessionStorage.clear();
+  document.getElementById('userPill').style.display = 'none';
+  renderLogin();
+  toast('👋 Berhasil keluar');
+}
+
+// ── LOAD FILES ────────────────────────────────────────
+async function loadFiles() {
+  renderLoading(); allFiles = [];
+  try {
+    await fetchFolder(CFG.folderId);
+    applyFilter(); renderBrowser();
+    toast(`✅ ${allFiles.length} file dimuat`);
+  } catch(e) {
+    renderError(e.message);
+    if (e.message.includes('401') || e.message.includes('403')) {
+      sessionStorage.removeItem('dvToken');
+      setTimeout(renderLogin, 1500);
+    }
+  }
+}
+
+async function fetchFolder(folderId, path = '') {
+  let pageToken = '';
+  do {
+    const url = `https://www.googleapis.com/drive/v3/files`
+      + `?q='${folderId}'+in+parents+and+trashed=false`
+      + `&fields=nextPageToken,files(id,name,mimeType,size,modifiedTime,thumbnailLink)`
+      + `&pageSize=100&key=${CFG.apiKey}`
+      + (pageToken ? '&pageToken='+pageToken : '');
+    const r = await fetch(url, { headers: { Authorization: 'Bearer '+accessToken } });
+    if (!r.ok) { const e = await r.json(); throw new Error(`${r.status}: ${e.error?.message}`); }
+    const data = await r.json();
+    for (const f of data.files) {
+      if (f.mimeType === 'application/vnd.google-apps.folder') {
+        await fetchFolder(f.id, (path ? path+' / ' : '')+f.name);
+      } else { allFiles.push({ ...f, path }); }
+    }
+    pageToken = data.nextPageToken || '';
+  } while (pageToken);
+}
+
+// ── FILTER / SORT ─────────────────────────────────────
+function buildChips() {
+  const types = ['all', ...new Set(allFiles.map(f => cat(f.mimeType)))];
+  const c = document.getElementById('filterChips');
+  if (!c) return;
+  c.innerHTML = '';
+  types.forEach(t => {
+    const b = document.createElement('button');
+    b.className = 'chip'+(t===activeFilter?' active':'');
+    b.textContent = catLabel(t);
+    b.onclick = () => { activeFilter = t; buildChips(); applyFilter(); };
+    c.appendChild(b);
+  });
+}
+
+function applyFilter() {
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  filtered = allFiles.filter(f => {
+    const mc = activeFilter==='all' || cat(f.mimeType)===activeFilter;
+    const mq = f.name.toLowerCase().includes(q) || (f.path||'').toLowerCase().includes(q);
+    return mc && mq;
+  });
+  filtered.sort((a,b) => {
+    if (activeSort==='name') return a.name.localeCompare(b.name);
+    if (activeSort==='date') return new Date(b.modifiedTime)-new Date(a.modifiedTime);
+    if (activeSort==='size') return (parseInt(b.size)||0)-(parseInt(a.size)||0);
+    return 0;
+  });
+  const sc = document.getElementById('statText');
+  if (sc) sc.textContent = filtered.length+' file';
+  renderFileArea();
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderLoading() {
+  document.getElementById('mainArea').innerHTML =
+    `<div class="center-state"><div class="spinner"></div>
+     <p style="font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--ink2)">Memuat file...</p></div>`;
+}
+function renderError(msg) {
+  document.getElementById('mainArea').innerHTML =
+    `<div class="center-state"><div class="big">⚠️</div><h3>Gagal Memuat</h3>
+     <p style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--ink2);margin-top:.4rem">${esc(msg)}</p></div>`;
+}
+function renderBrowser() {
+  document.getElementById('mainArea').innerHTML = `
+    <div class="search-row">
+      <div class="search-wrap">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="search" id="searchInput" placeholder="Cari nama file... (Ctrl+K)" oninput="applyFilter()">
+      </div>
+      <button class="refresh-btn" onclick="loadFiles()" title="Refresh">↺</button>
+    </div>
+    <div class="filter-bar">
+      <div id="filterChips" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+      <span class="stat-text" id="statText"></span>
+    </div>
+    <div class="toolbar">
+      <select class="sort-sel" onchange="activeSort=this.value;applyFilter()">
+        <option value="name">Nama A–Z</option>
+        <option value="date">Terbaru</option>
+        <option value="size">Ukuran</option>
+      </select>
+      <div class="view-toggle">
+        <button class="vtb active" id="vGrid" onclick="setView('grid')" title="Grid">▦</button>
+        <button class="vtb" id="vList" onclick="setView('list')" title="List">☰</button>
+      </div>
+    </div>
+    <div id="fileArea"></div>`;
+  buildChips(); applyFilter();
+}
+
+function renderFileArea() {
+  const area = document.getElementById('fileArea');
+  if (!area) return;
+  if (!filtered.length) {
+    area.innerHTML = `<div class="center-state"><div class="big">🔍</div>
+      <p style="color:var(--ink2);font-family:'JetBrains Mono',monospace;font-size:.85rem">Tidak ada file yang cocok</p></div>`;
+    return;
+  }
+  if (activeView==='grid') {
+    area.innerHTML = '<div class="file-grid" id="fg"></div>';
+    filtered.forEach(f => document.getElementById('fg').appendChild(mkCard(f)));
+  } else {
+    area.innerHTML = '<div class="file-list" id="fl"></div>';
+    filtered.forEach(f => document.getElementById('fl').appendChild(mkRow(f)));
+  }
+}
+
+function setView(v) {
+  activeView = v;
+  document.getElementById('vGrid').classList.toggle('active', v==='grid');
+  document.getElementById('vList').classList.toggle('active', v==='list');
+  renderFileArea();
+}
+
+function mkCard(f) {
+  const el = document.createElement('div');
+  el.className = 'file-card';
+  el.innerHTML = `
+    <div class="card-thumb">${f.mimeType.startsWith('image/') && f.thumbnailLink
+      ? `<img src="${f.thumbnailLink}" alt="" loading="lazy">`
+      : `<span>${emoji(f.mimeType)}</span>`}</div>
+    <div class="card-name">${esc(f.name)}</div>
+    <div class="card-meta">${fmtSize(f.size)} · ${fmtDate(f.modifiedTime)}</div>
+    ${f.path?`<div class="card-path">📂 ${esc(f.path)}</div>`:''}
+    <div class="card-actions">
+      <button class="cta" onclick="openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁 Preview</button>
+      <button class="cta" onclick="dlFile('${f.id}','${ea(f.name)}')">⬇ Unduh</button>
+    </div>`;
+  return el;
+}
+
+function mkRow(f) {
+  const el = document.createElement('div');
+  el.className = 'file-row';
+  el.innerHTML = `
+    <div class="row-icon">${emoji(f.mimeType)}</div>
+    <div class="row-info">
+      <div class="row-name">${esc(f.name)}</div>
+      <div class="row-meta">${fmtSize(f.size)} · ${fmtDate(f.modifiedTime)}${f.path?' · 📂 '+esc(f.path):''}</div>
+    </div>
+    <div class="row-acts">
+      <button class="rta" onclick="openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁 Preview</button>
+      <button class="rta" onclick="dlFile('${f.id}','${ea(f.name)}')">⬇ Unduh</button>
+    </div>`;
+  return el;
+}
+
+// ── PREVIEW ───────────────────────────────────────────
+function openPv(id, name, mime) {
+  currentFileId = id; currentFileName = name;
+  document.getElementById('pvIcon').textContent = emoji(mime);
+  document.getElementById('pvTitle').textContent = name;
+  const body = document.getElementById('pvBody');
+  body.innerHTML = '';
+  if (mime.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.className = 'pv-img';
+    img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1200`;
+    img.alt = name; body.appendChild(img);
+  } else if (mime==='application/pdf'||mime.includes('document')||mime.includes('spreadsheet')||
+             mime.includes('presentation')||mime.startsWith('video/')||mime.startsWith('audio/')) {
+    const iframe = document.createElement('iframe');
+    iframe.className = 'pv-frame';
+    iframe.src = `https://drive.google.com/file/d/${id}/preview`;
+    iframe.allow = 'autoplay'; body.appendChild(iframe);
+  } else {
+    body.innerHTML = `<div class="pv-none"><div class="em">${emoji(mime)}</div>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.85rem">
+        Preview tidak tersedia.<br>Silakan unduh file ini.
+      </p></div>`;
+  }
+  document.getElementById('pvModal').classList.add('on');
+}
+function closePv() {
+  document.getElementById('pvModal').classList.remove('on');
+  document.getElementById('pvBody').innerHTML = '';
+}
+function dlCurrent() { dlFile(currentFileId, currentFileName); }
+document.getElementById('pvModal').addEventListener('click', e => {
+  if (e.target===document.getElementById('pvModal')) closePv();
+});
+
+// ── DOWNLOAD ──────────────────────────────────────────
+function dlFile(id, name) {
+  toast('⏳ Menyiapkan unduhan...');
+  fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
+    headers: { Authorization: 'Bearer '+accessToken }
+  })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+  .then(blob => {
+    const url = URL.createObjectURL(blob);
+    Object.assign(document.createElement('a'), { href:url, download:name }).click();
+    URL.revokeObjectURL(url);
+    toast('⬇ Mengunduh '+name);
+  })
+  .catch(() => toast('❌ Gagal mengunduh'));
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function cat(mime) {
+  if (mime.startsWith('image/')) return 'image';
+  if (mime.startsWith('video/')) return 'video';
+  if (mime.startsWith('audio/')) return 'audio';
+  if (mime==='application/pdf') return 'pdf';
+  if (mime.includes('document')||mime.includes('word')) return 'doc';
+  if (mime.includes('spreadsheet')||mime.includes('excel')) return 'sheet';
+  if (mime.includes('presentation')||mime.includes('powerpoint')) return 'slide';
+  if (mime.includes('zip')||mime.includes('rar')) return 'zip';
+  return 'other';
+}
+function catLabel(c) {
+  return {all:'Semua',image:'🖼 Gambar',video:'🎬 Video',audio:'🎵 Audio',
+          pdf:'📄 PDF',doc:'📝 Dokumen',sheet:'📊 Sheet',slide:'🖥 Slide',
+          zip:'📦 Arsip',other:'📎 Lainnya'}[c]||c;
+}
+function emoji(mime) {
+  return {image:'🖼',video:'🎬',audio:'🎵',pdf:'📄',doc:'📝',
+          sheet:'📊',slide:'🖥',zip:'📦',other:'📎'}[cat(mime)]||'📎';
+}
+function fmtSize(b) {
+  if (!b) return '—'; b=parseInt(b);
+  if (b<1024) return b+' B';
+  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  if (b<1073741824) return (b/1048576).toFixed(1)+' MB';
+  return (b/1073741824).toFixed(1)+' GB';
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function ea(s)  { return String(s).replace(/'/g,"\\'"); }
+
+let _tid;
+function toast(msg, ms=3000) {
+  clearTimeout(_tid);
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  _tid = setTimeout(()=>t.classList.remove('on'), ms);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') closePv();
+  if ((e.ctrlKey||e.metaKey) && e.key==='k') { e.preventDefault(); document.getElementById('searchInput')?.focus(); }
+});
+</script>
+</body>
+</html>

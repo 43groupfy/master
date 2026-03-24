@@ -303,7 +303,7 @@ main{padding:1.25rem;overflow:auto}
 <header class="topbar">
   <div class="logo">
     <div class="logo-icon">DV</div>
-    <span class="logo-text">Drive<em>Vault</em></span>
+    <span class="logo-text">Drive<em>KPU</em></span>
   </div>
   <div class="topbar-divider"></div>
   <div class="search-box" id="searchBox" style="display:none">
@@ -704,6 +704,8 @@ function mkFolderEl(f) {
 function mkFileEl(f, showPath) {
   const pathHint = showPath && f._path
     ? `<span class="path-hint"> · 📂 ${esc(f._path)}</span>` : '';
+  const pathHint = showPath && f._path
+	? ` · <span class="path-hint" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="event.stopPropagation();navigateToPath('${ea(f._path)}')" title="Buka folder ini">📂 ${esc(f._path)}</span>` : '';
 
   if (activeView==='grid') {
     const el=div('grid-item');
@@ -714,6 +716,7 @@ function mkFileEl(f, showPath) {
       <div class="grid-name">${esc(f.name)}</div>
       <div class="grid-meta">${fmtSize(f.size)}</div>
       ${showPath&&f._path?`<div class="grid-path">📂 ${esc(f._path)}</div>`:''}
+	  ${showPath&&f._path?`<div class="grid-path" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px" onclick="event.stopPropagation();navigateToPath('${ea(f._path)}')" title="Buka folder ini">📂 ${esc(f._path)}</span>`:''}
       <div class="grid-actions">
         <button class="gab" onclick="event.stopPropagation();openPv('${f.id}','${ea(f.name)}','${f.mimeType}')">👁</button>
         <button class="gab" onclick="event.stopPropagation();dlFile('${f.id}','${ea(f.name)}')">↓</button>
@@ -794,6 +797,33 @@ function setView(v){
   else { const id=navStack[navStack.length-1]?.id; renderArea(cache[id]||[]); }
 }
 
+async function navigateToPath(pathStr) {
+  // pathStr = "2026 / Januari / SK" → pecah jadi array nama folder
+  const parts = pathStr.split(' / ').map(s => s.trim()).filter(Boolean);
+  closePv();
+
+  // mulai dari root folder di nav stack paling bawah
+  let currentId = navStack[0].id;
+  let currentName = navStack[0].name;
+  navStack = [{ id: currentId, name: currentName }];
+
+  for (const part of parts) {
+    const items = await fetchDirect(currentId);
+    const folder = items.find(f => isFolder(f) && f.name === part);
+    if (!folder) { toast('⚠ Folder tidak ditemukan: ' + part); return; }
+    currentId = folder.id;
+    currentName = folder.name;
+    navStack.push({ id: currentId, name: currentName });
+  }
+
+  searchQ = '';
+  document.getElementById('searchInput').value = '';
+  renderBC();
+  renderLoading();
+  const items = await fetchDirect(currentId);
+  renderArea(items);
+}
+
 // ── UTILS ──
 function isFolder(f){return f.mimeType==='application/vnd.google-apps.folder';}
 function div(cls){const e=document.createElement('div');e.className=cls;return e;}
@@ -848,3 +878,4 @@ document.getElementById('searchInput').addEventListener('input', handleSearch);
 </script>
 </body>
 </html>
+

@@ -36,6 +36,7 @@
         @media (max-width: 1024px) { .preview-container.list-mode { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 480px) { .preview-container.list-mode { grid-template-columns: 1fr; } }
 
+
         .preview-item { width:100%; height:165px; background:#fff; padding:8px; border-radius:10px; border:1px solid #e2e8f0; position:relative; cursor:grab; display:flex; flex-direction:column; align-items:center; }
         .preview-item.selected { border:2px solid var(--maroon); background:rgba(128,0,0,0.03); }
         .preview-image { width:100%; height:115px; object-fit:contain; background:#f8fafc; border-radius:4px; margin-bottom: 6px; }
@@ -64,33 +65,34 @@
 
         @keyframes spin { to { transform:rotate(360deg); } }
         @media (max-width:768px){ .main-content-grid { grid-template-columns:1fr; } }
+		
+		/* Samakan dengan gaya .upload-area / .dropzone Anda */
+		.file-upload-area { 
+			grid-column: 1 / -1;
+			border: 2px dashed var(--maroon-light); 
+			padding: 40px; 
+			border-radius: var(--radius); 
+			text-align: center; 
+			cursor: pointer; 
+			background: #fff; 
+			transition: 0.3s; 
+			margin-bottom: 20px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
 
-        .file-upload-area { 
-            grid-column: 1 / -1;
-            border: 2px dashed var(--maroon-light); 
-            padding: 40px; 
-            border-radius: var(--radius); 
-            text-align: center; 
-            cursor: pointer; 
-            background: #fff; 
-            transition: 0.3s; 
-            margin-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+		.file-upload-area:hover, .file-upload-area.dragover { 
+			background: #fff5f5; 
+			border-color: var(--maroon); 
+		}
 
-        .file-upload-area:hover, .file-upload-area.dragover { 
-            background: #fff5f5; 
-            border-color: var(--maroon); 
-        }
-
-        .file-upload-area i { 
-            font-size: 40px; 
-            color: var(--maroon); 
-            margin-bottom: 15px; 
-        }
+		.file-upload-area i { 
+			font-size: 40px; 
+			color: var(--maroon); 
+			margin-bottom: 15px; 
+		}
     </style>
 </head>
 <body>
@@ -102,8 +104,9 @@
             <span>MASTER APP</span>
         </a>
         <a href="../index.html#pdf-page" class="btn-back-main">
-            <i class="fa-solid fa-house"></i>
-        </a>
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+		</a>
     </div>
 </header>
 

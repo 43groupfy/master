@@ -349,45 +349,96 @@ const CFG = {
 
 // ── STATE ──────────────────────────────────────────────
 let accessToken  = '';
+let tokenExpiry  = 0;
 let userInfo     = null;
 let activeView   = 'grid';
 let activeSort   = 'type';
 let pvFileId     = '';
 let pvFileName   = '';
 
-// Nav stack: [{id, name}]
 let navStack = [];
-
-// Cache folder contents: folderId → [items]
 const folderCache = {};
 
-// Search state
-let searchDebounce   = null;
-let searchAbort      = null;   // AbortController for in-flight recursive search
-let isSearchMode     = false;
-let searchResults    = [];
-let searchQuery      = '';
+let searchDebounce = null;
+let searchAbort    = null;
+let isSearchMode   = false;
+let searchResults  = [];
+let searchQuery    = '';
 
 // ── INIT ───────────────────────────────────────────────
 document.title = CFG.appName;
 window.addEventListener('load', () => {
-  const t = sessionStorage.getItem('dvToken');
-  const u = sessionStorage.getItem('dvUser');
-  if (t && u) {
-    accessToken = t; userInfo = JSON.parse(u);
-    showUserPill(); openFolder(CFG.folderId, 'Home');
-  } else { renderLogin(); }
+  const saved = localStorage.getItem('dvUser');
+  if (saved) {
+    userInfo = JSON.parse(saved);
+    showUserPill();
+    silentRefresh().then(ok => {
+      if (ok) openFolder(CFG.folderId, 'Home');
+      else renderLogin(true);
+    });
+  } else {
+    renderLogin(false);
+  }
 });
 
+// ── TOKEN MANAGEMENT ───────────────────────────────────
+function getTokenClient(callback) {
+  return google.accounts.oauth2.initTokenClient({
+    client_id: CFG.clientId,
+    scope: 'https://www.googleapis.com/auth/drive.readonly profile email',
+    callback,
+    prompt: '',
+  });
+}
+
+function silentRefresh() {
+  return new Promise((resolve) => {
+    try {
+      const client = getTokenClient((resp) => {
+        if (resp.error || !resp.access_token) { resolve(false); return; }
+        saveToken(resp.access_token, resp.expires_in);
+        resolve(true);
+      });
+      client.requestAccessToken({ hint: userInfo?.email || '' });
+    } catch { resolve(false); }
+  });
+}
+
+function saveToken(token, expiresIn) {
+  accessToken = token;
+  tokenExpiry = Date.now() + ((expiresIn || 3600) - 60) * 1000;
+  scheduleAutoRefresh();
+}
+
+async function ensureToken() {
+  if (accessToken && Date.now() < tokenExpiry) return true;
+  const ok = await silentRefresh();
+  if (!ok) { renderLogin(true); return false; }
+  return true;
+}
+
+function scheduleAutoRefresh() {
+  const msLeft = tokenExpiry - Date.now() - 5 * 60 * 1000;
+  if (msLeft > 0) {
+    setTimeout(async () => {
+      await silentRefresh();
+    }, msLeft);
+  }
+}
+
 // ── LOGIN ──────────────────────────────────────────────
-function renderLogin() {
+function renderLogin(returning = false) {
   document.getElementById('headerSearch').style.display = 'none';
   document.getElementById('breadcrumbBar').style.display = 'none';
   document.getElementById('toolbarBar').style.display = 'none';
+  const greeting = returning && userInfo?.name
+    ? `<p style="font-size:.8rem;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-bottom:.5rem">👋 Halo kembali, ${esc(userInfo.name.split(' ')[0])}!</p>`
+    : '';
   document.getElementById('mainArea').innerHTML = `
     <div class="login-wrap"><div class="login-card">
       <div class="ico">🔐</div>
       <h2>${CFG.appName}</h2>
+      ${greeting}
       <p>Akses terbatas hanya untuk pengguna yang<br>telah diberi izin oleh administrator.</p>
       <button class="google-btn" onclick="startLogin()">
         <svg width="18" height="18" viewBox="0 0 48 48">
@@ -396,32 +447,37 @@ function renderLogin() {
           <path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/>
           <path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/>
         </svg>
-        Masuk dengan Google
+        ${returning ? 'Lanjutkan dengan Google' : 'Masuk dengan Google'}
       </button>
       <p class="login-note">Hubungi administrator jika tidak bisa masuk.</p>
     </div></div>`;
 }
 
 function startLogin() {
-  google.accounts.oauth2.initTokenClient({
+  // prompt: 'select_account' hanya saat login pertama kali (bukan silent)
+  const client = google.accounts.oauth2.initTokenClient({
     client_id: CFG.clientId,
     scope: 'https://www.googleapis.com/auth/drive.readonly profile email',
     callback: async (resp) => {
       if (resp.error) { toast('❌ Login gagal: ' + resp.error); return; }
-      accessToken = resp.access_token;
-      sessionStorage.setItem('dvToken', accessToken);
+      saveToken(resp.access_token, resp.expires_in);
       await fetchUserInfo();
       showUserPill();
       openFolder(CFG.folderId, 'Home');
-    }
-  }).requestAccessToken();
+    },
+  });
+  // Jika sudah pernah login, coba tanpa popup dulu
+  client.requestAccessToken({ prompt: userInfo ? '' : 'select_account' });
 }
 
 async function fetchUserInfo() {
   try {
-    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: 'Bearer ' + accessToken } });
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
     userInfo = await r.json();
-    sessionStorage.setItem('dvUser', JSON.stringify(userInfo));
+    // Simpan ke localStorage agar dikenali saat buka ulang browser
+    localStorage.setItem('dvUser', JSON.stringify(userInfo));
   } catch { userInfo = { name: 'Pengguna', picture: '' }; }
 }
 
@@ -433,10 +489,15 @@ function showUserPill() {
 }
 
 function signOut() {
-  accessToken = ''; userInfo = null; navStack = [];
-  sessionStorage.clear();
+  // Revoke token di Google agar benar-benar logout
+  if (accessToken) {
+    google.accounts.oauth2.revoke(accessToken, () => {});
+  }
+  accessToken = ''; tokenExpiry = 0; userInfo = null; navStack = [];
+  localStorage.removeItem('dvUser');
   document.getElementById('userPill').style.display = 'none';
-  renderLogin(); toast('👋 Berhasil keluar');
+  renderLogin(false);
+  toast('👋 Berhasil keluar');
 }
 
 // ── FOLDER NAVIGATION ─────────────────────────────────
@@ -472,6 +533,7 @@ async function openFolder(folderId, name) {
 // Fetch single folder (with cache)
 async function fetchFolderContents(folderId) {
   if (folderCache[folderId]) return folderCache[folderId];
+  if (!await ensureToken()) throw new Error('Sesi berakhir, silakan login ulang');
   const items = [];
   let pageToken = '';
   do {
@@ -868,17 +930,20 @@ document.getElementById('pvModal').addEventListener('click', e => {
 // ── DOWNLOAD ──────────────────────────────────────────
 function dlFile(id, name) {
   toast('⏳ Menyiapkan unduhan...');
-  fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
-    headers: { Authorization: 'Bearer ' + accessToken }
-  })
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
-  .then(blob => {
-    const url = URL.createObjectURL(blob);
-    Object.assign(document.createElement('a'), { href: url, download: name }).click();
-    URL.revokeObjectURL(url);
-    toast('⬇ Mengunduh ' + name);
-  })
-  .catch(() => toast('❌ Gagal mengunduh, coba lagi'));
+  ensureToken().then(ok => {
+    if (!ok) return;
+    fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.blob(); })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      Object.assign(document.createElement('a'), { href: url, download: name }).click();
+      URL.revokeObjectURL(url);
+      toast('⬇ Mengunduh ' + name);
+    })
+    .catch(() => toast('❌ Gagal mengunduh, coba lagi'));
+  });
 }
 
 // ── VIEW / SORT ───────────────────────────────────────

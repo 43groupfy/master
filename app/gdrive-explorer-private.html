@@ -96,45 +96,50 @@ header {
 .x-btn { width: 36px; height: 36px; border-radius: 10px; border: none; background: #f1f3f5; cursor: pointer; transition: .2s; }
 .x-btn:hover { background: var(--red-l); color: var(--red); }
 </style>
+</head>
 <body>
+<!-- HEADER -->
 <header>
-  <div class="logo"><div class="logo-mark"><i class="fa-solid fa-vault"></i></div>DriveVault</div>
+  <div class="logo"><div class="logo-mark">🔒</div>DriveVault</div>
   <span class="badge">PRIVATE</span>
   <div class="header-search" id="headerSearch" style="display:none">
-    <i class="fa-solid fa-magnifying-glass"></i>
-    <input type="search" id="searchInput" placeholder="Cari file... (Ctrl+K)" oninput="handleSearch(this.value)">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="search" id="searchInput" placeholder="Cari semua file... (Ctrl+K)" oninput="handleSearch(this.value)">
     <div class="search-spinner" id="searchSpinner"></div>
   </div>
   <div class="hspace"></div>
-  <div id="userPill" class="user-pill">
+  <div class="user-pill" id="userPill">
     <img id="userAvatar" src="" alt="">
     <span id="userName"></span>
-    <button onclick="signOut()"><i class="fa-solid fa-right-from-bracket"></i></button>
+    <button onclick="signOut()">Keluar</button>
   </div>
 </header>
 
+<!-- BREADCRUMB -->
 <div class="breadcrumb-bar" id="breadcrumbBar"></div>
 
+<!-- TOOLBAR -->
 <div class="toolbar-bar" id="toolbarBar">
   <select class="sort-sel" id="sortSel" onchange="activeSort=this.value; refreshView()">
-    <option value="type">Urutkan: Tipe</option>
-    <option value="name">Nama A-Z</option>
+    <option value="type">Folder dulu</option>
+    <option value="name">Nama A–Z</option>
     <option value="date">Terbaru</option>
     <option value="size">Ukuran</option>
   </select>
   <span class="stat-lbl" id="statLbl"></span>
   <div class="view-toggle">
-    <button class="vtb on" id="vGrid" onclick="setView('grid')" title="Grid View"><i class="fa-solid fa-grip-vertical"></i></button>
-    <button class="vtb" id="vList" onclick="setView('list')" title="List View"><i class="fa-solid fa-list"></i></button>
+    <button class="vtb on" id="vGrid" onclick="setView('grid')" title="Grid">▦</button>
+    <button class="vtb" id="vList" onclick="setView('list')" title="List">☰</button>
   </div>
 </div>
 
+<!-- PREVIEW -->
 <div class="overlay" id="pvModal">
   <div class="pv-head">
-    <span id="pvIcon" style="font-size:1.4rem"></span>
-    <h3 id="pvTitle" style="flex:1; font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h3>
-    <button class="btn-acc" onclick="dlCurrent()" style="padding: .5rem 1rem; background: var(--accent); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;"><i class="fa-solid fa-download"></i> Unduh</button>
-    <button class="x-btn" onclick="closePv()"><i class="fa-solid fa-xmark"></i></button>
+    <span id="pvIcon" style="font-size:1.2rem"></span>
+    <h3 id="pvTitle"></h3>
+    <button class="btn-acc" onclick="dlCurrent()">⬇ Unduh</button>
+    <button class="x-btn" onclick="closePv()">✕</button>
   </div>
   <div class="pv-body" id="pvBody"></div>
 </div>

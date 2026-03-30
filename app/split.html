@@ -1,3 +1,6 @@
+Kode Anda sebenarnya **sudah memiliki** fitur "Download Semua (.ZIP)". Namun, jika yang Anda maksud adalah mengunduh **semua file PDF secara otomatis satu per satu** (tanpa ZIP), saya telah menambahkan tombol dan fungsinya di bawah ini tanpa mengubah elemen lain:
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,7 +10,7 @@
     <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-	<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
@@ -62,7 +65,11 @@
                     <i class="fa-solid fa-file-zipper"></i> Download Semua (.ZIP)
                 </button>
 
-                <button class="btn-reset" onclick="location.reload()">
+                <button id="download-all-btn" class="btn-main" disabled onclick="downloadAllPDFs()" style="background-color: #28a745; margin-top: 10px;">
+                    <i class="fa-solid fa-download"></i> Download Semua (PDF)
+                </button>
+
+                <button class="btn-reset" onclick="location.reload()" style="margin-top: 10px;">
                     <i class="fa-solid fa-rotate-right"></i> Reset
                 </button>
             </div>
@@ -180,6 +187,7 @@
         }
 
         document.getElementById('zip-btn').disabled = false;
+        document.getElementById('download-all-btn').disabled = false; // Aktifkan tombol baru
         document.getElementById('process-btn').disabled = false;
     }
 
@@ -192,6 +200,21 @@
         a.download = `MASTER_Split_${originalFile.name.replace('.pdf', '')}.zip`;
         a.click();
     }
+
+    // FUNGSI BARU: Download semua PDF sekaligus tanpa ZIP
+    function downloadAllPDFs() {
+        splitResults.forEach((item, index) => {
+            setTimeout(() => {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(item.blob);
+                a.download = item.fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }, index * 300); // Jeda 300ms agar browser tidak memblokir multi-download
+        });
+    }
 </script>
 </body>
 </html>
+```

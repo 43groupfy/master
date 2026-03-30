@@ -58,12 +58,8 @@
                     <i class="fa-solid fa-scissors"></i> Pecah PDF Sekarang
                 </button>
 
-                <button id="zip-btn" class="btn-zip" disabled onclick="downloadAllZip()">
+                <button id="zip-btn" class="btn-zip" disabled onclick="downloadAllZip()" style="margin-top: 10px;">
                     <i class="fa-solid fa-file-zipper"></i> Download Semua (.ZIP)
-                </button>
-
-                <button id="download-all-btn" class="btn-main" disabled onclick="downloadAllPDFs()" style="background-color: #28a745; margin-top: 10px;">
-                    <i class="fa-solid fa-download"></i> Download Semua (PDF)
                 </button>
 
                 <button class="btn-reset" onclick="location.reload()" style="margin-top: 10px;">
@@ -184,7 +180,6 @@
         }
 
         document.getElementById('zip-btn').disabled = false;
-        document.getElementById('download-all-btn').disabled = false; // Aktifkan tombol baru
         document.getElementById('process-btn').disabled = false;
     }
 
@@ -197,21 +192,6 @@
         a.download = `MASTER_Split_${originalFile.name.replace('.pdf', '')}.zip`;
         a.click();
     }
-
-    // FUNGSI BARU: Download semua PDF sekaligus tanpa ZIP
-    function downloadAllPDFs() {
-        splitResults.forEach((item, index) => {
-            setTimeout(() => {
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(item.blob);
-                a.download = item.fileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }, index * 300); // Jeda 300ms agar browser tidak memblokir multi-download
-        });
-    }
 </script>
 </body>
 </html>
-```

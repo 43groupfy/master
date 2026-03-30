@@ -189,7 +189,7 @@
         const content = await zip.generateAsync({ type: "blob" });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(content);
-        a.download = `MASTER_Split_${originalFile.name.replace('.pdf', '')}.zip`;
+        a.download = `Split_${originalFile.name.replace('.pdf', '')}.zip`;
         a.click();
     }
 </script>

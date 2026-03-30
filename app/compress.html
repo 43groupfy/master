@@ -155,7 +155,7 @@
             sizeArea.innerHTML = `${(blob.size/1024).toFixed(0)} KB <small style="color:var(--success)">(${saving}%)</small>`;
             actionArea.innerHTML = `
                 <button class="btn-reset" style="padding:7px 8px; margin-top:0; font-size:12px" onclick="removeFile('${id}')"><i class="fa-solid fa-trash"></i></button>
-                <a href="${URL.createObjectURL(blob)}" download="MASTER_${file.name}" class="btn-unduh-mini">UNDUH</a>
+                <a href="${URL.createObjectURL(blob)}" download="${file.name}" class="btn-unduh-mini">UNDUH</a>
             `;
             zipBtn.classList.remove('hidden');
         } catch (err) {

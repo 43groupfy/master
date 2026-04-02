@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MASTER - PDF Splitter Studio</title>
+    <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<div class="header-container">
+    <a href="#" class="logo">
+        <img src="https://43groupfy.github.io/almeto/icons/appIcon.png" alt="Logo" width="35">
+        <span>MASTER APP</span>
+    </a>
+    <a href="../index.html#pdf-page" class="btn-back-main">
+        <i class="fa-solid fa-house"></i>
+        <span>Menu Utama</span>
+    </a>
+</div>
+</header>
+
+<div class="container">
+    <div class="main-layout">
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-layer-group"></i> Antrean File & Hasil</h2>
+                </div>
+                
+                <div id="file-list-empty" class="upload-area" onclick="document.getElementById('pdf-input').click()">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p style="font-weight: bold; color: #444;">Klik atau Seret File PDF di sini</p>
+                    <p style="font-size: 12px; color: #888; margin-top: 5px;">Pisahkan halaman secara instan</p>
+                </div>
+
+                <div id="file-list"></div>
+                <input type="file" id="pdf-input" accept="application/pdf" style="display:none">
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-sliders"></i> Kontrol Split</h2>
+                </div>
+
+                <div class="form-group">
+                    <label>Atur Halaman / Rentang</label>
+                    <textarea id="range-input" placeholder="Contoh: 1, 3-5, 10"></textarea>
+                    <p class="hint">Gunakan koma untuk memisahkan halaman tunggal atau rentang (misal: 1-5, 8, 10-12).</p>
+                </div>
+
+                <button id="process-btn" class="btn-main" disabled onclick="startSplitting()">
+                    <i class="fa-solid fa-scissors"></i> Pecah PDF Sekarang
+                </button>
+
+                <button id="zip-btn" class="btn-main" disabled onclick="downloadAllZip()" style="margin-top: 10px;">
+                    <i class="fa-solid fa-file-zipper"></i> Download Semua (.ZIP)
+                </button>
+
+                <button class="btn-reset" onclick="location.reload()" style="margin-top: 10px;">
+                    <i class="fa-solid fa-rotate-right"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let originalFile = null;
+    let cachedArrayBuffer = null; // CACHE: load sekali, pakai ulang
+    let cachedSrcDoc = null;      // CACHE: PDFDocument tidak di-load ulang
+    let splitResults = [];
+    let totalPagesInDoc = 0;
+
+    // Yield ke event loop agar UI tidak freeze saat proses berat
+    function yieldToUI() {
+        return new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    document.getElementById('pdf-input').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        originalFile = file;
+        cachedArrayBuffer = null;
+        cachedSrcDoc = null;
+        splitResults = [];
+
+        const fileList = document.getElementById('file-list');
+        const fileListEmpty = document.getElementById('file-list-empty');
+        fileListEmpty.style.display = 'none';
+        fileList.innerHTML = `
+            <div class="file-item">
+                <div style="flex:1">
+                    <div style="font-weight:bold; font-size:14px;">${file.name}</div>
+                    <div style="font-size:12px; color:#888;"><i class="fa-solid fa-spinner fa-spin"></i> Membaca file...</div>
+                </div>
+            </div>
+        `;
+
+        try {
+            // Load arrayBuffer SEKALI dan simpan di cache
+            cachedArrayBuffer = await file.arrayBuffer();
+            await yieldToUI();
+            cachedSrcDoc = await PDFLib.PDFDocument.load(cachedArrayBuffer, { ignoreEncryption: true });
+            totalPagesInDoc = cachedSrcDoc.getPageCount();
+
+            document.getElementById('range-input').value = `1-${totalPagesInDoc}`;
+            document.getElementById('process-btn').disabled = false;
+
+            fileList.innerHTML = `
+                <div class="file-item">
+                    <div style="flex:1">
+                        <div style="font-weight:bold; font-size:14px;">${file.name}</div>
+                        <div style="font-size:12px; color:#666;">Total ${totalPagesInDoc} Halaman &bull; ${(file.size / 1024 / 1024).toFixed(1)} MB</div>
+                    </div>
+                    <span class="status-ready-text"><i class="fa-solid fa-circle-check"></i> SIAP</span>
+                </div>
+            `;
+        } catch (err) {
+            fileList.innerHTML = `<div class="file-item"><span style="color:red">Gagal membaca PDF: ${err.message}</span></div>`;
+        }
+    };
+
+    function parseRanges(text) {
+        const items = text.split(',').map(item => item.trim()).filter(item => item !== "");
+        const results = [];
+        for (const item of items) {
+            if (item.includes('-')) {
+                const parts = item.split('-');
+                const start = parseInt(parts[0]);
+                const end = parseInt(parts[1]);
+                if (isNaN(start) || isNaN(end) || start < 1 || end < start || end > totalPagesInDoc) {
+                    throw new Error(`Rentang "${item}" tidak valid atau melebihi total halaman (${totalPagesInDoc})`);
+                }
+                results.push({ start, end, label: `${start}-${end}` });
+            } else {
+                const val = parseInt(item);
+                if (isNaN(val) || val < 1 || val > totalPagesInDoc) {
+                    throw new Error(`Halaman "${item}" tidak tersedia.`);
+                }
+                results.push({ start: val, end: val, label: `${val}` });
+            }
+        }
+        return results;
+    }
+
+    async function startSplitting() {
+        const rangeText = document.getElementById('range-input').value;
+        let ranges = [];
+        try {
+            ranges = parseRanges(rangeText);
+        } catch (err) {
+            return alert("Kesalahan Format: " + err.message);
+        }
+
+        const list = document.getElementById('file-list');
+        list.innerHTML = '';
+        splitResults = [];
+        document.getElementById('process-btn').disabled = true;
+        document.getElementById('zip-btn').disabled = true;
+
+        // Gunakan cachedSrcDoc — TIDAK load ulang dari file
+        const srcDoc = cachedSrcDoc;
+
+        for (let i = 0; i < ranges.length; i++) {
+            const range = ranges[i];
+            const id = `res-${i}`;
+
+            // Render row dulu, lalu yield agar tampil sebelum proses berat
+            const row = document.createElement('div');
+            row.className = 'file-item';
+            row.id = id;
+            row.innerHTML = `
+                <div style="flex:1">
+                    <div style="font-weight:bold; font-size:14px;">Bagian ${i+1}: Hal ${range.label}</div>
+                    <div style="font-size:11px; color:#888;">${range.end - range.start + 1} halaman</div>
+                </div>
+                <div id="act-${id}"><small style="color:#888"><i class="fa-solid fa-spinner fa-spin"></i> ${i+1}/${ranges.length}</small></div>
+            `;
+            list.appendChild(row);
+            await yieldToUI(); // beri kesempatan browser render
+
+            try {
+                const newPdf = await PDFLib.PDFDocument.create();
+                const pageIndices = [];
+                for (let p = range.start - 1; p < range.end; p++) {
+                    pageIndices.push(p);
+                }
+
+                const copiedPages = await newPdf.copyPages(srcDoc, pageIndices);
+                copiedPages.forEach(page => newPdf.addPage(page));
+                await yieldToUI();
+
+                const pdfBytes = await newPdf.save({ useObjectStreams: true });
+                await yieldToUI();
+
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const fileName = `${originalFile.name.replace(/\.pdf$/i, '')}_Hal_${range.label}.pdf`;
+
+                splitResults.push({ blob, fileName });
+                document.getElementById(`act-${id}`).innerHTML = `
+                    <a href="${url}" download="${fileName}" class="btn-download" style="border-radius:4px">
+                        <i class="fa-solid fa-download"></i> Simpan
+                    </a>
+                `;
+            } catch (err) {
+                document.getElementById(`act-${id}`).innerHTML = `<span style="color:red; font-size:11px;">Gagal: ${err.message}</span>`;
+            }
+        }
+
+        document.getElementById('zip-btn').disabled = false;
+        document.getElementById('process-btn').disabled = false;
+    }
+
+    async function downloadAllZip() {
+        if (splitResults.length === 0) return alert("Belum ada hasil split.");
+
+        const zipBtn = document.getElementById('zip-btn');
+        zipBtn.disabled = true;
+
+        // Tampilkan progress bar di bawah tombol ZIP
+        let progressBar = document.getElementById('zip-progress-wrap');
+        if (!progressBar) {
+            progressBar = document.createElement('div');
+            progressBar.id = 'zip-progress-wrap';
+            progressBar.style.cssText = 'margin-top:10px; background:#e0e0e0; border-radius:6px; height:10px; overflow:hidden;';
+            progressBar.innerHTML = '<div id="zip-progress-bar" style="height:100%; width:0%; background:#4CAF50; border-radius:6px; transition:width 0.2s;"></div>';
+            zipBtn.insertAdjacentElement('afterend', progressBar);
+        }
+        const bar = document.getElementById('zip-progress-bar');
+        bar.style.width = '0%';
+
+        let statusLabel = document.getElementById('zip-status-label');
+        if (!statusLabel) {
+            statusLabel = document.createElement('div');
+            statusLabel.id = 'zip-status-label';
+            statusLabel.style.cssText = 'font-size:11px; color:#555; margin-top:4px; text-align:center;';
+            progressBar.insertAdjacentElement('afterend', statusLabel);
+        }
+        statusLabel.textContent = 'Menyiapkan ZIP...';
+
+        try {
+            const zip = new JSZip();
+            for (const item of splitResults) {
+                zip.file(item.fileName, item.blob);
+            }
+
+            const content = await zip.generateAsync(
+                { type: "blob", compression: "DEFLATE", compressionOptions: { level: 3 } },
+                (metadata) => {
+                    const pct = Math.round(metadata.percent);
+                    bar.style.width = pct + '%';
+                    statusLabel.textContent = `Mengemas ZIP... ${pct}%`;
+                }
+            );
+
+            bar.style.width = '100%';
+            statusLabel.textContent = 'Selesai! Mengunduh...';
+            await yieldToUI();
+
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(content);
+            a.download = `Split_${originalFile.name.replace(/\.pdf$/i, '')}.zip`;
+            a.click();
+
+            setTimeout(() => {
+                statusLabel.textContent = 'ZIP berhasil diunduh.';
+                zipBtn.disabled = false;
+            }, 1500);
+
+        } catch (err) {
+            statusLabel.textContent = 'Gagal membuat ZIP: ' + err.message;
+            zipBtn.disabled = false;
+        }
+    }
+</script>
+</body>
+</html>

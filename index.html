@@ -300,107 +300,126 @@
         </section>
     </div>
 
-    <script>
-        // Struktur Data Sesuai Permintaan
-        const databaseStructure = [
-            { id: "00", title: "00 TEMPLATE DOKUMEN", links: ["Surat Dinas", "Keputusan dan Penetapan", "Berita Acara", "Notulen dan Rapat", "Laporan Keuangan", "Kepegawaian SDM", "Logistik BMN", "Humas dan Publikasi"] },
-            { id: "01", title: "01 KELEMBAGAAN", links: ["SK Komisioner", "SK Sekretariat", "Struktur Organisasi", "Renstra dan Renja", "Peraturan KPU", "SOP Internal"] },
-            { id: "02", title: "02 KEPEGAWAIAN SDM", links: ["Data Pegawai", "SK CPNS PNS PPPK", "Kenaikan Pangkat", "Penilaian Kinerja", "Latsar dan Diklat", "Disiplin Pegawai"] },
-            { id: "03", title: "03 KEUANGAN", links: ["DIPA dan Anggaran", "Laporan Keuangan", "SPP SPM", "Pertanggungjawaban", "Audit BPK Inspektorat", "Perjalanan Dinas"] },
-            { id: "04", title: "04 PENGADAAN BARANG JASA", links: ["RUP", "Kontrak", "Dokumen Pemilihan", "BA Serah Terima", "E-Katalog"] },
-            { id: "05", title: "05 PEMILU PILKADA", links: ["Tahapan Pemilu", "Pilkada", "PSU dan Sengketa"] },
-            { id: "06", title: "06 HUKUM DAN PENGAWASAN", links: ["Sengketa Pemilu", "Putusan PTUN MK", "Advokasi Hukum", "Produk Hukum Internal"] },
-            { id: "07", title: "07 LOGISTIK BMN", links: ["Distribusi Logistik", "Gudang Logistik", "Inventaris Logistik", "Berita Acara"] },
-            { id: "08", title: "08 UMUM DAN RUMAH TANGGA", links: ["Surat Masuk", "Surat Keluar", "Notulen Rapat", "Undangan", "Dokumentasi Kegiatan"] },
-            { id: "09", title: "09 HUMAS DAN PUBLIKASI", links: ["Press Release", "Media Sosial", "Dokumentasi Foto", "Video Kegiatan"] },
-            { id: "10", title: "10 PENGAWASAN INTERNAL", links: ["SPI", "Monitoring Evaluasi", "Laporan Pengawasan"] },
-            { id: "99", title: "99 ARSIP INAKTIF", links: ["Tahun 2020", "Tahun 2021", "Tahun 2022", "Retensi Musnah Permanen"] }
-        ];
+<script>
+    // 1. Struktur Data (Sekarang menggunakan Objek untuk Nama & URL)
+    const databaseStructure = [
+        { 
+            id: "00", 
+            title: "00 TEMPLATE DOKUMEN", 
+            links: [
+                { name: "Surat Dinas", url: "https://drive.google.com/..." },
+                { name: "Keputusan dan Penetapan", url: "https://drive.google.com/..." },
+                { name: "Berita Acara", url: "#" },
+                { name: "Notulen dan Rapat", url: "#" },
+                { name: "Laporan Keuangan", url: "#" },
+                { name: "Kepegawaian SDM", url: "#" },
+                { name: "Logistik BMN", url: "#" },
+                { name: "Humas dan Publikasi", url: "#" }
+            ] 
+        },
+        { 
+            id: "01", 
+            title: "01 KELEMBAGAAN", 
+            links: [
+                { name: "SK Komisioner", url: "https://drive.google.com/..." },
+                { name: "SK Sekretariat", url: "#" },
+                { name: "Struktur Organisasi", url: "#" },
+                { name: "Renstra dan Renja", url: "#" },
+                { name: "Peraturan KPU", url: "#" },
+                { name: "SOP Internal", url: "#" }
+            ] 
+        },
+        { 
+            id: "05", 
+            title: "05 PEMILU PILKADA", 
+            links: [
+                { name: "Tahapan Pemilu", url: "https://drive.google.com/..." },
+                { name: "Pilkada", url: "#" },
+                { name: "PSU dan Sengketa", url: "#" }
+            ] 
+        },
+        // Tambahkan kategori lain (02, 03, 04, dst) dengan format objek yang sama
+    ];
 
-        // Fungsi Render Card Database
-        function renderDatabase() {
-            const grid = document.getElementById('db-grid');
-            databaseStructure.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'expand-card';
-                
-                // Header kartu (hanya bagian ini yang mentrigger buka/tutup)
-                const header = document.createElement('div');
-                header.className = 'expand-header';
-                header.innerHTML = `<span>${item.title}</span><span class="arrow">▼</span>`;
-                header.onclick = () => toggleExpand(card);
-                
-                // Konten kartu (area link)
-                const content = document.createElement('div');
-                content.className = 'expand-content';
-                
-                // Mencegah klik di area kosong konten menutup kartu
-                content.onclick = (e) => e.stopPropagation();
+    // 2. Fungsi Render Card Database
+    function renderDatabase() {
+        const grid = document.getElementById('db-grid');
+        grid.innerHTML = ''; // Clear grid sebelum render
 
-                const list = document.createElement('ul');
-                list.className = 'link-list';
-                
-                item.links.forEach(linkText => {
-                    const li = document.createElement('li');
-                    const a = document.createElement('a');
-                    a.href = "#"; // Ganti dengan URL asli jika ada
-                    a.innerText = `• ${linkText}`;
-                    
-                    // Mencegah klik link mentrigger fungsi toggle kartu induk
-                    a.onclick = (e) => {
-                        e.stopPropagation(); 
-                        console.log("Membuka folder: " + linkText);
-                        // window.location.href = "url_anda_disini"; 
-                    };
-                    
-                    li.appendChild(a);
-                    list.appendChild(li);
-                });
+        databaseStructure.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'expand-card';
+            
+            const header = document.createElement('div');
+            header.className = 'expand-header';
+            header.innerHTML = `<span>${item.title}</span><span class="arrow">▼</span>`;
+            header.onclick = () => toggleExpand(card);
+            
+            const content = document.createElement('div');
+            content.className = 'expand-content';
+            content.onclick = (e) => e.stopPropagation();
 
-                content.appendChild(list);
-                card.appendChild(header);
-                card.appendChild(content);
-                grid.appendChild(card);
+            const list = document.createElement('ul');
+            list.className = 'link-list';
+            
+            item.links.forEach(linkObj => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                
+                a.href = linkObj.url;
+                a.target = "_blank"; // Membuka di tab baru
+                a.innerText = `• ${linkObj.name}`;
+                
+                a.onclick = (e) => {
+                    e.stopPropagation(); 
+                    console.log("Membuka: " + linkObj.name);
+                };
+                
+                li.appendChild(a);
+                list.appendChild(li);
             });
-        }
 
-        // Navigasi Halaman
-        function navigateTo(pageId) {
-            document.querySelectorAll('.page').forEach(p => {
-                p.classList.remove('active');
-            });
-            setTimeout(() => {
-                const target = document.getElementById(pageId);
+            content.appendChild(list);
+            card.appendChild(header);
+            card.appendChild(content);
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Navigasi Halaman
+    function navigateTo(pageId) {
+        document.querySelectorAll('.page').forEach(p => {
+            p.classList.remove('active');
+        });
+        setTimeout(() => {
+            const target = document.getElementById(pageId);
+            if(target) {
                 target.classList.add('active');
                 window.scrollTo(0,0);
-            }, 100);
-        }
-
-        // Kontrol Buka/Tutup Kartu
-        function toggleExpand(element) {
-            const isAlreadyActive = element.classList.contains('active-expand');
-            
-            // Tutup semua kartu lain sebelum membuka yang baru (mode akordeon)
-            document.querySelectorAll('.expand-card').forEach(card => {
-                card.classList.remove('active-expand');
-            });
-
-            // Jika sebelumnya tidak aktif, aktifkan sekarang
-            if (!isAlreadyActive) {
-                element.classList.add('active-expand');
             }
-        }
+        }, 100);
+    }
 
-		
-		window.onload = () => {
-			renderDatabase(); // fungsi yang sudah Anda punya
-			
-			// Cek jika ada hash di URL (misal: index.html#pdf-page)
-			const hash = window.location.hash.replace('#', '');
-			if (hash && document.getElementById(hash)) {
-				navigateTo(hash);
-			}
-		};
-    </script>
+    // 4. Kontrol Buka/Tutup Kartu (Accordion)
+    function toggleExpand(element) {
+        const isAlreadyActive = element.classList.contains('active-expand');
+        
+        document.querySelectorAll('.expand-card').forEach(card => {
+            card.classList.remove('active-expand');
+        });
+
+        if (!isAlreadyActive) {
+            element.classList.add('active-expand');
+        }
+    }
+
+    window.onload = () => {
+        renderDatabase();
+        const hash = window.location.hash.replace('#', '');
+        if (hash && document.getElementById(hash)) {
+            navigateTo(hash);
+        }
+    };
+</script>
 </body>
 </html>

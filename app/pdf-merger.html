@@ -203,53 +203,57 @@
         return (clean || 'merged file') + '.pdf';
     }
 
-    async function mergePDFs() {
-        const btn = document.getElementById('merge-btn');
-        const progArea = document.getElementById('prog-area');
-        const resultArea = document.getElementById('result-area');
-        
-        btn.disabled = true;
-		document.getElementById('output-filename').disabled = true; // tambah ini
-        progArea.style.display = 'block';
-        resultArea.innerHTML = '';
-		
+async function mergePDFs() {
+    const btn = document.getElementById('merge-btn');
+    const progArea = document.getElementById('prog-area');
+    const resultArea = document.getElementById('result-area');
+    const filenameInput = document.getElementById('output-filename');
+    
+    btn.disabled = true;
+    filenameInput.disabled = true; // kunci input saat proses mulai
+    progArea.style.display = 'block';
+    resultArea.innerHTML = '';
 
-        try {
-            const mergedPdf = await PDFLib.PDFDocument.create();
-            for (let i = 0; i < fileQueue.length; i++) {
-                const bytes = await fileQueue[i].file.arrayBuffer();
-                const pdf = await PDFLib.PDFDocument.load(bytes);
-                const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-                pages.forEach(p => mergedPdf.addPage(p));
-                
-                let p = Math.round(((i + 1) / fileQueue.length) * 100);
-                document.getElementById('prog-fill').style.width = p + '%';
-                document.getElementById('prog-val').innerText = p + '%';
-            }
-
-            const bytes = await mergedPdf.save();
-            const blob = new Blob([bytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const filename = getOutputFilename();
+    try {
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        for (let i = 0; i < fileQueue.length; i++) {
+            const bytes = await fileQueue[i].file.arrayBuffer();
+            const pdf = await PDFLib.PDFDocument.load(bytes);
+            const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+            pages.forEach(p => mergedPdf.addPage(p));
             
-            progArea.style.display = 'none';
-			document.getElementById('output-filename').disabled = false; // tambah ini
-            
-            resultArea.innerHTML = `
-                <a href="${url}" download="${filename}" style="text-decoration: none; display: block; width: 100%;">
-                    <button class="btn-main" style="width: 100%; background-color: #27ae60; cursor: pointer;">
-                        <i class="fa-solid fa-file-arrow-down"></i> UNDUH HASIL PDF
-                    </button>
-                </a>`;
-                
-            btn.style.display = 'none';
-        } catch (e) {
-            console.error(e);
-            alert("Gagal menggabung PDF! Pastikan file tidak terenkripsi.");
-            progArea.style.display = 'none';
+            let p = Math.round(((i + 1) / fileQueue.length) * 100);
+            document.getElementById('prog-fill').style.width = p + '%';
+            document.getElementById('prog-val').innerText = p + '%';
         }
-        btn.disabled = false;
+
+        const bytes = await mergedPdf.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const filename = getOutputFilename();
+        
+        progArea.style.display = 'none';
+        // filenameInput tetap disabled karena sukses, user harus reset untuk proses ulang
+        
+        resultArea.innerHTML = `
+            <a href="${url}" download="${filename}" style="text-decoration: none; display: block; width: 100%;">
+                <button class="btn-main" style="width: 100%; background-color: #27ae60; cursor: pointer;">
+                    <i class="fa-solid fa-file-arrow-down"></i> UNDUH HASIL PDF
+                </button>
+            </a>
+            <div style="text-align:center; font-size:11px; color:#888; margin-top:5px;">
+                <i class="fa-solid fa-file-pdf" style="color:#e74c3c;"></i> ${filename}
+            </div>`;
+            
+        btn.style.display = 'none';
+    } catch (e) {
+        console.error(e);
+        alert("Gagal menggabung PDF! Pastikan file tidak terenkripsi.");
+        progArea.style.display = 'none';
+        filenameInput.disabled = false; // buka kunci lagi kalau gagal
     }
+    btn.disabled = false;
+}
 </script>
 </body>
 </html>

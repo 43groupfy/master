@@ -108,26 +108,30 @@
     dropZone.ondragleave = () => dropZone.classList.remove('dragover');
     dropZone.ondrop = (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
 
-    function handleFiles(files) {
-        const added = Array.from(files).filter(f => f.type === "application/pdf");
-        if (added.length > 0) {
-            dropZone.classList.add('hidden');
-            addMoreBtn.classList.remove('hidden');
-            sortTools.classList.remove('hidden');
-        }
-        added.forEach(file => {
-            fileQueue.push({ 
-                id: Math.random().toString(36).substr(2, 9), 
-                file, 
-                name: file.name, 
-                date: file.lastModified,
-                size: (file.size / 1024).toFixed(0)
-            });
-        });
-        renderList();
-        pdfInput.value = '';
+function handleFiles(files) {
+    const added = Array.from(files).filter(f => f.type === "application/pdf");
+    if (added.length > 0) {
+        dropZone.classList.add('hidden');
+        addMoreBtn.classList.remove('hidden');
+        sortTools.classList.remove('hidden');
     }
+    added.forEach(file => {
+        fileQueue.push({ 
+            id: Math.random().toString(36).substr(2, 9), 
+            file, 
+            name: file.name, 
+            date: file.lastModified,
+            size: (file.size / 1024).toFixed(0)
+        });
+    });
+    renderList();
+    pdfInput.value = '';
 
+    // Reset state setelah proses selesai
+    document.getElementById('merge-btn').style.display = '';
+    document.getElementById('output-filename').disabled = false;
+    document.getElementById('result-area').innerHTML = '';
+}
     function renderList() {
         const list = document.getElementById('file-list');
         list.innerHTML = '';

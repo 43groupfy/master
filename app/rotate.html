@@ -155,7 +155,7 @@
         const savedBytes = await pdfDoc.save();
         const link = document.createElement('a');
         link.href = URL.createObjectURL(new Blob([savedBytes], { type: 'application/pdf' }));
-        link.download = `Rotated_${currentFile.name}`;
+        link.download = currentFile.name;
         link.click();
     }
 

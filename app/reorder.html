@@ -137,7 +137,6 @@
 		async function savePDF() {
 			loading.style.display = 'flex';
 			loadingStatus.innerText = "Menyusun PDF baru...";
-			link.download = currentFileName;
 			try {
 				// Gunakan slice(0) untuk membuat salinan buffer saat loading
 				const sourcePdf = await PDFLib.PDFDocument.load(originalPdfBytes.slice(0));

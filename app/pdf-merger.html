@@ -58,11 +58,8 @@
 
                 <!-- INPUT NAMA FILE HASIL -->
                 <div style="margin-bottom: 12px;">
-                    <label style="font-size: 12px; font-weight: 600; color: #555; display: block; margin-bottom: 5px;">
-                        <i class="fa-solid fa-file-signature" style="margin-right: 4px;"></i> Nama File Hasil
-                    </label>
                     <div style="display: flex; align-items: center; border: 1.5px solid #ddd; border-radius: 8px; overflow: hidden; background: #fafafa;">
-                        <input type="text" id="output-filename" placeholder="MASTER_Merged" maxlength="100" style="
+                        <input type="text" id="output-filename" placeholder="Isi nama file" maxlength="100" style="
                             flex: 1;
                             border: none;
                             outline: none;
@@ -203,7 +200,7 @@
         const raw = document.getElementById('output-filename').value.trim();
         // Bersihkan karakter yang tidak valid untuk nama file
         const clean = raw.replace(/[\\/:*?"<>|]/g, '').trim();
-        return (clean || 'MASTER_Merged') + '.pdf';
+        return (clean || 'merged file') + '.pdf';
     }
 
     async function mergePDFs() {
@@ -212,8 +209,10 @@
         const resultArea = document.getElementById('result-area');
         
         btn.disabled = true;
+		document.getElementById('output-filename').disabled = true; // tambah ini
         progArea.style.display = 'block';
         resultArea.innerHTML = '';
+		
 
         try {
             const mergedPdf = await PDFLib.PDFDocument.create();
@@ -234,16 +233,14 @@
             const filename = getOutputFilename();
             
             progArea.style.display = 'none';
+			document.getElementById('output-filename').disabled = false; // tambah ini
             
             resultArea.innerHTML = `
                 <a href="${url}" download="${filename}" style="text-decoration: none; display: block; width: 100%;">
                     <button class="btn-main" style="width: 100%; background-color: #27ae60; cursor: pointer;">
                         <i class="fa-solid fa-file-arrow-down"></i> UNDUH HASIL PDF
                     </button>
-                </a>
-                <div style="text-align:center; font-size:11px; color:#888; margin-top:5px;">
-                    <i class="fa-solid fa-file-pdf" style="color:#e74c3c;"></i> ${filename}
-                </div>`;
+                </a>`;
                 
             btn.style.display = 'none';
         } catch (e) {

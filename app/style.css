@@ -108,6 +108,8 @@ button, .btn-link, .btn-dl, .download-link { display: inline-flex;align-items: c
 .btn-del-mini { position: absolute;top: -10px;right: -10px;background: var(--danger);color: white;width: 24px;height: 24px;border-radius: 50%;display: flex;align-items: center;justify-content: center;border: 2px solid #fff;z-index: 5; }
 .btn-float-dl { position: absolute;top: 0px;right: 6px;background: var(--maroon);color: white;width: 30px;height: 30px;border-radius: 50%;display: flex;align-items: center;justify-content: center;opacity: 0;border: 2px solid white;z-index: 10; }
 .download-link { background: var(--success);color: white;padding: 12px;margin-top: 15px;font-size: 14px;width: 100%; }
+#output-filename:disabled {color: #aaa;cursor: not-allowed;}
+
 /* Hilangkan margin-top untuk tombol pertama di sidebar agar pas dengan container */
 .sidebar *:first-child button,
 .sidebar button:first-of-type { margin-top: 0 !important; }

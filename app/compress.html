@@ -212,11 +212,11 @@
 
     zipBtn.onclick = async () => {
         const zip = new JSZip();
-        batchStore.forEach(p => zip.file("MASTER_" + p.name, p.blob));
+        batchStore.forEach(p => zip.file("" + p.name, p.blob));
         const content = await zip.generateAsync({ type: "blob" });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(content);
-        link.download = `MASTER_Batch.zip`;
+        link.download = `Download.zip`;
         link.click();
     };
 

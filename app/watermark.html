@@ -214,11 +214,11 @@
 
     document.getElementById('zip-btn').onclick = async () => {
         const zip = new JSZip();
-        fileQueue.forEach(f => { if(f.result) zip.file(`WM_${f.file.name}`, f.result); });
+        fileQueue.forEach(f => { if(f.result) zip.file(`${f.file.name}`, f.result); });
         const blob = await zip.generateAsync({type:"blob"});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = "MASTER_Watermarked_Batch.zip";
+        a.download = "Watermark.zip";
         a.click();
     };
 </script>

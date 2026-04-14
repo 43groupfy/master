@@ -76,10 +76,12 @@
 <script>
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
     let virtualDocument = [];
+	let currentFileName = '';
 
     async function handleFileUpload(event, type) {
         const file = event.target.files[0];
         if (!file) return;
+		if (type === 'main') currentFileName = file.name;
         showProgress(true);
         try {
             const arrayBuffer = await file.arrayBuffer();
@@ -146,7 +148,7 @@
             const bytes = await newPdf.save();
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-            link.download = `MASTER_Edited.pdf`;
+            link.download = currentFileName;
             link.click();
         } catch (err) { alert(err.message); }
         finally { showProgress(false); }

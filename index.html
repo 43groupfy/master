@@ -304,83 +304,93 @@
  // 1. Struktur Data (Sekarang menggunakan Objek untuk Nama & URL)
     const databaseStructure = [
 
-{
- id: "01", 
- title: "PERENCANAAN", 
- links: [
- { name: "LAPORAN KINERJA", url: "https://drive.google.com/drive/folders/1skxlE9m2-uBMo2Ba71FqncDl9TfNIqMS?usp=drive_link" },
- { name: "MONITORING KINERJA", url: "https://drive.google.com/drive/folders/19TL9sk889oR6bqHi6wtgqtzgnq6QqpBE?usp=drive_link" },
- { name: "RENCANA AKSI", url: "https://drive.google.com/drive/folders/1kpgUfBNJTvHlXiQJSy2oWr-97YS1z_Pk?usp=drive_link" },
- { name: "RENCANA ANGGARAN (DIPA)", url: "https://drive.google.com/drive/folders/1sMr91if-3sM6ImstHypyOM6h5qbv6Qv9?usp=drive_link" },
- { name: "RENSTRA & RENJA", url: "https://drive.google.com/drive/folders/1dZoUveJxb7ud7XOoQjsxVsw30mjJyGTE?usp=drive_link
-},
-{
- id: "02", 
- title: "DATA & INFORMASI", 
- links: [
- { name: "DATA PEMILIH", url: "https://drive.google.com/drive/folders/1eMgJk7uvwchQkpGMR-dQzRoSsiYlfhV2?usp=drive_link" },
-]},
-{
- id: "03", 
- title: "HUMAS & PUBLIKASI", 
- links: [
- { name: "DOKUMENTASI KEGIATAN", url: "https://drive.google.com/drive/folders/1Plwmj-K9GgcM08QjXRxgEenfyHveqtNI?usp=drive_link" },
- { name: "MATERI SOSIALISASI & EDUKASI", url: "https://drive.google.com/drive/folders/1nkKLfLEftQFCc3Q5CwhCvivuJdU6F9N6?usp=drive_link" },
- { name: "SIARAN PERS & KLIPING MEDIA", url: "https://drive.google.com/drive/folders/1QdLv_e4SGi2SJrapRHhE5neA-ZV8B5kS?usp=drive_link" },
-]},
-{
- id: "04", 
- title: "KEPEGAWAIAN (SDM)", 
- links: [
- { name: "BIMTEK & PELATIHAN", url: "https://drive.google.com/drive/folders/1FPcm2P4qGzFB-p-JFamiOcMnaWRzudIT?usp=drive_link" },
- { name: "DATA PEGAWAI", url: "https://drive.google.com/drive/folders/1vMNCaZ6le9664NDn6A03D6SJNCpWLMRv?usp=drive_link" },
- { name: "REKRUTMEN BADAN ADHOC", url: "https://drive.google.com/drive/folders/1O6XHCXQwFpDU2NJDkknwoEcXvqcbEq8R?usp=drive_link" },
- { name: "SK PEGAWAI", url: "https://drive.google.com/drive/folders/1rZ7lWzwVsvvAq4eSOtXTs7uys-xoZ8l7?usp=drive_link" },
- { name: "SKP PEGAWAI", url: "https://drive.google.com/drive/folders/1kR-vg4mfBcYdWzxN9DDczRJt9L4FOYkW?usp=drive_link" },
-]},
-{
- id: "05", 
- title: "KEUANGAN", 
- links: [
- { name: "GAJI & HONORARIUM", url: "https://drive.google.com/drive/folders/1fC5oawo-pLLenV-22NhJsNO1GHnQ-1TI?usp=drive_link" },
- { name: "LAPORAN KEUANGAN", url: "https://drive.google.com/drive/folders/1ich2qtKdEwp74qWmv_Ecglh29MK1aWDz?usp=drive_link" },
- { name: "PERJALANAN DINAS", url: "https://drive.google.com/drive/folders/1uSw5C-xNs1CIZBA2XA46BIS9gfbLrDGD?usp=drive_link" },
- { name: "PERPAJAKAN", url: "https://drive.google.com/drive/folders/1RRbk5pQk7NcVgcFzzXO3-0a9njGdwTT8?usp=drive_link" },
- { name: "LAPORAN REALISASI (SPJ)", url: "https://drive.google.com/drive/folders/1zWgoXbAK0328LnO_YwroXNF-Wk48UYBj?usp=drive_link" },
-]},
-{
- id: "06", 
- title: "UMUM & LOGISTIK", 
- links: [
- { name: "ASET & INVENTARIS", url: "https://drive.google.com/drive/folders/1jpbTqCzw5fi6OVwJPIHt2WwlPTNqSnPP?usp=drive_link" },
- { name: "KEARSIPAN", url: "https://drive.google.com/drive/folders/1ikK5xCkWoYqfbh30SSulM6YSQ-rvhBgS?usp=drive_link" },
- { name: "PENGADAAN & LOGISTIK PEMILU", url: "https://drive.google.com/drive/folders/1Smi41XoQ-BEGTvasDi96n7ZHkYCPk99E?usp=drive_link" },
- { name: "PERSURATAN", url: "https://drive.google.com/drive/folders/1aJjmcSA9KYVY8XQb3ha86amlEY4q8n2s?usp=drive_link" },
-]},
-{
- id: "07", 
- title: "HUKUM", 
- links: [
- { name: "DOKUMENTASI JDIH", url: "https://drive.google.com/drive/folders/14gmMm3lLCRHi6hOq4KQ2KUUI7vGsxoY9?usp=drive_link" },
- { name: "SENGKETA PEMILU", url: "https://drive.google.com/drive/folders/1xYndxdTXTcAu1P3u2YbVYicFkxWxtqY9?usp=drive_link" },
- { name: "SK KETUA", url: "https://drive.google.com/drive/folders/1BF5AJTe0mbCq_d2N7bFsbHqmLvToROC-?usp=drive_link" },
- { name: "SK SEKRETARIS", url: "https://drive.google.com/drive/folders/1wmxCGDe-hu0mPtbemEm13ea1jA0J4-nK?usp=drive_link" },
-]},
-{
- id: "08", 
- title: "TEKNIS PENYELENGGARAAN", 
- links: [
- { name: "PENCALONAN", url: "https://drive.google.com/drive/folders/1W4HqcGYq5jbICvNFfiy6UJ6qAHXv03SN?usp=drive_link" },
- { name: "REKAPITULASI SUARA", url: "https://drive.google.com/drive/folders/12owdRepZwlUl2-smpgk0Qf6F-fQjwuvz?usp=drive_link" },
- { name: "VERIFIKASI PARPOL", url: "https://drive.google.com/drive/folders/1bCyxGhf-J-UDsjfiBTv6cfCUY80LhdzQ?usp=drive_link" },
-]},
-{
- id: "09", 
- title: "KELEMBAGAAN", 
- links: [
- { name: "PAKTA INTEGRITAS", url: "https://drive.google.com/drive/folders/1Mw54Vo3w16qkQw7UKwhd_VJ98AOnuCqM?usp=drive_link" },
- { name: "PERJANJIAN KINERJA", url: "https://drive.google.com/drive/folders/1GvbA3YIoo7C8eKbO-MU7MNGEg06rYyAu?usp=drive_link" },
- ]},
+[
+  {
+    "id": "01",
+    "title": "PERENCANAAN",
+    "links": [
+      { "name": "LAPORAN KINERJA", "url": "https://drive.google.com/drive/folders/1skxlE9m2-uBMo2Ba71FqncDl9TfNIqMS?usp=drive_link" },
+      { "name": "MONITORING KINERJA", "url": "https://drive.google.com/drive/folders/19TL9sk889oR6bqHi6wtgqtzgnq6QqpBE?usp=drive_link" },
+      { "name": "RENCANA AKSI", "url": "https://drive.google.com/drive/folders/1kpgUfBNJTvHlXiQJSy2oWr-97YS1z_Pk?usp=drive_link" },
+      { "name": "RENCANA ANGGARAN (DIPA)", "url": "https://drive.google.com/drive/folders/1sMr91if-3sM6ImstHypyOM6h5qbv6Qv9?usp=drive_link" },
+      { "name": "RENSTRA & RENJA", "url": "https://drive.google.com/drive/folders/1dZoUveJxb7ud7XOoQjsxVsw30mjJyGTE?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "02",
+    "title": "DATA & INFORMASI",
+    "links": [
+      { "name": "DATA PEMILIH", "url": "https://drive.google.com/drive/folders/1eMgJk7uvwchQkpGMR-dQzRoSsiYlfhV2?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "03",
+    "title": "HUMAS & PUBLIKASI",
+    "links": [
+      { "name": "DOKUMENTASI KEGIATAN", "url": "https://drive.google.com/drive/folders/1Plwmj-K9GgcM08QjXRxgEenfyHveqtNI?usp=drive_link" },
+      { "name": "MATERI SOSIALISASI & EDUKASI", "url": "https://drive.google.com/drive/folders/1nkKLfLEftQFCc3Q5CwhCvivuJdU6F9N6?usp=drive_link" },
+      { "name": "SIARAN PERS & KLIPING MEDIA", "url": "https://drive.google.com/drive/folders/1QdLv_e4SGi2SJrapRHhE5neA-ZV8B5kS?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "04",
+    "title": "KEPEGAWAIAN (SDM)",
+    "links": [
+      { "name": "BIMTEK & PELATIHAN", "url": "https://drive.google.com/drive/folders/1FPcm2P4qGzFB-p-JFamiOcMnaWRzudIT?usp=drive_link" },
+      { "name": "DATA PEGAWAI", "url": "https://drive.google.com/drive/folders/1vMNCaZ6le9664NDn6A03D6SJNCpWLMRv?usp=drive_link" },
+      { "name": "REKRUTMEN BADAN ADHOC", "url": "https://drive.google.com/drive/folders/1O6XHCXQwFpDU2NJDkknwoEcXvqcbEq8R?usp=drive_link" },
+      { "name": "SK PEGAWAI", "url": "https://drive.google.com/drive/folders/1rZ7lWzwVsvvAq4eSOtXTs7uys-xoZ8l7?usp=drive_link" },
+      { "name": "SKP PEGAWAI", "url": "https://drive.google.com/drive/folders/1kR-vg4mfBcYdWzxN9DDczRJt9L4FOYkW?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "05",
+    "title": "KEUANGAN",
+    "links": [
+      { "name": "GAJI & HONORARIUM", "url": "https://drive.google.com/drive/folders/1fC5oawo-pLLenV-22NhJsNO1GHnQ-1TI?usp=drive_link" },
+      { "name": "LAPORAN KEUANGAN", "url": "https://drive.google.com/drive/folders/1ich2qtKdEwp74qWmv_Ecglh29MK1aWDz?usp=drive_link" },
+      { "name": "PERJALANAN DINAS", "url": "https://drive.google.com/drive/folders/1uSw5C-xNs1CIZBA2XA46BIS9gfbLrDGD?usp=drive_link" },
+      { "name": "PERPAJAKAN", "url": "https://drive.google.com/drive/folders/1RRbk5pQk7NcVgcFzzXO3-0a9njGdwTT8?usp=drive_link" },
+      { "name": "LAPORAN REALISASI (SPJ)", "url": "https://drive.google.com/drive/folders/1zWgoXbAK0328LnO_YwroXNF-Wk48UYBj?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "06",
+    "title": "UMUM & LOGISTIK",
+    "links": [
+      { "name": "ASET & INVENTARIS", "url": "https://drive.google.com/drive/folders/1jpbTqCzw5fi6OVwJPIHt2WwlPTNqSnPP?usp=drive_link" },
+      { "name": "KEARSIPAN", "url": "https://drive.google.com/drive/folders/1ikK5xCkWoYqfbh30SSulM6YSQ-rvhBgS?usp=drive_link" },
+      { "name": "PENGADAAN & LOGISTIK PEMILU", "url": "https://drive.google.com/drive/folders/1Smi41XoQ-BEGTvasDi96n7ZHkYCPk99E?usp=drive_link" },
+      { "name": "PERSURATAN", "url": "https://drive.google.com/drive/folders/1aJjmcSA9KYVY8XQb3ha86amlEY4q8n2s?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "07",
+    "title": "HUKUM",
+    "links": [
+      { "name": "DOKUMENTASI JDIH", "url": "https://drive.google.com/drive/folders/14gmMm3lLCRHi6hOq4KQ2KUUI7vGsxoY9?usp=drive_link" },
+      { "name": "SENGKETA PEMILU", "url": "https://drive.google.com/drive/folders/1xYndxdTXTcAu1P3u2YbVYicFkxWxtqY9?usp=drive_link" },
+      { "name": "SK KETUA", "url": "https://drive.google.com/drive/folders/1BF5AJTe0mbCq_d2N7bFsbHqmLToROC-?usp=drive_link" },
+      { "name": "SK SEKRETARIS", "url": "https://drive.google.com/drive/folders/1wmxCGDe-hu0mPtbemEm13ea1jA0J4-nK?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "08",
+    "title": "TEKNIS PENYELENGGARAAN",
+    "links": [
+      { "name": "PENCALONAN", "url": "https://drive.google.com/drive/folders/1W4HqcGYq5jbICvNFfiy6UJ6qAHXv03SN?usp=drive_link" },
+      { "name": "REKAPITULASI SUARA", "url": "https://drive.google.com/drive/folders/12owdRepZwlUl2-smpgk0Qf6F-fQjwuvz?usp=drive_link" },
+      { "name": "VERIFIKASI PARPOL", "url": "https://drive.google.com/drive/folders/1bCyxGhf-J-UDsjfiBTv6cfCUY80LhdzQ?usp=drive_link" }
+    ]
+  },
+  {
+    "id": "09",
+    "title": "KELEMBAGAAN",
+    "links": [
+      { "name": "PAKTA INTEGRITAS", "url": "https://drive.google.com/drive/folders/1Mw54Vo3w16qkQw7UKwhd_VJ98AOnuCqM?usp=drive_link" },
+      { "name": "PERJANJIAN KINERJA", "url": "https://drive.google.com/drive/folders/1GvbA3YIoo7C8eKbO-MU7MNGEg06rYyAu?usp=drive_link" }
+    ]
+  }
 ];
 
     // 2. Fungsi Render Card Database

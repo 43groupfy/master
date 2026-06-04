@@ -177,7 +177,6 @@
 
 <div class="app">
 
-  <!-- SIDEBAR -->
   <div class="sidebar">
 
     <div class="section">
@@ -214,6 +213,15 @@
           </select>
         </div>
       </div>
+	  <div class="setting-row">
+		<label class="lbl">Jika sumber lebih besar</label>
+		  <div class="sel-wrap">
+			<select id="overflowMode">
+			  <option value="scale">Perkecil (Scale Down)</option>
+			  <option value="crop">Potong (Crop)</option>
+			</select>
+		</div>
+	  </div>
       <div class="paper-diagram">
         <div class="mini-outer" id="miniOuter" style="width:32px;height:40px">
           <div class="mini-inner" id="miniInner" style="width:22px;height:28px"></div>
@@ -271,7 +279,6 @@
 
   </div>
 
-  <!-- MAIN -->
   <div class="main-content" id="mainContent">
 
     <div class="empty-state" id="emptyState">
@@ -344,7 +351,7 @@ const ALIGN_MAP  = {
 
 // State
 let pdfDoc       = null;
-let rawBuffer    = null;   // original ArrayBuffer (kept pristine for pdf-lib)
+let rawBuffer    = null; // original ArrayBuffer (kept pristine for pdf-lib)
 let fileName     = '';
 let totalPages   = 0;
 let currentPage  = 1;
@@ -402,11 +409,17 @@ function calcLayout(srcWmm, srcHmm) {
   const [tgtWmm, tgtHmm] = getTargetDims(srcWmm, srcHmm);
   // Effective inner area after removing extra margin
   const innerW = tgtWmm - extra * 2;
-  const innerH = tgtHmm - extra * 2;
+  const innerH = tgtHmm - extra * 2;  
+  
   // Scale if needed
   let scale = 1;
+  const overflowMode = document.getElementById('overflowMode') ? document.getElementById('overflowMode').value : 'scale';
+  
   if (srcWmm > innerW || srcHmm > innerH) {
-    scale = Math.min(innerW / srcWmm, innerH / srcHmm);
+    if (overflowMode === 'scale') {
+      scale = Math.min(innerW / srcWmm, innerH / srcHmm);
+    } 
+    // Jika 'crop', scale tetap 1 sehingga tidak diperkecil
   }
   const scaledW = srcWmm * scale;
   const scaledH = srcHmm * scale;
@@ -437,28 +450,34 @@ async function updateSidebar() {
   const vp = page.getViewport({scale:1});
   const srcW = ptToMm(vp.width), srcH = ptToMm(vp.height);
   const L = calcLayout(srcW, srcH);
+  
   document.getElementById('padTop').textContent    = L.padTop.toFixed(1)    + ' mm';
   document.getElementById('padBottom').textContent = L.padBottom.toFixed(1) + ' mm';
   document.getElementById('padLeft').textContent   = L.padLeft.toFixed(1)   + ' mm';
   document.getElementById('padRight').textContent  = L.padRight.toFixed(1)  + ' mm';
+
   document.getElementById('overflowWarn').classList.toggle('show', L.scale < 1);
   // Paper info
   const selName = document.getElementById('targetSize').value;
   const [rw, rh] = PAPER[selName];
   document.getElementById('paperInfo').innerHTML =
     `<strong>${selName}</strong> · ${rw} × ${rh} mm<br><span id="srcDimText">Sumber: ${srcW.toFixed(1)} × ${srcH.toFixed(1)} mm</span>`;
+
   // Mini diagram
   const maxD = 38;
   const ratio = L.tgtHmm / L.tgtWmm;
   let mw, mh;
   if (ratio >= 1) { mh = maxD; mw = Math.round(maxD / ratio); }
   else            { mw = maxD; mh = Math.round(maxD * ratio); }
+  
   const mo = document.getElementById('miniOuter');
   mo.style.width = mw+'px'; mo.style.height = mh+'px';
   const sc2 = Math.min((mw-4)/L.tgtWmm, (mh-4)/L.tgtHmm);
+  
   const mi = document.getElementById('miniInner');
   mi.style.width  = Math.round(srcW * sc2)+'px';
   mi.style.height = Math.round(srcH * sc2)+'px';
+  
   // Position mini-inner
   const [ha, va] = ALIGN_MAP[currentAlign];
   mi.style.left = ha==='left'?'2px' : ha==='right'?(mw-Math.round(srcW*sc2)-2)+'px' : '50%';
@@ -497,8 +516,8 @@ async function renderCurrentPage() {
   const srcPxW = Math.round(L.scaledW * dispScale);
   const srcPxH = Math.round(L.scaledH * dispScale);
   const pdfRenderScale = srcPxW / vp0.width;
+  
   const vp = page.getViewport({scale: pdfRenderScale});
-
   const canvas = document.getElementById('pageCanvas');
   canvas.width  = Math.round(vp.width);
   canvas.height = Math.round(vp.height);
@@ -574,12 +593,15 @@ async function processPdf() {
 
   try {
     const { PDFDocument, rgb } = PDFLib;
-
     // PENTING: copy ArrayBuffer baru setiap kali agar pdf-lib dapat buffer yang fresh
     const bufferCopy = rawBuffer.slice(0);
+    
     const srcPdfDoc  = await PDFDocument.load(bufferCopy);
     const newPdfDoc  = await PDFDocument.create();
     const pages = srcPdfDoc.getPages();
+    
+    // PERBAIKAN: Embed semua halaman PDF secara langsung di luar loop
+    const embeddedPages = await newPdfDoc.embedPdf(srcPdfDoc);
 
     for (let i = 0; i < pages.length; i++) {
       document.getElementById('pbar').style.width = ((i/pages.length)*100)+'%';
@@ -590,20 +612,21 @@ async function processPdf() {
       const {width: srcWpt, height: srcHpt} = srcPage.getSize();
       const srcWmm = ptToMm(srcWpt), srcHmm = ptToMm(srcHpt);
       const L = calcLayout(srcWmm, srcHmm);
-
+      
       const tgtWpt = mmToPt(L.tgtWmm);
       const tgtHpt = mmToPt(L.tgtHmm);
 
       const newPage = newPdfDoc.addPage([tgtWpt, tgtHpt]);
       // White fill
       newPage.drawRectangle({x:0, y:0, width:tgtWpt, height:tgtHpt, color:rgb(1,1,1)});
-
-      // Embed page
-      const [emb] = await newPdfDoc.embedPages([srcPage]);
+      
+      // Ambil halaman yang sudah di-embed dari array
+      const emb = embeddedPages[i];
+      
       const offXpt = mmToPt(L.offX);
       // PDF y-axis: origin bottom-left, so bottom offset = padBottom
       const offYpt = mmToPt(L.padBottom);
-
+      
       newPage.drawPage(emb, {
         x: offXpt,
         y: offYpt,
@@ -615,16 +638,16 @@ async function processPdf() {
     document.getElementById('pbar').style.width = '100%';
     document.getElementById('pbarTxt').textContent = 'Menyimpan file…';
     await new Promise(r => setTimeout(r, 30));
-
+    
     processedBytes = await newPdfDoc.save();
 
     const selName = document.getElementById('targetSize').value;
     const base = fileName.replace(/\.pdf$/i,'');
     const outName = base + '_' + selName + '.pdf';
-
+    
     document.getElementById('resultMsg').textContent =
       `✓ ${pages.length} halaman dikonversi ke ${selName} (${(processedBytes.byteLength/1024/1024).toFixed(2)} MB)`;
-
+      
     document.getElementById('btnDownload').onclick = () => {
       const blob = new Blob([processedBytes], {type:'application/pdf'});
       const url = URL.createObjectURL(blob);
@@ -635,7 +658,6 @@ async function processPdf() {
       setTimeout(() => URL.revokeObjectURL(url), 1500);
     };
     document.getElementById('resultBar').classList.add('show');
-
   } catch(e) {
     alert('Error saat memproses PDF:\n' + e.message);
     console.error(e);
@@ -654,19 +676,23 @@ async function handleFile(file) {
   fileName = file.name;
   // Read as ArrayBuffer — simpan apa adanya, jangan convert ke Uint8Array global
   rawBuffer = await file.arrayBuffer();
+  
   try {
     // pdf.js butuh copy tersendiri (immutable setelah dipakai)
     pdfDoc = await pdfjsLib.getDocument({data: rawBuffer.slice(0)}).promise;
     totalPages  = pdfDoc.numPages;
     currentPage = 1;
     processedBytes = null;
+    
     document.getElementById('fileName').textContent = file.name;
     document.getElementById('fileMeta').textContent = `${totalPages} halaman · ${(file.size/1024/1024).toFixed(2)} MB`;
+    
     document.getElementById('fileBar').classList.add('show');
     document.getElementById('btnProcess').disabled = false;
     document.getElementById('emptyState').style.display = 'none';
     document.getElementById('previewArea').classList.add('show');
     document.getElementById('resultBar').classList.remove('show');
+    
     updateNavState();
     await updateSidebar();
     await renderCurrentPage();
@@ -677,7 +703,8 @@ async function handleFile(file) {
 }
 
 function resetFile() {
-  pdfDoc = null; rawBuffer = null; fileName = ''; totalPages = 0; currentPage = 1; processedBytes = null;
+  pdfDoc = null;
+  rawBuffer = null; fileName = ''; totalPages = 0; currentPage = 1; processedBytes = null;
   document.getElementById('fileBar').classList.remove('show');
   document.getElementById('btnProcess').disabled = true;
   document.getElementById('previewArea').classList.remove('show');
@@ -692,9 +719,11 @@ function resetFile() {
 /* ─── EVENTS ─── */
 document.getElementById('fileInput').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
 const dz = document.getElementById('dropzone');
+
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
 dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+
 document.getElementById('btnRemove').addEventListener('click', e => { e.stopPropagation(); resetFile(); });
 document.getElementById('btnProcess').addEventListener('click', processPdf);
 
@@ -709,9 +738,13 @@ document.getElementById('btnZoomOut').addEventListener('click', () => { zoomScal
 });
 document.getElementById('extraMargin').addEventListener('input', () => { updateSidebar(); renderCurrentPage(); });
 
+document.getElementById('overflowMode').addEventListener('change', () => { 
+  updateSidebar(); 
+  renderCurrentPage(); 
+});
+
 /* ─── INIT ─── */
 buildAlignGrid();
 </script>
 </body>
 </html>
-

@@ -566,7 +566,6 @@ async function processPdf() {
   $('btnIcon').style.display = 'none';
   $('btnTxt').textContent = 'Memproses…';
   $('progWrap').classList.add('on');
-  $('resultBar').classList.remove('on');
   $('successStrip').classList.remove('on');
   processedBytes = null;
 
@@ -623,8 +622,6 @@ async function processPdf() {
     // ── AUTO DOWNLOAD ──
     triggerDownload(processedBytes, outName);
 
-    $('resultMsg').textContent = `✓ ${pageCount} halaman → ${selName} (${sizeMB} MB)`;
-    $('resultBar').classList.add('on');
     $('successStrip').classList.add('on');
     $('successTxt').textContent = `File sedang diunduh — ${outName}`;
     $('progFill').style.width = '100%';
@@ -666,7 +663,6 @@ async function handleFile(file) {
     $('btnProcess').disabled = false;
     $('emptyState').style.display = 'none';
     $('previewArea').classList.add('on');
-    $('resultBar').classList.remove('on');
     $('successStrip').classList.remove('on');
 
     updateNav();

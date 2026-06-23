@@ -623,9 +623,6 @@ async function processPdf() {
     // ── AUTO DOWNLOAD ──
     triggerDownload(processedBytes, outName);
 
-    // Setup tombol "Unduh Lagi"
-    $('btnDownload').onclick = () => triggerDownload(processedBytes, outName);
-
     $('resultMsg').textContent = `✓ ${pageCount} halaman → ${selName} (${sizeMB} MB)`;
     $('resultBar').classList.add('on');
     $('successStrip').classList.add('on');

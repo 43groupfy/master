@@ -3,249 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Resizer</title>
+<title>PDF Paper Resizer</title>
+<link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <style>
-:root {
-  --duo-green: #58cc02;
-  --duo-green-dark: #46a302;
-  --duo-green-dim: #d7f5b1;
-  --duo-blue: #1cb0f6;
-  --duo-blue-dark: #0a9fd8;
-  --duo-blue-dim: #ddf4ff;
-  --duo-purple: #ce82ff;
-  --duo-purple-dark: #9c44c0;
-  --duo-purple-dim: #f4e0ff;
-  --duo-orange: #ff9600;
-  --duo-orange-dark: #d47900;
-  --duo-orange-dim: #fff3d4;
-  --duo-red: #ff4b4b;
-  --duo-red-dim: #ffd0d0;
-  --duo-yellow: #ffc800;
-  --duo-yellow-dim: #fff9d4;
-  --fg: #3c3c3c;
-  --fg2: #777;
-  --fg3: #afafaf;
-  --bg: #f7f7f7;
-  --surface: #ffffff;
-  --border: #e5e5e5;
-  --border2: #d0d0d0;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --radius-xs: 6px;
-  --shadow: 0 2px 0 #d0d0d0;
-  --shadow-green: 0 3px 0 var(--duo-green-dark);
-  --shadow-blue: 0 3px 0 var(--duo-blue-dark);
-  --transition: 0.15s cubic-bezier(.4,0,.2,1);
+/* === PDF RESIZER — tambahan ke style.css === */
+/* Salin blok ini ke style.css Anda               */
+
+/* APP SHELL */
+.app-shell { display: flex; height: calc(100vh - 70px); overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar { width: 300px; min-width: 280px; background: #fff; border-right: 2px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; flex-shrink: 0; }
+.sb-section { padding: 16px 18px 14px; border-bottom: 1px solid var(--border); }
+.sb-section:last-child { border-bottom: none; }
+.sb-step { display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin-bottom: 12px; }
+.sb-step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--maroon); color: white; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+/* FILE CHIP (setelah upload) */
+.file-ready { background: #fff5f5; border: 1px solid #fed7d7; padding: 10px 12px; border-radius: var(--radius); display: none; align-items: center; gap: 10px; margin-top: 10px; }
+.file-ready.show { display: flex; }
+.file-icon { width: 36px; height: 36px; background: var(--maroon); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.file-ready .file-info { flex: 1; min-width: 0; }
+.file-ready .file-name { font-weight: 700; font-size: 12px; color: var(--maroon); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.file-ready .file-meta { font-size: 10px; color: #999; margin-top: 1px; }
+
+/* ALIGN GRID */
+.align-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 5px; }
+.al-btn { aspect-ratio: 1; border: 2px solid var(--border); border-radius: 8px; background: var(--light); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; padding: 0; }
+.al-btn:hover { border-color: var(--maroon-light); background: #fff5f5; }
+.al-btn.active { border-color: var(--maroon); background: #fff5f5; box-shadow: 0 2px 0 #500000; }
+.al-btn svg { width: 28px; height: 28px; display: block; }
+
+/* PADDING DISPLAY */
+.pad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 8px; }
+.pad-cell { background: var(--light); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.pad-cell-dir { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #bbb; }
+.pad-cell-val { font-size: 13px; font-weight: 800; color: var(--maroon); }
+
+/* PAPER DIAGRAM */
+.paper-diagram { display: flex; align-items: center; gap: 12px; background: var(--light); border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 10px; }
+.mini-outer { background: white; border: 2px solid var(--border); box-shadow: 0 1px 0 #ccc; position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.mini-inner { background: #fff5f5; border: 2px solid var(--maroon-light); position: absolute; border-radius: 2px; }
+.paper-info { font-size: 12px; color: #666; line-height: 1.8; }
+.paper-info strong { color: var(--dark); font-size: 13px; font-weight: 800; }
+.paper-info em { font-style: normal; color: var(--maroon); font-weight: 700; }
+
+/* WARN */
+.warn-badge { display: none; align-items: center; gap: 6px; background: #fffbea; border: 1px solid #fbbf24; border-radius: 6px; padding: 7px 10px; font-size: 11px; font-weight: 700; color: #92400e; margin-top: 8px; }
+.warn-badge.show { display: flex; }
+.warn-badge i { font-size: 13px; color: #d97706; }
+
+/* MAIN */
+.main-panel { flex: 1; overflow-y: auto; background: var(--light); display: flex; flex-direction: column; min-width: 0; }
+
+/* EMPTY STATE */
+.empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 40px; text-align: center; color: #bbb; }
+.empty-state i { font-size: 54px; color: #ddd; }
+.empty-state h3 { font-size: 18px; font-weight: 800; color: #ccc; }
+.empty-state p { font-size: 13px; color: #ccc; max-width: 220px; line-height: 1.5; }
+
+/* PREVIEW AREA */
+.preview-area { flex: 1; display: none; flex-direction: column; }
+.preview-area.on { display: flex; }
+
+/* RESULT BAR */
+.result-bar { display: none; align-items: center; gap: 10px; background: #f0fff4; border-bottom: 2px solid var(--success); padding: 11px 20px; }
+.result-bar.on { display: flex; }
+.result-bar i { font-size: 18px; color: var(--success); flex-shrink: 0; }
+.result-bar p { font-size: 13px; color: #166534; font-weight: 700; flex: 1; }
+
+/* PAGE NAV */
+.page-nav { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 1px solid var(--border); background: #fff; }
+.page-nav-title { font-size: 13px; font-weight: 800; color: var(--dark); }
+.nav-btns { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+.nav-btn { width: 30px; height: 30px; border: 1px solid var(--border); background: #fff; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; color: #666; transition: 0.15s; box-shadow: 0 1px 0 #ddd; }
+.nav-btn:hover:not(:disabled) { border-color: var(--maroon-light); color: var(--maroon); background: #fff5f5; }
+.nav-btn:active:not(:disabled) { transform: translateY(1px); box-shadow: none; }
+.nav-btn:disabled { opacity: .3; cursor: not-allowed; box-shadow: none; }
+.nav-label { font-size: 12px; font-weight: 700; color: #666; min-width: 54px; text-align: center; }
+.zoom-sep { width: 1px; height: 20px; background: var(--border); margin: 0 3px; }
+
+/* CANVAS */
+.canvas-area { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 28px; background: var(--light); }
+.page-preview-wrap { background: #b0aaa5; padding: 16px; border-radius: 12px; display: inline-flex; box-shadow: 0 4px 18px rgba(0,0,0,.2); }
+.page-paper { background: white; box-shadow: 0 2px 14px rgba(0,0,0,.25); position: relative; overflow: hidden; }
+.page-paper canvas { display: block; position: absolute; top: 0; left: 0; }
+.pad-overlay { position: absolute; pointer-events: none; }
+.pad-ov-top    { top: 0; left: 0; right: 0; background: rgba(128,0,0,.07); border-bottom: 1.5px dashed rgba(128,0,0,.3); }
+.pad-ov-bot    { bottom: 0; left: 0; right: 0; background: rgba(128,0,0,.07); border-top: 1.5px dashed rgba(128,0,0,.3); }
+.pad-ov-left   { top: 0; bottom: 0; left: 0; background: rgba(128,0,0,.07); border-right: 1.5px dashed rgba(128,0,0,.3); }
+.pad-ov-right  { top: 0; bottom: 0; right: 0; background: rgba(128,0,0,.07); border-left: 1.5px dashed rgba(128,0,0,.3); }
+.scale-tag { position: absolute; bottom: 6px; right: 6px; background: #fffbea; border: 1px solid #fbbf24; border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 800; color: #92400e; }
+
+/* INFO BAR */
+.info-bar { padding: 8px 20px; background: #fff; border-top: 1px solid var(--border); font-size: 11px; color: #aaa; display: flex; gap: 16px; flex-wrap: wrap; }
+.info-bar strong { color: #666; font-weight: 700; }
+.info-bar .hl { color: var(--maroon); font-weight: 800; }
+
+/* PROGRESS */
+.progress-container { display: none; margin-top: 12px; }
+.progress-container.on { display: block; }
+.progress-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--maroon); border-radius: 99px; transition: width .25s ease; width: 0; }
+.progress-text { font-size: 10px; font-weight: 700; color: #999; margin-top: 5px; text-align: center; }
+
+/* SUCCESS STRIP */
+.success-strip { display: none; align-items: center; gap: 8px; background: #f0fff4; border: 1px solid #86efac; border-radius: 8px; padding: 8px 12px; margin-top: 10px; }
+.success-strip.on { display: flex; }
+.success-strip i { color: var(--success); font-size: 16px; }
+.success-strip span { font-size: 12px; font-weight: 700; color: #166534; }
+
+/* SPINNER di tombol */
+.btn-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin 0.65s linear infinite; display: none; }
+.btn-spinner.on { display: inline-block; }
+
+/* SELECT override */
+select, input[type="number"] { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: var(--light); color: var(--dark); font-size: 13px; font-weight: 600; outline: none; appearance: none; transition: 0.15s; }
+select:focus, input[type="number"]:focus { border-color: var(--maroon); box-shadow: 0 0 0 3px rgba(128,0,0,.1); background: #fff; }
+.sel-wrap { position: relative; }
+.sel-wrap::after { content: '▾'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: #bbb; pointer-events: none; }
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field-label { display: block; font-size: 11px; font-weight: 700; color: #888; margin-bottom: 5px; text-transform: uppercase; letter-spacing: .04em; }
+
+/* BTN PROCESS override */
+.btn-main { display: flex !important; align-items: center; justify-content: center; gap: 8px; background: var(--maroon) !important; color: white !important; width: 100%; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.15s; border: none; box-shadow: 0 3px 0 #500000; }
+.btn-main:hover:not(:disabled) { background: #600000 !important; transform: translateY(1px); box-shadow: 0 2px 0 #500000; }
+.btn-main:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
+.btn-main:disabled { background: #ccc !important; color: #aaa !important; cursor: not-allowed; box-shadow: 0 3px 0 #bbb; }
+.btn-main i { font-size: 14px; }
+
+/* DROPZONE override — pastikan upload-area punya font icon */
+.upload-area p { font-size: 13px; color: #888; font-weight: 600; }
+.upload-area p span { color: var(--maroon); }
+.upload-area small { font-size: 11px; color: #bbb; display: block; margin-top: 3px; }
+
+/* SCROLLBAR */
+.sidebar::-webkit-scrollbar, .main-panel::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track, .main-panel::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb, .main-panel::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+@media (max-width: 850px) {
+  .app-shell { flex-direction: column; height: auto; overflow: visible; }
+  .sidebar { width: 100%; min-width: unset; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+  .main-panel { height: 70vh; }
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;font-size:14px;line-height:1.5}
-
-/* ── HEADER ── */
-.hdr{background:var(--surface);border-bottom:2px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200}
-.hdr-logo{width:38px;height:38px;background:var(--duo-green);border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-green)}
-.hdr-logo svg{width:20px;height:20px;fill:white}
-.hdr-title{font-size:18px;font-weight:800;letter-spacing:-0.3px;color:var(--fg)}
-.hdr-pill{margin-left:auto;background:var(--duo-green-dim);color:var(--duo-green-dark);font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;letter-spacing:0.03em}
-
-/* ── LAYOUT ── */
-.app{display:flex;height:calc(100vh - 60px);overflow:hidden}
-
-/* ── SIDEBAR ── */
-.sidebar{width:300px;min-width:280px;background:var(--surface);border-right:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;gap:0}
-.sb-section{padding:18px 18px 16px;border-bottom:2px solid var(--border)}
-.sb-section:last-child{border-bottom:none;margin-top:auto}
-.sb-label{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--fg3);margin-bottom:12px}
-.sb-label-num{width:20px;height:20px;border-radius:50%;background:var(--duo-green);color:white;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-
-/* ── DROP ZONE ── */
-.dropzone{border:3px dashed var(--border2);border-radius:var(--radius);padding:24px 16px;text-align:center;cursor:pointer;transition:all var(--transition);background:var(--bg);user-select:none}
-.dropzone:hover,.dropzone.drag{border-color:var(--duo-blue);background:var(--duo-blue-dim)}
-.dropzone-icon{width:44px;height:44px;margin:0 auto 10px;background:var(--duo-blue-dim);border-radius:12px;display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
-.dropzone:hover .dropzone-icon,.dropzone.drag .dropzone-icon{background:var(--duo-blue);transform:scale(1.05)}
-.dropzone-icon svg{width:22px;height:22px;stroke:var(--duo-blue);transition:stroke var(--transition)}
-.dropzone:hover .dropzone-icon svg,.dropzone.drag .dropzone-icon svg{stroke:white}
-.dropzone p{font-size:13px;color:var(--fg2);font-weight:600}
-.dropzone p span{color:var(--duo-blue)}
-.dropzone small{font-size:11px;color:var(--fg3);display:block;margin-top:3px}
-#fileInput{display:none}
-
-.file-chip{display:none;align-items:center;gap:8px;background:var(--duo-green-dim);border:2px solid var(--duo-green);border-radius:var(--radius-sm);padding:8px 10px;margin-top:10px}
-.file-chip.show{display:flex}
-.file-chip-icon{width:28px;height:28px;background:var(--duo-green);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.file-chip-icon svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5}
-.file-chip-info{flex:1;min-width:0}
-.file-chip-name{font-size:12px;font-weight:700;color:var(--duo-green-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.file-chip-meta{font-size:10px;color:var(--duo-green-dark);opacity:.75}
-.btn-remove{width:22px;height:22px;border:none;background:rgba(0,0,0,.1);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background var(--transition)}
-.btn-remove:hover{background:var(--duo-red)}
-.btn-remove svg{width:10px;height:10px;stroke:var(--duo-green-dark);stroke-width:3;transition:stroke var(--transition)}
-.btn-remove:hover svg{stroke:white}
-
-/* ── FORM CONTROLS ── */
-.field{margin-bottom:12px}
-.field:last-child{margin-bottom:0}
-.field-label{display:block;font-size:11px;font-weight:700;color:var(--fg2);margin-bottom:5px}
-.select-wrap{position:relative}
-.select-wrap::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--fg3);pointer-events:none}
-select,input[type="number"]{width:100%;padding:9px 12px;border:2px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg);color:var(--fg);font-size:13px;font-weight:600;outline:none;appearance:none;transition:border-color var(--transition)}
-select:focus,input[type="number"]:focus{border-color:var(--duo-blue);background:var(--duo-blue-dim)}
-select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
-
-/* ── ALIGN GRID ── */
-.align-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.al-btn{aspect-ratio:1;border:2px solid var(--border2);border-radius:var(--radius-xs);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);padding:0}
-.al-btn:hover{border-color:var(--duo-blue);background:var(--duo-blue-dim)}
-.al-btn.active{border-color:var(--duo-green);background:var(--duo-green-dim);box-shadow:0 2px 0 var(--duo-green-dark)}
-.al-btn svg{width:28px;height:28px;display:block}
-
-/* ── PADDING DISPLAY ── */
-.pad-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-.pad-cell{background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-xs);padding:6px 10px;display:flex;flex-direction:column;gap:1px;align-items:center}
-.pad-cell-dir{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--fg3)}
-.pad-cell-val{font-size:13px;font-weight:800;color:var(--duo-purple-dark)}
-
-.warn-badge{display:none;align-items:center;gap:6px;background:var(--duo-orange-dim);border:2px solid var(--duo-orange);border-radius:var(--radius-xs);padding:7px 10px;font-size:11px;font-weight:700;color:var(--duo-orange-dark);margin-top:8px}
-.warn-badge.show{display:flex}
-.warn-badge svg{width:14px;height:14px;stroke:var(--duo-orange-dark);fill:none;stroke-width:2.5;flex-shrink:0}
-
-/* ── PAPER DIAGRAM ── */
-.paper-diagram{display:flex;align-items:center;gap:12px;background:var(--bg);border:2px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:10px}
-.mini-outer{background:white;border:2px solid var(--border2);box-shadow:0 1px 0 var(--border2);position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.mini-inner{background:var(--duo-green-dim);border:2px solid var(--duo-green);position:absolute;border-radius:2px}
-.paper-info{font-size:12px;color:var(--fg2);line-height:1.8}
-.paper-info strong{color:var(--fg);font-size:13px;font-weight:800}
-.paper-info em{font-style:normal;color:var(--duo-blue-dark);font-weight:700}
-
-/* ── PROCESS BUTTON ── */
-.btn-process{width:100%;padding:13px;background:var(--duo-green);color:white;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all var(--transition);box-shadow:var(--shadow-green);letter-spacing:.02em}
-.btn-process:hover:not(:disabled){background:var(--duo-green-dark);transform:translateY(1px);box-shadow:0 2px 0 var(--duo-green-dark)}
-.btn-process:active:not(:disabled){transform:translateY(3px);box-shadow:none}
-.btn-process:disabled{background:var(--border2);color:var(--fg3);cursor:not-allowed;box-shadow:0 3px 0 var(--border);transform:none}
-.btn-process svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5}
-
-/* ── SPINNER ── */
-.spinner{width:18px;height:18px;border:3px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .65s linear infinite;display:none}
-.spinner.on{display:block}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── PROGRESS ── */
-.prog-wrap{display:none;margin-top:12px}
-.prog-wrap.on{display:block}
-.prog-track{background:var(--border);border-radius:99px;height:10px;overflow:hidden;border:1.5px solid var(--border2)}
-.prog-fill{background:linear-gradient(90deg,var(--duo-green),var(--duo-blue));height:100%;border-radius:99px;transition:width .2s ease;width:0}
-.prog-txt{font-size:11px;font-weight:700;color:var(--fg2);margin-top:5px;text-align:center}
-
-/* ── XP BADGE ── */
-.xp-strip{display:none;align-items:center;gap:8px;background:var(--duo-yellow-dim);border:2px solid var(--duo-yellow);border-radius:var(--radius-sm);padding:8px 12px;margin-top:10px}
-.xp-strip.on{display:flex}
-.xp-icon{font-size:18px}
-.xp-text{font-size:12px;font-weight:800;color:var(--duo-orange-dark)}
-
-/* ── MAIN CONTENT ── */
-.main{flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
-
-/* ── EMPTY STATE ── */
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px;text-align:center}
-.empty-owl{width:80px;height:80px;background:var(--duo-green-dim);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid var(--duo-green)}
-.empty-owl svg{width:44px;height:44px;fill:var(--duo-green-dark)}
-.empty h2{font-size:18px;font-weight:800;color:var(--fg);margin:0}
-.empty p{font-size:13px;color:var(--fg2);max-width:240px}
-
-/* ── PREVIEW AREA ── */
-.preview{flex:1;display:none;flex-direction:column}
-.preview.on{display:flex}
-
-/* ── RESULT BAR ── */
-.result-bar{display:none;align-items:center;gap:10px;background:var(--duo-green-dim);border-bottom:3px solid var(--duo-green);padding:12px 20px}
-.result-bar.on{display:flex}
-.result-bar svg{width:20px;height:20px;stroke:var(--duo-green-dark);fill:none;stroke-width:2.5;flex-shrink:0}
-.result-bar p{font-size:13px;color:var(--duo-green-dark);font-weight:700;flex:1}
-.btn-dl{padding:9px 16px;background:var(--duo-green);color:white;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:var(--shadow-green);transition:all var(--transition)}
-.btn-dl:hover{background:var(--duo-green-dark);transform:translateY(1px);box-shadow:0 2px 0 var(--duo-green-dark)}
-.btn-dl svg{width:13px;height:13px;stroke:white;fill:none;stroke-width:2.5}
-
-/* ── PAGE NAV ── */
-.page-nav{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:2px solid var(--border);background:var(--surface)}
-.page-nav-title{font-size:14px;font-weight:800}
-.pg-badge{font-size:10px;padding:3px 9px;border-radius:99px;font-weight:800;background:var(--duo-blue-dim);color:var(--duo-blue-dark)}
-.nav-btns{margin-left:auto;display:flex;align-items:center;gap:6px}
-.nav-btn{width:32px;height:32px;border:2px solid var(--border2);background:var(--surface);border-radius:var(--radius-xs);cursor:pointer;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--fg2);transition:all var(--transition);box-shadow:0 2px 0 var(--border2)}
-.nav-btn:hover:not(:disabled){border-color:var(--duo-blue);color:var(--duo-blue-dark);background:var(--duo-blue-dim);transform:translateY(1px);box-shadow:0 1px 0 var(--border2)}
-.nav-btn:active:not(:disabled){transform:translateY(2px);box-shadow:none}
-.nav-btn:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
-.nav-label{font-size:12px;font-weight:700;color:var(--fg2);min-width:54px;text-align:center}
-.zoom-sep{width:2px;height:22px;background:var(--border);margin:0 2px;border-radius:1px}
-
-/* ── CANVAS AREA ── */
-.canvas-area{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:28px;background:var(--bg)}
-.page-preview-wrap{background:#b8b3aa;padding:18px;border-radius:var(--radius);display:inline-flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.2)}
-.page-paper{background:white;box-shadow:0 2px 16px rgba(0,0,0,.3);position:relative;overflow:hidden}
-.page-paper canvas{display:block;position:absolute;top:0;left:0}
-.pad-overlay{position:absolute;pointer-events:none}
-.pad-ov-top{top:0;left:0;right:0;background:rgba(88,204,2,.1);border-bottom:2px dashed rgba(88,204,2,.4)}
-.pad-ov-bot{bottom:0;left:0;right:0;background:rgba(88,204,2,.1);border-top:2px dashed rgba(88,204,2,.4)}
-.pad-ov-left{top:0;bottom:0;left:0;background:rgba(88,204,2,.1);border-right:2px dashed rgba(88,204,2,.4)}
-.pad-ov-right{top:0;bottom:0;right:0;background:rgba(88,204,2,.1);border-left:2px dashed rgba(88,204,2,.4)}
-.scale-tag{position:absolute;bottom:8px;right:8px;background:var(--duo-orange-dim);border:2px solid var(--duo-orange);border-radius:var(--radius-xs);padding:3px 8px;font-size:10px;font-weight:800;color:var(--duo-orange-dark)}
-
-/* ── INFO BAR ── */
-.info-bar{padding:10px 20px;background:var(--surface);border-top:2px solid var(--border);font-size:11px;color:var(--fg3);display:flex;gap:16px;flex-wrap:wrap}
-.info-bar strong{color:var(--fg2);font-weight:700}
-.info-bar .hl{color:var(--duo-green-dark);font-weight:800}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--fg3)}
 </style>
 </head>
 <body>
 
-<div class="hdr">
-  <div class="hdr-logo">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1.5H8V13zm0 3h5v1.5H8V16zm0-6h2v1.5H8V10z"/></svg>
+<!-- HEADER -->
+<header>
+  <div class="header-container">
+    <a href="#" class="logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--maroon)">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 13h8v1H8zm0 2.5h8v1H8zm0-5h2v1H8z"/>
+      </svg>
+      PDF Resizer
+    </a>
+    <a href="#" class="btn-back-main">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>Kembali</span>
+    </a>
   </div>
-  <div class="hdr-title">PDF Resizer</div>
-  <div class="hdr-pill">✦ Tambah Padding Putih</div>
-</div>
+</header>
 
-<div class="app">
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
   <div class="sidebar">
 
-    <!-- STEP 1 -->
+    <!-- STEP 1: UPLOAD -->
     <div class="sb-section">
-      <div class="sb-label"><span class="sb-label-num">1</span> Upload PDF</div>
-      <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
-        <div class="dropzone-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        </div>
+      <div class="sb-step"><span class="sb-step-num">1</span> Upload PDF</div>
+      <div class="upload-area dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+        <i class="fa fa-cloud-upload" style="font-size:36px;color:var(--maroon);margin-bottom:10px;display:block"></i>
         <p><span>Klik</span> atau seret PDF ke sini</p>
-        <small>Hanya file .pdf yang didukung</small>
+        <small>Hanya file .pdf</small>
       </div>
-      <input type="file" id="fileInput" accept=".pdf">
-      <div class="file-chip" id="fileChip">
-        <div class="file-chip-icon">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <input type="file" id="fileInput" accept=".pdf" style="display:none">
+
+      <div class="file-ready" id="fileChip">
+        <div class="file-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm0 1.5L18.5 9H14V3.5z"/></svg>
         </div>
-        <div class="file-chip-info">
-          <div class="file-chip-name" id="chipName">-</div>
-          <div class="file-chip-meta" id="chipMeta">-</div>
+        <div class="file-info">
+          <span class="file-name" id="chipName">-</span>
+          <div class="file-meta" id="chipMeta">-</div>
         </div>
-        <button class="btn-remove" id="btnRemove" title="Hapus file">
-          <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button class="btn-cancel btn-del" id="btnRemove" style="padding:4px 8px;font-size:11px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
     </div>
 
-    <!-- STEP 2 -->
+    <!-- STEP 2: TARGET SIZE -->
     <div class="sb-section">
-      <div class="sb-label"><span class="sb-label-num">2</span> Ukuran Target</div>
+      <div class="sb-step"><span class="sb-step-num">2</span> Ukuran Target</div>
+
       <div class="field">
         <label class="field-label">Kertas tujuan</label>
-        <div class="select-wrap">
+        <div class="sel-wrap">
           <select id="targetSize">
             <option value="A4">A4 — 210 × 297 mm</option>
             <option value="F4">F4 — 215 × 330 mm</option>
@@ -255,15 +215,17 @@ select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
           </select>
         </div>
       </div>
+
       <div class="field">
         <label class="field-label">Jika sumber lebih besar</label>
-        <div class="select-wrap">
+        <div class="sel-wrap">
           <select id="overflowMode">
             <option value="scale">Perkecil otomatis (Scale Down)</option>
             <option value="crop">Potong sisi lebih (Crop)</option>
           </select>
         </div>
       </div>
+
       <div class="paper-diagram">
         <div class="mini-outer" id="miniOuter" style="width:34px;height:42px">
           <div class="mini-inner" id="miniInner" style="width:22px;height:28px"></div>
@@ -273,17 +235,18 @@ select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
           <em id="srcDimText">Sumber: —</em>
         </div>
       </div>
+
       <div class="warn-badge" id="overflowWarn">
-        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Sumber lebih besar — akan diperkecil
       </div>
     </div>
 
-    <!-- STEP 3 -->
+    <!-- STEP 3: POSISI -->
     <div class="sb-section">
-      <div class="sb-label"><span class="sb-label-num">3</span> Posisi Halaman</div>
+      <div class="sb-step"><span class="sb-step-num">3</span> Posisi Halaman</div>
       <div class="align-grid" id="alignGrid"></div>
-      <div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--fg3);text-transform:uppercase;letter-spacing:.06em">Padding yang ditambahkan</div>
+      <div style="margin-top:10px;font-size:10px;font-weight:800;color:#bbb;text-transform:uppercase;letter-spacing:.06em">Padding yang ditambahkan</div>
       <div class="pad-grid">
         <div class="pad-cell"><div class="pad-cell-dir">↑ Atas</div><div class="pad-cell-val" id="padTop">—</div></div>
         <div class="pad-cell"><div class="pad-cell-dir">↓ Bawah</div><div class="pad-cell-val" id="padBottom">—</div></div>
@@ -292,12 +255,12 @@ select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
       </div>
     </div>
 
-    <!-- STEP 4 -->
+    <!-- STEP 4: OPSI -->
     <div class="sb-section">
-      <div class="sb-label"><span class="sb-label-num">4</span> Opsi Tambahan</div>
+      <div class="sb-step"><span class="sb-step-num">4</span> Opsi Tambahan</div>
       <div class="field">
         <label class="field-label">Orientasi target</label>
-        <div class="select-wrap">
+        <div class="sel-wrap">
           <select id="orientation">
             <option value="auto">Otomatis (ikuti sumber)</option>
             <option value="portrait">Portrait (tegak)</option>
@@ -308,52 +271,60 @@ select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
       <div class="field">
         <label class="field-label">Margin ekstra (mm)</label>
         <input type="number" id="extraMargin" value="0" min="0" max="30" step="0.5">
-        <div style="font-size:10px;color:var(--fg3);margin-top:3px;font-weight:600">Tambahan margin putih di semua sisi</div>
+        <div class="hint">Tambahan margin putih di semua sisi</div>
       </div>
     </div>
 
-    <!-- PROCESS -->
+    <!-- STEP 5: PROSES -->
     <div class="sb-section">
-      <button class="btn-process" id="btnProcess" disabled>
-        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        <span id="btnTxt">Proses PDF</span>
-        <div class="spinner" id="spinner"></div>
+      <button class="btn-main" id="btnProcess" disabled>
+        <div class="btn-spinner" id="btnSpinner"></div>
+        <svg id="btnIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span id="btnTxt">Proses & Unduh PDF</span>
       </button>
-      <div class="prog-wrap" id="progWrap">
-        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-        <div class="prog-txt" id="progTxt">Memproses…</div>
+
+      <div class="progress-container" id="progWrap">
+        <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+        <div class="progress-text" id="progTxt">Memproses…</div>
       </div>
-      <div class="xp-strip" id="xpStrip">
-        <span class="xp-icon">🎉</span>
-        <span class="xp-text" id="xpText">Konversi selesai!</span>
+
+      <div class="success-strip" id="successStrip">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span id="successTxt">Selesai! File sedang diunduh…</span>
       </div>
     </div>
 
   </div><!-- /sidebar -->
 
-  <div class="main" id="mainEl">
+  <!-- MAIN PANEL -->
+  <div class="main-panel">
 
-    <div class="empty" id="emptyState">
-      <div class="empty-owl">
-        <svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9v1l-1 1v2l1 1v1a7 7 0 0014 0v-1l1-1v-2l-1-1V9c0-4-3-7-7-7zm-2 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm4 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm-2 4c-1.1 0-2-.4-2.7-1h5.4c-.7.6-1.6 1-2.7 1z"/></svg>
-      </div>
-      <h2>Siap membantu!</h2>
-      <p>Upload PDF-mu dan atur ukuran target untuk melihat preview padding.</p>
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="emptyState">
+      <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ddd" stroke-width="1">
+        <rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 8h20M8 20V8"/>
+      </svg>
+      <h3>Upload PDF dulu</h3>
+      <p>Preview padding akan muncul di sini setelah file dipilih.</p>
     </div>
 
-    <div class="preview" id="previewArea">
+    <!-- PREVIEW -->
+    <div class="preview-area" id="previewArea">
+
+      <!-- RESULT BAR (juga tampil setelah proses, untuk unduh ulang) -->
       <div class="result-bar" id="resultBar">
-        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
         <p id="resultMsg">Berhasil dikonversi!</p>
-        <button class="btn-dl" id="btnDownload">
-          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Unduh PDF
+        <button class="btn-dl btn-download" id="btnDownload" style="white-space:nowrap">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Unduh Lagi
         </button>
       </div>
 
+      <!-- PAGE NAV -->
       <div class="page-nav">
         <span class="page-nav-title" id="previewTitle">Preview</span>
-        <span class="pg-badge" id="pgBadge">0 hal</span>
+        <span class="page-badge" id="pgBadge">0 hal</span>
         <div class="nav-btns">
           <button class="nav-btn" id="btnPrev" disabled>&#8249;</button>
           <span class="nav-label" id="pgLabel">1 / 1</span>
@@ -365,6 +336,7 @@ select:hover,input[type="number"]:hover{border-color:var(--duo-blue)}
         </div>
       </div>
 
+      <!-- CANVAS -->
       <div class="canvas-area" id="canvasArea">
         <div class="page-preview-wrap">
           <div class="page-paper" id="pagePaper">
@@ -402,19 +374,19 @@ const ALIGN_MAP  = {
   BL:['left','bottom'], B:['center','bottom'], BR:['right','bottom'],
 };
 
-let pdfDoc       = null;
-let rawBytes     = null; // Uint8Array — kept pristine
-let srcFileName  = '';
-let totalPages   = 0;
-let currentPage  = 1;
-let zoomScale    = 1.0;
-let currentAlign = 'M';
+let pdfDoc        = null;
+let rawBytes      = null;
+let srcFileName   = '';
+let totalPages    = 0;
+let currentPage   = 1;
+let zoomScale     = 1.0;
+let currentAlign  = 'M';
 let processedBytes = null;
-let renderTask   = null;
+let renderTask    = null;
 
 const mmToPt = mm => mm * 72 / 25.4;
 const ptToMm = pt => pt * 25.4 / 72;
-const $ = id => document.getElementById(id);
+const $  = id => document.getElementById(id);
 
 /* ── ALIGN GRID ── */
 function buildAlignGrid() {
@@ -427,9 +399,9 @@ function buildAlignGrid() {
     const ow=28, oh=28, iw=14, ih=14;
     const ix = ha==='left'?2 : ha==='right'?ow-iw-2 : (ow-iw)/2;
     const iy = va==='top' ?2 : va==='bottom'?oh-ih-2 : (oh-ih)/2;
-    btn.innerHTML = `<svg viewBox="0 0 ${ow} ${oh}" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="${ow-2}" height="${oh-2}" rx="3" stroke="var(--border2)" stroke-width="1.5"/>
-      <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="2" fill="var(--duo-green-dim)" stroke="var(--duo-green)" stroke-width="1.5"/>
+    btn.innerHTML = `<svg viewBox="0 0 ${ow} ${oh}" fill="none">
+      <rect x="1" y="1" width="${ow-2}" height="${oh-2}" rx="3" stroke="#ddd" stroke-width="1.5"/>
+      <rect x="${ix}" y="${iy}" width="${iw}" height="${ih}" rx="2" fill="#fff5f5" stroke="var(--maroon)" stroke-width="1.5"/>
     </svg>`;
     btn.addEventListener('click', () => {
       document.querySelectorAll('.al-btn').forEach(b => b.classList.remove('active'));
@@ -449,8 +421,7 @@ function getTargetDims(srcWmm, srcHmm) {
   if (ori === 'portrait')   { if (tw > th) [tw,th]=[th,tw]; }
   else if (ori === 'landscape') { if (th > tw) [tw,th]=[th,tw]; }
   else {
-    const sLand = srcWmm > srcHmm, tLand = tw > th;
-    if (sLand !== tLand) [tw,th]=[th,tw];
+    if ((srcWmm > srcHmm) !== (tw > th)) [tw,th]=[th,tw];
   }
   return [tw, th];
 }
@@ -460,13 +431,9 @@ function calcLayout(srcWmm, srcHmm) {
   const [tgtWmm, tgtHmm] = getTargetDims(srcWmm, srcHmm);
   const innerW = tgtWmm - extra * 2;
   const innerH = tgtHmm - extra * 2;
-  const overflowMode = $('overflowMode').value;
   let scale = 1;
-  if (srcWmm > innerW || srcHmm > innerH) {
-    if (overflowMode === 'scale') {
-      scale = Math.min(innerW / srcWmm, innerH / srcHmm);
-    }
-    // crop: scale stays 1, content will be clipped by pdf-lib via page mediabox
+  if ((srcWmm > innerW || srcHmm > innerH) && $('overflowMode').value === 'scale') {
+    scale = Math.min(innerW / srcWmm, innerH / srcHmm);
   }
   const scaledW = srcWmm * scale;
   const scaledH = srcHmm * scale;
@@ -478,12 +445,9 @@ function calcLayout(srcWmm, srcHmm) {
   const offX = extra + innerOffX;
   const offY = extra + innerOffY;
   return {
-    tgtWmm, tgtHmm, extra, innerW, innerH,
-    scale, scaledW, scaledH, offX, offY,
-    padLeft:   offX,
-    padRight:  tgtWmm - offX - scaledW,
-    padTop:    offY,
-    padBottom: tgtHmm - offY - scaledH,
+    tgtWmm, tgtHmm, scale, scaledW, scaledH, offX, offY,
+    padLeft: offX, padRight: tgtWmm - offX - scaledW,
+    padTop: offY,  padBottom: tgtHmm - offY - scaledH,
   };
 }
 
@@ -499,7 +463,6 @@ async function updateSidebar() {
   $('padBottom').textContent = L.padBottom.toFixed(1) + ' mm';
   $('padLeft').textContent   = L.padLeft.toFixed(1)   + ' mm';
   $('padRight').textContent  = L.padRight.toFixed(1)  + ' mm';
-
   $('overflowWarn').classList.toggle('show', L.scale < 0.999);
 
   const selName = $('targetSize').value;
@@ -507,7 +470,6 @@ async function updateSidebar() {
   $('paperInfo').innerHTML =
     `<strong>${selName}</strong> · ${rw} × ${rh} mm<br><em id="srcDimText">Sumber: ${srcW.toFixed(1)} × ${srcH.toFixed(1)} mm</em>`;
 
-  // mini diagram
   const maxD = 40;
   const ratio = L.tgtHmm / L.tgtWmm;
   let mw, mh;
@@ -537,54 +499,42 @@ async function renderCurrentPage() {
   const L = calcLayout(srcWmm, srcHmm);
 
   const areaEl = $('canvasArea');
-  const maxW = (areaEl.clientWidth  || 620) - 96;
-  const maxH = (areaEl.clientHeight || 520) - 96;
+  const maxW = (areaEl.clientWidth  || 600) - 96;
+  const maxH = (areaEl.clientHeight || 500) - 96;
   const fitScale = Math.min(maxW / L.tgtWmm, maxH / L.tgtHmm);
   const dispScale = fitScale * zoomScale;
 
-  const tgtPxW = Math.round(L.tgtWmm * dispScale);
-  const tgtPxH = Math.round(L.tgtHmm * dispScale);
-
   const paper = $('pagePaper');
-  paper.style.width  = tgtPxW + 'px';
-  paper.style.height = tgtPxH + 'px';
+  paper.style.width  = Math.round(L.tgtWmm * dispScale) + 'px';
+  paper.style.height = Math.round(L.tgtHmm * dispScale) + 'px';
 
   const srcPxW = Math.round(L.scaledW * dispScale);
-  const srcPxH = Math.round(L.scaledH * dispScale);
   const pdfRenderScale = srcPxW / Math.max(vp0.width, 1);
-
   const vp = page.getViewport({scale: pdfRenderScale});
+
   const canvas = $('pageCanvas');
   canvas.width  = Math.round(vp.width);
   canvas.height = Math.round(vp.height);
   canvas.style.width  = canvas.width  + 'px';
   canvas.style.height = canvas.height + 'px';
-
-  const canvasX = Math.round(L.offX * dispScale);
-  const canvasY = Math.round(L.offY * dispScale);
-  canvas.style.left = canvasX + 'px';
-  canvas.style.top  = canvasY + 'px';
+  canvas.style.left   = Math.round(L.offX * dispScale) + 'px';
+  canvas.style.top    = Math.round(L.offY * dispScale) + 'px';
 
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   renderTask = page.render({canvasContext: ctx, viewport: vp});
   try { await renderTask.promise; } catch(e) { if (e.name !== 'RenderingCancelledException') throw e; }
   renderTask = null;
 
   // overlays
-  const ptPx = Math.round(L.padTop    * dispScale);
-  const pbPx = Math.round(L.padBottom * dispScale);
-  const plPx = Math.round(L.padLeft   * dispScale);
-  const prPx = Math.round(L.padRight  * dispScale);
   const setOv = (el, prop, px) => { el.style[prop] = px > 0 ? px+'px' : '0'; el.style.display = px > 1 ? 'block' : 'none'; };
-  setOv($('ovTop'),  'height', ptPx);
-  setOv($('ovBot'),  'height', pbPx);
-  setOv($('ovLeft'), 'width',  plPx);
-  setOv($('ovRight'),'width',  prPx);
+  setOv($('ovTop'),   'height', Math.round(L.padTop    * dispScale));
+  setOv($('ovBot'),   'height', Math.round(L.padBottom * dispScale));
+  setOv($('ovLeft'),  'width',  Math.round(L.padLeft   * dispScale));
+  setOv($('ovRight'), 'width',  Math.round(L.padRight  * dispScale));
 
   const stag = $('scaleTag');
-  if (L.scale < 0.999) { stag.textContent = '↓ Scale '+  (L.scale*100).toFixed(0)+'%'; stag.style.display='block'; }
+  if (L.scale < 0.999) { stag.textContent = '↓ Scale ' + (L.scale*100).toFixed(0)+'%'; stag.style.display='block'; }
   else stag.style.display='none';
 
   $('infoBar').innerHTML =
@@ -605,20 +555,27 @@ function updateNav() {
   $('previewTitle').textContent = 'Preview — ' + $('targetSize').value;
 }
 
-/* ── PROCESS PDF ── (BUG FIXED)
-   FIX 1: Use copyPages() instead of embedPdf() → avoids XObject/resource issues
-   FIX 2: Keep rawBytes as Uint8Array, always fresh-copy for each PDFDocument.load()
-   FIX 3: Proper crop via page.setMediaBox() when overflow=crop
-   FIX 4: Correct PDF y-axis: origin at bottom-left, so y = padBottom (not padTop)
-*/
+/* ── AUTO DOWNLOAD HELPER ── */
+function triggerDownload(bytes, filename) {
+  const blob = new Blob([bytes], {type:'application/pdf'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+/* ── PROCESS PDF ── */
 async function processPdf() {
   const btn = $('btnProcess');
   btn.disabled = true;
-  $('spinner').classList.add('on');
+  $('btnSpinner').classList.add('on');
+  $('btnIcon').style.display = 'none';
   $('btnTxt').textContent = 'Memproses…';
   $('progWrap').classList.add('on');
   $('resultBar').classList.remove('on');
-  $('xpStrip').classList.remove('on');
+  $('successStrip').classList.remove('on');
   processedBytes = null;
 
   try {
@@ -626,50 +583,38 @@ async function processPdf() {
     const overflowMode = $('overflowMode').value;
     const selName = $('targetSize').value;
 
-    // Load source — always give pdf-lib a fresh copy
     const srcDoc = await PDFDocument.load(rawBytes.slice(0), { ignoreEncryption: true });
     const outDoc = await PDFDocument.create();
-
     const pageCount = srcDoc.getPageCount();
 
     for (let i = 0; i < pageCount; i++) {
-      // Progress
-      const pct = (i / pageCount * 90);
-      $('progFill').style.width = pct + '%';
+      $('progFill').style.width = (i / pageCount * 90) + '%';
       $('progTxt').textContent = `Halaman ${i+1} dari ${pageCount}…`;
       await new Promise(r => setTimeout(r, 0));
 
-      // Embed just this page (safer than bulk embedPdf)
+      // Embed per halaman (paling stabil, hindari error XObject)
       const [emb] = await outDoc.embedPdf(srcDoc, [i]);
 
-      const srcWpt  = emb.width;
-      const srcHpt  = emb.height;
-      const srcWmm  = ptToMm(srcWpt);
-      const srcHmm  = ptToMm(srcHpt);
+      const srcWmm = ptToMm(emb.width);
+      const srcHmm = ptToMm(emb.height);
       const L = calcLayout(srcWmm, srcHmm);
 
       const tgtWpt = mmToPt(L.tgtWmm);
       const tgtHpt = mmToPt(L.tgtHmm);
 
       const newPage = outDoc.addPage([tgtWpt, tgtHpt]);
-      // White background
       newPage.drawRectangle({ x:0, y:0, width:tgtWpt, height:tgtHpt, color:rgb(1,1,1) });
 
+      const drawX = mmToPt(L.offX);
+      const drawY = mmToPt(L.padBottom); // PDF y-axis: origin bottom-left
       const drawW = mmToPt(L.scaledW);
       const drawH = mmToPt(L.scaledH);
-      const drawX = mmToPt(L.offX);
-      // PDF coord: y=0 is bottom. Content bottom edge = padBottom from bottom
-      const drawY = mmToPt(L.padBottom);
 
-      if (overflowMode === 'crop' && L.scale === 1) {
-        // Draw at full size, then clip via MediaBox to target size
-        // The content will overflow the target box — MediaBox clips it
-        newPage.drawPage(emb, { x: drawX, y: drawY, width: drawW, height: drawH });
-        // Ensure MediaBox is exactly target (pdf-lib sets it from addPage, but be explicit)
+      newPage.drawPage(emb, { x: drawX, y: drawY, width: drawW, height: drawH });
+
+      // Crop mode: pastikan MediaBox memotong konten yg overflow
+      if (overflowMode === 'crop') {
         newPage.setMediaBox(0, 0, tgtWpt, tgtHpt);
-      } else {
-        // Scale-down path — content fits within target
-        newPage.drawPage(emb, { x: drawX, y: drawY, width: drawW, height: drawH });
       }
     }
 
@@ -679,35 +624,34 @@ async function processPdf() {
 
     processedBytes = await outDoc.save();
 
-    const base = srcFileName.replace(/\.pdf$/i, '');
+    const base    = srcFileName.replace(/\.pdf$/i, '');
     const outName = base + '_' + selName + '.pdf';
-    const sizeMB = (processedBytes.byteLength / 1024 / 1024).toFixed(2);
+    const sizeMB  = (processedBytes.byteLength / 1024 / 1024).toFixed(2);
+
+    // ── AUTO DOWNLOAD ──
+    triggerDownload(processedBytes, outName);
+
+    // Setup tombol "Unduh Lagi"
+    $('btnDownload').onclick = () => triggerDownload(processedBytes, outName);
 
     $('resultMsg').textContent = `✓ ${pageCount} halaman → ${selName} (${sizeMB} MB)`;
-    $('btnDownload').onclick = () => {
-      const blob = new Blob([processedBytes], {type:'application/pdf'});
-      const url  = URL.createObjectURL(blob);
-      const a    = document.createElement('a');
-      a.href = url; a.download = outName;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    };
     $('resultBar').classList.add('on');
-    $('xpStrip').classList.add('on');
-    $('xpText').textContent = `${pageCount} halaman berhasil dikonversi ke ${selName}!`;
+    $('successStrip').classList.add('on');
+    $('successTxt').textContent = `File sedang diunduh — ${outName}`;
     $('progFill').style.width = '100%';
+
   } catch(e) {
     console.error('processPdf error:', e);
     alert('Error saat memproses PDF:\n\n' + e.message + '\n\nCoba upload ulang file PDF-mu.');
   } finally {
     btn.disabled = false;
-    $('spinner').classList.remove('on');
-    $('btnTxt').textContent = 'Proses PDF';
+    $('btnSpinner').classList.remove('on');
+    $('btnIcon').style.display = '';
+    $('btnTxt').textContent = 'Proses & Unduh PDF';
     setTimeout(() => {
       $('progWrap').classList.remove('on');
       $('progFill').style.width = '0';
-    }, 800);
+    }, 1000);
   }
 }
 
@@ -718,13 +662,9 @@ async function handleFile(file) {
     return;
   }
   srcFileName = file.name;
-
-  // Read as Uint8Array — immutable, always slice before passing to libs
-  const ab = await file.arrayBuffer();
-  rawBytes = new Uint8Array(ab);
+  rawBytes = new Uint8Array(await file.arrayBuffer());
 
   try {
-    // pdf.js needs its own copy
     pdfDoc = await pdfjsLib.getDocument({data: rawBytes.slice(0)}).promise;
     totalPages  = pdfDoc.numPages;
     currentPage = 1;
@@ -738,7 +678,7 @@ async function handleFile(file) {
     $('emptyState').style.display = 'none';
     $('previewArea').classList.add('on');
     $('resultBar').classList.remove('on');
-    $('xpStrip').classList.remove('on');
+    $('successStrip').classList.remove('on');
 
     updateNav();
     await updateSidebar();
@@ -758,7 +698,7 @@ function resetFile() {
   $('previewArea').classList.remove('on');
   $('emptyState').style.display = 'flex';
   $('resultBar').classList.remove('on');
-  $('xpStrip').classList.remove('on');
+  $('successStrip').classList.remove('on');
   $('fileInput').value = '';
   const c = $('pageCanvas');
   c.getContext('2d').clearRect(0,0,c.width,c.height);
@@ -768,25 +708,22 @@ function resetFile() {
 $('fileInput').addEventListener('change', e => { if(e.target.files[0]) handleFile(e.target.files[0]); });
 
 const dz = $('dropzone');
-dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', ()  => dz.classList.remove('drag'));
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', ()  => dz.classList.remove('dragover'));
 dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag');
+  e.preventDefault(); dz.classList.remove('dragover');
   if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 });
 
-$('btnRemove').addEventListener('click', e => { e.stopPropagation(); resetFile(); });
+$('btnRemove').addEventListener('click',  e => { e.stopPropagation(); resetFile(); });
 $('btnProcess').addEventListener('click', processPdf);
 
 $('btnPrev').addEventListener('click', () => { if(currentPage>1){ currentPage--; updateSidebar(); renderCurrentPage(); } });
 $('btnNext').addEventListener('click', () => { if(currentPage<totalPages){ currentPage++; updateSidebar(); renderCurrentPage(); } });
+$('btnZoomIn').addEventListener('click',  () => { zoomScale = Math.min(3, zoomScale+0.25); renderCurrentPage(); $('zoomLbl').textContent = Math.round(zoomScale*100)+'%'; });
+$('btnZoomOut').addEventListener('click', () => { zoomScale = Math.max(0.25, zoomScale-0.25); renderCurrentPage(); $('zoomLbl').textContent = Math.round(zoomScale*100)+'%'; });
 
-$('btnZoomIn').addEventListener('click',  () => { zoomScale = Math.min(3, zoomScale+0.25);    renderCurrentPage(); document.getElementById('zoomLbl').textContent = Math.round(zoomScale*100)+'%'; });
-$('btnZoomOut').addEventListener('click', () => { zoomScale = Math.max(0.25, zoomScale-0.25); renderCurrentPage(); document.getElementById('zoomLbl').textContent = Math.round(zoomScale*100)+'%'; });
-
-['targetSize','orientation','overflowMode'].forEach(id => {
-  $(id).addEventListener('change', () => { updateSidebar(); renderCurrentPage(); });
-});
+['targetSize','orientation','overflowMode'].forEach(id => $(id).addEventListener('change', () => { updateSidebar(); renderCurrentPage(); }));
 $('extraMargin').addEventListener('input', () => { updateSidebar(); renderCurrentPage(); });
 
 /* ── INIT ── */

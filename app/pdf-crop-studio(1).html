@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Crop Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<style>
+  :root{
+    --bg:#15171b;
+    --panel:#1c1f24;
+    --panel-2:#23262c;
+    --panel-3:#2a2e35;
+    --border:#34383f;
+    --ink:#f0eee6;
+    --muted:#8b9099;
+    --muted-2:#5d6169;
+    --accent:#6c5ce7;
+    --accent-ink:#ffffff;
+    --mark:#ffc857;
+    --danger:#e8623d;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  ::selection{background:var(--accent);color:#fff;}
+
+  /* ---------- layout shell ---------- */
+  #app{display:flex;flex-direction:column;height:100vh;}
+  header{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 20px;border-bottom:1px solid var(--border);
+    background:var(--panel);flex:0 0 auto;
+  }
+  .brandmark{
+    width:26px;height:26px;position:relative;flex:0 0 auto;
+  }
+  .brandmark span{
+    position:absolute;width:9px;height:9px;border-color:var(--mark);border-style:solid;
+  }
+  .brandmark span:nth-child(1){top:0;left:0;border-width:2px 0 0 2px;}
+  .brandmark span:nth-child(2){top:0;right:0;border-width:2px 2px 0 0;}
+  .brandmark span:nth-child(3){bottom:0;left:0;border-width:0 0 2px 2px;}
+  .brandmark span:nth-child(4){bottom:0;right:0;border-width:0 2px 2px 0;}
+  header h1{font-size:16px;font-weight:600;margin:0;letter-spacing:.2px;}
+  header .tag{font-size:11px;color:var(--muted);margin-left:2px;}
+  header .file-info{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);}
+  header .file-info b{color:var(--ink);font-weight:500;}
+  .btn-ghost{
+    background:transparent;border:1px solid var(--border);color:var(--ink);
+    padding:7px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;font-family:'Inter',sans-serif;
+  }
+  .btn-ghost:hover{border-color:var(--muted);}
+
+  /* ---------- upload screen ---------- */
+  #uploadScreen{
+    flex:1;display:flex;align-items:center;justify-content:center;padding:40px;
+  }
+  .dropzone{
+    width:min(560px,90vw);border:1.5px dashed var(--border);border-radius:16px;
+    padding:56px 40px;text-align:center;background:var(--panel);
+    transition:border-color .15s, background .15s;cursor:pointer;position:relative;
+  }
+  .dropzone.drag{border-color:var(--mark);background:var(--panel-2);}
+  .dropzone .icon{
+    width:56px;height:56px;margin:0 auto 20px;position:relative;
+  }
+  .dropzone .icon span{position:absolute;width:16px;height:16px;border-color:var(--mark);border-style:solid;}
+  .dropzone .icon span:nth-child(1){top:0;left:0;border-width:3px 0 0 3px;}
+  .dropzone .icon span:nth-child(2){top:0;right:0;border-width:3px 3px 0 0;}
+  .dropzone .icon span:nth-child(3){bottom:0;left:0;border-width:0 0 3px 3px;}
+  .dropzone .icon span:nth-child(4){bottom:0;right:0;border-width:0 3px 3px 0;}
+  .dropzone h2{font-size:19px;margin:0 0 8px;font-weight:600;}
+  .dropzone p{font-size:13.5px;color:var(--muted);margin:0 0 22px;line-height:1.6;}
+  .dropzone .browse{
+    display:inline-block;background:var(--accent);color:#fff;padding:10px 22px;
+    border-radius:8px;font-size:13.5px;font-weight:500;cursor:pointer;
+  }
+  .dropzone .hint{margin-top:16px;font-size:11.5px;color:var(--muted-2);}
+  #fileInput{display:none;}
+
+  /* ---------- main app ---------- */
+  #mainScreen{flex:1;display:none;min-height:0;}
+  #mainScreen.active{display:flex;}
+
+  aside{
+    width:272px;flex:0 0 auto;background:var(--panel);border-right:1px solid var(--border);
+    overflow-y:auto;padding:18px 16px 40px;
+  }
+  .side-section{margin-bottom:24px;}
+  .side-label{
+    font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .ratio-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .ratio-btn{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:9px 6px;border-radius:8px;font-size:12.5px;cursor:pointer;text-align:left;
+    display:flex;flex-direction:column;gap:1px;
+  }
+  .ratio-btn b{font-size:12.5px;font-weight:600;}
+  .ratio-btn small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);}
+  .ratio-btn:hover{border-color:var(--muted-2);}
+  .ratio-btn.active{border-color:var(--mark);background:rgba(255,200,87,.08);}
+  .ratio-btn.active small{color:var(--mark);}
+
+  .custom-ratio{display:flex;align-items:center;gap:6px;margin-top:8px;}
+  .custom-ratio input{
+    width:0;flex:1;background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:7px 8px;border-radius:6px;font-size:12.5px;font-family:'IBM Plex Mono',monospace;
+  }
+  .custom-ratio span{color:var(--muted-2);font-size:12px;}
+  .custom-ratio button{
+    background:var(--panel-3);border:1px solid var(--border);color:var(--ink);
+    border-radius:6px;padding:7px 10px;font-size:12px;cursor:pointer;flex:0 0 auto;
+  }
+  .custom-ratio button:hover{border-color:var(--muted-2);}
+
+  .fit-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+  .fit-btn{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:8px 6px;border-radius:8px;font-size:12px;cursor:pointer;
+  }
+  .fit-btn:hover{border-color:var(--muted-2);}
+
+  .slider-row{display:flex;align-items:center;gap:10px;}
+  .slider-row input[type=range]{flex:1;accent-color:var(--accent);}
+  .slider-row .val{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);width:42px;text-align:right;}
+
+  .rotate-row{display:flex;gap:6px;}
+  .rotate-row button{
+    flex:1;background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:9px 0;border-radius:8px;cursor:pointer;font-size:15px;
+  }
+  .rotate-row button:hover{border-color:var(--muted-2);}
+  .rotate-note{font-size:11px;color:var(--muted-2);margin-top:8px;line-height:1.5;}
+
+  select, .select-like{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:9px 10px;border-radius:8px;font-size:12.5px;font-family:'Inter',sans-serif;
+  }
+  #rangeInput{
+    width:100%;margin-top:8px;background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    padding:8px 10px;border-radius:8px;font-size:12px;font-family:'IBM Plex Mono',monospace;display:none;
+  }
+
+  .export-btn{
+    width:100%;background:var(--mark);color:#20180a;border:none;padding:13px 0;
+    border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;letter-spacing:.2px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .export-btn:hover{filter:brightness(1.06);}
+  .export-btn:disabled{opacity:.5;cursor:not-allowed;}
+  .export-hint{font-size:11px;color:var(--muted-2);margin-top:8px;text-align:center;}
+
+  /* ---------- preview area ---------- */
+  main{flex:1;display:flex;flex-direction:column;min-width:0;background:#101215;}
+  .preview-top{
+    display:flex;align-items:center;gap:14px;padding:10px 18px;
+    border-bottom:1px solid var(--border);background:var(--panel);flex:0 0 auto;
+  }
+  .pagenav{display:flex;align-items:center;gap:8px;}
+  .pagenav button{
+    background:var(--panel-2);border:1px solid var(--border);color:var(--ink);
+    width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;
+  }
+  .pagenav button:disabled{opacity:.35;cursor:default;}
+  .pagenav .pageinfo{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--muted);min-width:70px;text-align:center;}
+  .preview-top .spacer{flex:1;}
+  .zoom-readout{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);}
+  .box-readout{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted-2);}
+
+  .canvas-wrap{
+    flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;
+    padding:36px;position:relative;
+  }
+  .page-stage{position:relative;flex:0 0 auto;box-shadow:0 10px 40px rgba(0,0,0,.45);}
+  .page-stage canvas{display:block;background:#fff;}
+
+  .crop-overlay{position:absolute;inset:0;}
+  .shade{position:absolute;background:rgba(10,11,13,.62);}
+  .cropbox{
+    position:absolute;border:1.5px solid var(--mark);cursor:move;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35);
+  }
+  .cropbox .grid-line{position:absolute;background:rgba(255,200,87,.28);}
+
+  .handle{position:absolute;}
+  .handle.corner{width:20px;height:20px;}
+  .handle.corner i{position:absolute;width:14px;height:14px;border-color:var(--mark);border-style:solid;}
+  .handle[data-h="nw"]{top:-10px;left:-10px;cursor:nwse-resize;}
+  .handle[data-h="nw"] i{top:3px;left:3px;border-width:3px 0 0 3px;}
+  .handle[data-h="ne"]{top:-10px;right:-10px;cursor:nesw-resize;}
+  .handle[data-h="ne"] i{top:3px;right:3px;border-width:3px 3px 0 0;}
+  .handle[data-h="sw"]{bottom:-10px;left:-10px;cursor:nesw-resize;}
+  .handle[data-h="sw"] i{bottom:3px;left:3px;border-width:0 0 3px 3px;}
+  .handle[data-h="se"]{bottom:-10px;right:-10px;cursor:nwse-resize;}
+  .handle[data-h="se"] i{bottom:3px;right:3px;border-width:0 3px 3px 0;}
+
+  .handle.edge{background:var(--mark);border-radius:2px;}
+  .handle[data-h="n"]{top:-4px;left:50%;transform:translateX(-50%);width:28px;height:7px;cursor:ns-resize;}
+  .handle[data-h="s"]{bottom:-4px;left:50%;transform:translateX(-50%);width:28px;height:7px;cursor:ns-resize;}
+  .handle[data-h="w"]{left:-4px;top:50%;transform:translateY(-50%);width:7px;height:28px;cursor:ew-resize;}
+  .handle[data-h="e"]{right:-4px;top:50%;transform:translateY(-50%);width:7px;height:28px;cursor:ew-resize;}
+
+  /* ---------- misc ---------- */
+  .loading-veil{
+    position:absolute;inset:0;background:rgba(16,18,21,.75);display:none;
+    align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:50;
+  }
+  .loading-veil.active{display:flex;}
+  .spinner{
+    width:26px;height:26px;border-radius:50%;border:2.5px solid var(--border);
+    border-top-color:var(--mark);animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-veil span{font-size:12px;color:var(--muted);}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    background:var(--panel-3);border:1px solid var(--border);color:var(--ink);
+    padding:11px 18px;border-radius:9px;font-size:12.5px;z-index:100;
+    display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .toast.error{border-color:var(--danger);}
+  .toast.show{display:block;}
+
+  @media (max-width:820px){
+    aside{width:220px;}
+    header .tag{display:none;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div class="brandmark"><span></span><span></span><span></span><span></span></div>
+    <h1>PDF Crop Studio</h1>
+    <span class="tag">crop berdasarkan rasio kertas, bukan cm/inci</span>
+    <div class="file-info" id="fileInfo" style="display:none;">
+      <span class="mono" id="fileNameLabel"></span>
+      <button class="btn-ghost" id="changeFileBtn">Ganti File</button>
+    </div>
+  </header>
+
+  <!-- upload screen -->
+  <div id="uploadScreen">
+    <div class="dropzone" id="dropzone">
+      <div class="icon"><span></span><span></span><span></span><span></span></div>
+      <h2>Upload PDF untuk mulai crop</h2>
+      <p>Drag &amp; drop file di sini, atau klik untuk memilih.<br>Semua proses berjalan di browser — file tidak dikirim ke server.</p>
+      <span class="browse">Pilih File PDF</span>
+      <div class="hint">Format .pdf · Maksimal 100 MB</div>
+      <input type="file" id="fileInput" accept="application/pdf">
+    </div>
+  </div>
+
+  <!-- main app -->
+  <div id="mainScreen">
+    <aside>
+      <div class="side-section">
+        <div class="side-label">Rasio Kertas</div>
+        <div class="ratio-grid" id="ratioGrid"></div>
+        <div class="custom-ratio">
+          <input type="number" id="customW" placeholder="W" min="1" step="any">
+          <span>:</span>
+          <input type="number" id="customH" placeholder="H" min="1" step="any">
+          <button id="applyCustomRatio">Terapkan</button>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">Posisi Crop Box</div>
+        <div class="fit-grid">
+          <button class="fit-btn" data-fit="width">Fit Width</button>
+          <button class="fit-btn" data-fit="height">Fit Height</button>
+          <button class="fit-btn" data-fit="center">Center</button>
+          <button class="fit-btn" data-fit="full">Full Page</button>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">Zoom Preview</div>
+        <div class="slider-row">
+          <input type="range" id="zoomSlider" min="25" max="300" value="100" step="1">
+          <span class="val mono" id="zoomVal">100%</span>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">Rotasi Output</div>
+        <div class="rotate-row">
+          <button id="rotateCCW">⟲ -90°</button>
+          <button id="rotateCW">⟳ +90°</button>
+        </div>
+        <div class="rotate-note">Saat ini: <b class="mono" id="rotVal">0°</b> tambahan. Rotasi diterapkan ke file hasil export, bukan ke pratinjau.</div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-label">Terapkan ke</div>
+        <select id="applyScope">
+          <option value="current">Halaman ini saja</option>
+          <option value="all" selected>Semua halaman</option>
+          <option value="range">Halaman tertentu…</option>
+        </select>
+        <input type="text" id="rangeInput" placeholder="contoh: 1-3, 5, 7-9">
+      </div>
+
+      <div class="side-section">
+        <button class="export-btn" id="exportBtn">Crop &amp; Download PDF</button>
+        <div class="export-hint" id="exportHint">Rasio: — · Terapkan ke: semua halaman</div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="preview-top">
+        <div class="pagenav">
+          <button id="prevPage">‹</button>
+          <span class="pageinfo mono" id="pageInfo">1 / 1</span>
+          <button id="nextPage">›</button>
+        </div>
+        <div class="spacer"></div>
+        <span class="box-readout mono" id="boxReadout"></span>
+        <span class="zoom-readout" id="zoomReadout2"></span>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <div class="page-stage" id="pageStage">
+          <canvas id="pdfCanvas"></canvas>
+          <div class="crop-overlay" id="cropOverlay"></div>
+        </div>
+        <div class="loading-veil" id="loadingVeil"><div class="spinner"></div><span id="loadingLabel">Memuat PDF…</span></div>
+      </div>
+    </main>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+/* ---------------- constants ---------------- */
+const RATIOS = {
+  original: {label:"Original", sub:"halaman", w:null, h:null},
+  a5:  {label:"A5",     sub:"148:210", w:148, h:210},
+  a4:  {label:"A4",     sub:"210:297", w:210, h:297},
+  f4:  {label:"F4",     sub:"210:330", w:210, h:330},
+  letter:{label:"Letter", sub:"8.5:11", w:8.5, h:11},
+  legal: {label:"Legal",  sub:"8.5:14", w:8.5, h:14},
+  a3:  {label:"A3",     sub:"297:420", w:297, h:420},
+  square:{label:"Square", sub:"1:1", w:1, h:1},
+};
+const RETINA = 2;
+const MIN_FRAC = 0.04;
+
+/* ---------------- state ---------------- */
+let originalBytes = null;   // ArrayBuffer for pdf-lib export
+let fileName = "document";
+let pdfDoc = null;          // pdf.js document
+let numPages = 1;
+let currentPageNum = 1;
+let baseFitScale = 1;
+let lockedRatio = null;     // real-world w/h
+let activePresetKey = "original";
+let cropRect = {x:0,y:0,w:1,h:1}; // fraction of page
+let zoomPct = 100;
+let rotationDelta = 0;
+let applyScope = "all";
+
+const $ = (id)=>document.getElementById(id);
+
+/* ---------------- upload handling ---------------- */
+const dropzone = $("dropzone");
+const fileInput = $("fileInput");
+
+dropzone.addEventListener("click", ()=>fileInput.click());
+["dragenter","dragover"].forEach(ev=>dropzone.addEventListener(ev,(e)=>{e.preventDefault();dropzone.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>dropzone.addEventListener(ev,(e)=>{e.preventDefault();dropzone.classList.remove("drag");}));
+dropzone.addEventListener("drop",(e)=>{
+  const f = e.dataTransfer.files[0];
+  if(f) handleFile(f);
+});
+fileInput.addEventListener("change",(e)=>{
+  const f = e.target.files[0];
+  if(f) handleFile(f);
+});
+$("changeFileBtn").addEventListener("click", ()=>{
+  $("mainScreen").classList.remove("active");
+  $("uploadScreen").style.display="flex";
+  $("fileInfo").style.display="none";
+  fileInput.value="";
+});
+
+function handleFile(file){
+  if(file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")){
+    showToast("File harus berformat PDF.", true);
+    return;
+  }
+  if(file.size > 100*1024*1024){
+    showToast("Ukuran file melebihi 100 MB.", true);
+    return;
+  }
+  fileName = file.name.replace(/\.pdf$/i,"");
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    originalBytes = e.target.result;
+    await openPdf(originalBytes.slice(0));
+  };
+  reader.onerror = ()=> showToast("Gagal membaca file.", true);
+  reader.readAsArrayBuffer(file);
+}
+
+async function openPdf(bufferForPdfJs){
+  showLoading(true, "Memuat PDF…");
+  try{
+    const task = pdfjsLib.getDocument({data:bufferForPdfJs});
+    pdfDoc = await task.promise;
+    numPages = pdfDoc.numPages;
+    currentPageNum = 1;
+    rotationDelta = 0;
+    updateRotLabel();
+
+    $("uploadScreen").style.display="none";
+    $("mainScreen").classList.add("active");
+    $("fileInfo").style.display="flex";
+    $("fileNameLabel").textContent = fileName + ".pdf · " + numPages + " hlm";
+
+    activePresetKey = "original";
+    await renderCurrentPage(true);
+    setPreset("original");
+  }catch(err){
+    console.error(err);
+    showToast("Gagal memuat PDF. Pastikan file tidak rusak.", true);
+  }finally{
+    showLoading(false);
+  }
+}
+
+/* ---------------- ratio sidebar ---------------- */
+const ratioGrid = $("ratioGrid");
+Object.entries(RATIOS).forEach(([key,r])=>{
+  const btn = document.createElement("button");
+  btn.className="ratio-btn";
+  btn.dataset.key=key;
+  btn.innerHTML = `<b>${r.label}</b><small>${r.sub}</small>`;
+  btn.addEventListener("click", ()=>setPreset(key));
+  ratioGrid.appendChild(btn);
+});
+
+$("applyCustomRatio").addEventListener("click", ()=>{
+  const w = parseFloat($("customW").value);
+  const h = parseFloat($("customH").value);
+  if(!w || !h || w<=0 || h<=0){
+    showToast("Masukkan rasio W dan H yang valid.", true);
+    return;
+  }
+  setPreset("custom", w/h);
+});
+
+function setPreset(key, customRatio){
+  activePresetKey = key;
+  document.querySelectorAll(".ratio-btn").forEach(b=>b.classList.toggle("active", b.dataset.key===key));
+
+  const {width:cw, height:ch} = currentCanvasPx();
+  if(key==="original"){
+    lockedRatio = cw/ch;
+  }else{
+    let ratio = key==="custom" ? customRatio : RATIOS[key].w/RATIOS[key].h;
+    const pageIsLandscape = cw>ch, ratioIsLandscape = ratio>1;
+    if(pageIsLandscape !== ratioIsLandscape) ratio = 1/ratio;
+    lockedRatio = ratio;
+  }
+  cropRect = fitBox("full");
+  drawOverlay();
+  updateHints();
+}
+
+/* ---------------- fit buttons ---------------- */
+document.querySelectorAll(".fit-btn").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    cropRect = fitBox(b.dataset.fit);
+    drawOverlay();
+    updateHints();
+  });
+});
+
+function fitBox(mode){
+  const {width:cw, height:ch} = currentCanvasPx();
+  const k = lockedRatio ? (lockedRatio / (cw/ch)) : (cropRect.w/cropRect.h); // fraction-space aspect fw/fh
+  let w,h;
+  if(mode==="width"){
+    w = 1; h = w/k;
+    if(h>1){ h=1; w=h*k; }
+  }else if(mode==="height"){
+    h = 1; w = h*k;
+    if(w>1){ w=1; h=w/k; }
+  }else if(mode==="center"){
+    w = cropRect.w; h = cropRect.h;
+  }else{ // full / contain
+    if(k >= 1){ w=1; h=w/k; if(h>1){h=1; w=h*k;} }
+    else { h=1; w=h*k; if(w>1){w=1; h=w/k;} }
+  }
+  const x = (1-w)/2;
+  const y = (1-h)/2;
+  return {x,y,w,h};
+}
+
+/* ---------------- zoom / rotate / scope ---------------- */
+const zoomSlider = $("zoomSlider");
+let zoomDebounce=null;
+zoomSlider.addEventListener("input", ()=>{
+  zoomPct = parseInt(zoomSlider.value,10);
+  $("zoomVal").textContent = zoomPct+"%";
+  clearTimeout(zoomDebounce);
+  zoomDebounce = setTimeout(()=>renderCurrentPage(false), 120);
+});
+
+$("rotateCCW").addEventListener("click", ()=>{ rotationDelta=(rotationDelta+270)%360; updateRotLabel(); });
+$("rotateCW").addEventListener("click", ()=>{ rotationDelta=(rotationDelta+90)%360; updateRotLabel(); });
+function updateRotLabel(){ $("rotVal").textContent = rotationDelta+"°"; }
+
+$("applyScope").addEventListener("change",(e)=>{
+  applyScope = e.target.value;
+  $("rangeInput").style.display = applyScope==="range" ? "block":"none";
+  updateHints();
+});
+$("rangeInput").addEventListener("input", updateHints);
+
+function updateHints(){
+  const ratioLabel = activePresetKey==="custom" ? lockedRatio.toFixed(3) : (RATIOS[activePresetKey]?RATIOS[activePresetKey].label:"—");
+  const scopeLabel = applyScope==="current" ? "halaman ini" : applyScope==="all" ? "semua halaman" : "halaman terpilih";
+  $("exportHint").textContent = `Rasio: ${ratioLabel} · Terapkan ke: ${scopeLabel}`;
+}
+
+/* ---------------- page nav ---------------- */
+$("prevPage").addEventListener("click", ()=>{ if(currentPageNum>1){ currentPageNum--; renderCurrentPage(false); } });
+$("nextPage").addEventListener("click", ()=>{ if(currentPageNum<numPages){ currentPageNum++; renderCurrentPage(false); } });
+
+/* ---------------- rendering ---------------- */
+const canvas = $("pdfCanvas");
+const ctx = canvas.getContext("2d");
+const pageStage = $("pageStage");
+const canvasWrap = $("canvasWrap");
+
+function currentCanvasPx(){
+  return {width: canvas.width/RETINA, height: canvas.height/RETINA};
+}
+
+async function renderCurrentPage(recalcFit){
+  if(!pdfDoc) return;
+  showLoading(true, "Merender halaman…");
+  try{
+    const page = await pdfDoc.getPage(currentPageNum);
+    const viewport1 = page.getViewport({scale:1, rotation:0});
+    if(recalcFit || !baseFitScale){
+      const containerW = Math.max(280, canvasWrap.clientWidth - 72);
+      const containerH = Math.max(280, window.innerHeight*0.95 - 100);
+      baseFitScale = Math.min(containerW/viewport1.width, containerH/viewport1.height, 2.2);
+    }
+    const scale = baseFitScale*(zoomPct/100)*RETINA;
+    const viewport = page.getViewport({scale, rotation:0});
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    canvas.style.width = (viewport.width/RETINA)+"px";
+    canvas.style.height = (viewport.height/RETINA)+"px";
+    pageStage.style.width = (viewport.width/RETINA)+"px";
+    pageStage.style.height = (viewport.height/RETINA)+"px";
+    $("cropOverlay").style.width = (viewport.width/RETINA)+"px";
+    $("cropOverlay").style.height = (viewport.height/RETINA)+"px";
+
+    await page.render({canvasContext:ctx, viewport}).promise;
+
+    $("pageInfo").textContent = currentPageNum+" / "+numPages;
+    $("prevPage").disabled = currentPageNum<=1;
+    $("nextPage").disabled = currentPageNum>=numPages;
+    $("zoomReadout2").textContent = zoomPct+"% zoom";
+
+    drawOverlay();
+  }catch(err){
+    console.error(err);
+    showToast("Gagal merender halaman.", true);
+  }finally{
+    showLoading(false);
+  }
+}
+
+window.addEventListener("resize", ()=>{
+  clearTimeout(window.__rsz);
+  window.__rsz = setTimeout(()=>renderCurrentPage(true), 150);
+});
+
+/* ---------------- crop overlay ---------------- */
+const overlay = $("cropOverlay");
+
+function drawOverlay(){
+  const {width:cw, height:ch} = currentCanvasPx();
+  overlay.innerHTML = "";
+
+  const px = {
+    x: cropRect.x*cw, y: cropRect.y*ch,
+    w: cropRect.w*cw, h: cropRect.h*ch
+  };
+
+  // shading (4 rects around the box)
+  const shades = [
+    {top:0,left:0,width:cw,height:px.y},                              // top
+    {top:px.y+px.h,left:0,width:cw,height:ch-(px.y+px.h)},            // bottom
+    {top:px.y,left:0,width:px.x,height:px.h},                         // left
+    {top:px.y,left:px.x+px.w,width:cw-(px.x+px.w),height:px.h},       // right
+  ];
+  shades.forEach(s=>{
+    if(s.width<=0||s.height<=0) return;
+    const d = document.createElement("div");
+    d.className="shade";
+    Object.assign(d.style,{top:s.top+"px",left:s.left+"px",width:s.width+"px",height:s.height+"px"});
+    overlay.appendChild(d);
+  });
+
+  // box
+  const box = document.createElement("div");
+  box.className="cropbox";
+  Object.assign(box.style,{left:px.x+"px",top:px.y+"px",width:px.w+"px",height:px.h+"px"});
+
+  // rule-of-thirds grid
+  [1,2].forEach(i=>{
+    const v=document.createElement("div");
+    v.className="grid-line";
+    Object.assign(v.style,{left:(px.w*i/3)+"px",top:0,width:"1px",height:px.h+"px"});
+    box.appendChild(v);
+    const h=document.createElement("div");
+    h.className="grid-line";
+    Object.assign(h.style,{top:(px.h*i/3)+"px",left:0,height:"1px",width:px.w+"px"});
+    box.appendChild(h);
+  });
+
+  const handles = ["n","s","e","w","nw","ne","sw","se"];
+  handles.forEach(h=>{
+    const el = document.createElement("div");
+    const isCorner = h.length===2;
+    el.className = "handle "+(isCorner?"corner":"edge");
+    el.dataset.h = h;
+    if(isCorner){ el.innerHTML="<i></i>"; }
+    box.appendChild(el);
+  });
+
+  overlay.appendChild(box);
+  $("boxReadout").textContent = `${(cropRect.w*100).toFixed(0)}% × ${(cropRect.h*100).toFixed(0)}% area`;
+
+  attachDrag(box);
+}
+
+/* ---------------- drag / resize logic ---------------- */
+function attachDrag(box){
+  box.addEventListener("pointerdown",(e)=>{
+    const handleEl = e.target.closest(".handle");
+    e.stopPropagation();
+    const {width:cw, height:ch} = currentCanvasPx();
+    const stageRect = pageStage.getBoundingClientRect();
+    const toFrac = (clientX, clientY)=>({
+      x:(clientX-stageRect.left)/cw,
+      y:(clientY-stageRect.top)/ch
+    });
+    const startMouse = toFrac(e.clientX, e.clientY);
+    const startRect = {...cropRect};
+
+    let mode, cfg;
+    if(handleEl){
+      mode="resize";
+      const h = handleEl.dataset.h;
+      const map = {
+        n:{type:"edge-v",dirX:0,dirY:-1}, s:{type:"edge-v",dirX:0,dirY:1},
+        w:{type:"edge-h",dirX:-1,dirY:0}, e:{type:"edge-h",dirX:1,dirY:0},
+        nw:{type:"corner",dirX:-1,dirY:-1}, ne:{type:"corner",dirX:1,dirY:-1},
+        sw:{type:"corner",dirX:-1,dirY:1}, se:{type:"corner",dirX:1,dirY:1},
+      };
+      cfg = map[h];
+    }else{
+      mode="move";
+    }
+
+    function onMove(ev){
+      const m = toFrac(ev.clientX, ev.clientY);
+      if(mode==="move"){
+        const dx = m.x-startMouse.x, dy = m.y-startMouse.y;
+        let nx = startRect.x+dx, ny = startRect.y+dy;
+        nx = Math.max(0, Math.min(1-startRect.w, nx));
+        ny = Math.max(0, Math.min(1-startRect.h, ny));
+        cropRect = {x:nx,y:ny,w:startRect.w,h:startRect.h};
+      }else{
+        const {width:cw2, height:ch2} = currentCanvasPx();
+        const k = lockedRatio / (cw2/ch2);
+        cropRect = computeResize(cfg, startRect, m.x, m.y, k);
+      }
+      drawOverlay();
+    }
+    function onUp(){
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+    }
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+  });
+}
+
+function computeResize(cfg, startRect, mfx, mfy, k){
+  const anchorX = cfg.dirX!==0 ? (cfg.dirX<0 ? startRect.x+startRect.w : startRect.x) : null;
+  const anchorY = cfg.dirY!==0 ? (cfg.dirY<0 ? startRect.y+startRect.h : startRect.y) : null;
+  const centerX = startRect.x+startRect.w/2;
+  const centerY = startRect.y+startRect.h/2;
+  let finalW, finalH, maxW, maxH;
+
+  if(cfg.type==="corner"){
+    const rawW = Math.abs(mfx-anchorX), rawH = Math.abs(mfy-anchorY);
+    const c1w=rawW, c1h=rawW/k, c2w=rawH*k, c2h=rawH;
+    if(c1w*c1h >= c2w*c2h){ finalW=c1w; finalH=c1h; } else { finalW=c2w; finalH=c2h; }
+    maxW = cfg.dirX<0 ? anchorX : 1-anchorX;
+    maxH = cfg.dirY<0 ? anchorY : 1-anchorY;
+  }else if(cfg.type==="edge-v"){
+    const rawH = Math.abs(mfy-anchorY);
+    finalH = rawH; finalW = rawH*k;
+    maxH = cfg.dirY<0 ? anchorY : 1-anchorY;
+    maxW = 2*Math.min(centerX, 1-centerX);
+  }else{
+    const rawW = Math.abs(mfx-anchorX);
+    finalW = rawW; finalH = rawW/k;
+    maxW = cfg.dirX<0 ? anchorX : 1-anchorX;
+    maxH = 2*Math.min(centerY, 1-centerY);
+  }
+
+  const scale = Math.min(1, finalW>0?maxW/finalW:1, finalH>0?maxH/finalH:1);
+  finalW*=scale; finalH*=scale;
+  if(finalW<MIN_FRAC || finalH<MIN_FRAC){
+    finalW=MIN_FRAC; finalH=MIN_FRAC/k;
+    if(finalH<MIN_FRAC){ finalH=MIN_FRAC; finalW=MIN_FRAC*k; }
+  }
+
+  let x,y;
+  if(cfg.type==="corner"){
+    x = cfg.dirX<0 ? anchorX-finalW : anchorX;
+    y = cfg.dirY<0 ? anchorY-finalH : anchorY;
+  }else if(cfg.type==="edge-v"){
+    x = centerX-finalW/2;
+    y = cfg.dirY<0 ? anchorY-finalH : anchorY;
+  }else{
+    x = cfg.dirX<0 ? anchorX-finalW : anchorX;
+    y = centerY-finalH/2;
+  }
+  x = Math.max(0, Math.min(1-finalW, x));
+  y = Math.max(0, Math.min(1-finalH, y));
+  return {x,y,w:finalW,h:finalH};
+}
+
+/* ---------------- export ---------------- */
+$("exportBtn").addEventListener("click", exportPdf);
+
+function parseRange(str, total){
+  const set = new Set();
+  str.split(",").forEach(part=>{
+    part = part.trim();
+    if(!part) return;
+    if(part.includes("-")){
+      const [a,b] = part.split("-").map(n=>parseInt(n.trim(),10));
+      if(!isNaN(a) && !isNaN(b)){
+        const lo=Math.max(1,Math.min(a,b)), hi=Math.min(total,Math.max(a,b));
+        for(let i=lo;i<=hi;i++) set.add(i-1);
+      }
+    }else{
+      const n = parseInt(part,10);
+      if(!isNaN(n) && n>=1 && n<=total) set.add(n-1);
+    }
+  });
+  return [...set].sort((a,b)=>a-b);
+}
+
+async function exportPdf(){
+  if(!originalBytes){ return; }
+  const btn = $("exportBtn");
+  btn.disabled = true;
+  showLoading(true, "Memproses & meng-crop PDF…");
+  try{
+    const { PDFDocument, degrees } = PDFLib;
+    const doc = await PDFDocument.load(originalBytes.slice(0));
+    const pages = doc.getPages();
+    const total = pages.length;
+
+    let targets;
+    if(applyScope==="current") targets=[currentPageNum-1];
+    else if(applyScope==="all") targets=[...Array(total).keys()];
+    else{
+      targets = parseRange($("rangeInput").value, total);
+      if(targets.length===0){
+        showToast("Rentang halaman tidak valid.", true);
+        btn.disabled=false; showLoading(false);
+        return;
+      }
+    }
+
+    targets.forEach(idx=>{
+      const page = pages[idx];
+      const {width:Wp, height:Hp} = page.getSize();
+      const cropX = cropRect.x*Wp;
+      const cropW = cropRect.w*Wp;
+      const cropY = (1-cropRect.y-cropRect.h)*Hp;
+      const cropH = cropRect.h*Hp;
+      page.setMediaBox(cropX, cropY, cropW, cropH);
+      page.setCropBox(cropX, cropY, cropW, cropH);
+      if(rotationDelta!==0){
+        const cur = page.getRotation().angle||0;
+        page.setRotation(degrees((cur+rotationDelta)%360));
+      }
+    });
+
+    const outBytes = await doc.save();
+    const blob = new Blob([outBytes], {type:"application/pdf"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName+"-cropped.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast("PDF berhasil di-crop dan diunduh.");
+  }catch(err){
+    console.error(err);
+    showToast("Gagal mengekspor PDF.", true);
+  }finally{
+    btn.disabled = false;
+    showLoading(false);
+  }
+}
+
+/* ---------------- utils ---------------- */
+function showLoading(on, label){
+  const veil = $("loadingVeil");
+  if(label) $("loadingLabel").textContent = label;
+  veil.classList.toggle("active", on);
+}
+function showToast(msg, isError){
+  const t = $("toast");
+  t.textContent = msg;
+  t.className = "toast show"+(isError?" error":"");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 3200);
+}
+</script>
+</body>
+</html>

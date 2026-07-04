@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Scanner Effect (Auto Orientation & Accurate Preview)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --bg: #F3F4F6;
+            --surface: #FFFFFF;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--surface);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        /* File Input Styling */
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: var(--primary);
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-text {
+            font-weight: 500;
+            color: var(--primary);
+        }
+
+        .file-name {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            word-break: break-all;
+        }
+
+        /* Buttons */
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s ease, opacity 0.2s ease;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #status {
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Preview Area */
+        .preview-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 1rem;
+        }
+
+        .file-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-light);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .nav-btn {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:disabled {
+            background-color: var(--border);
+            color: var(--text-light);
+        }
+
+        .preview-container {
+            flex-grow: 1;
+            background-color: #E5E7EB;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            min-height: 400px;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .empty-state {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card control-section">
+            <h2>Ubah PDF ke Hasil Scan</h2>
+            <p class="subtitle">Pratinjau kini 100% akurat dengan hasil unduhan akhir.</p>
+
+            <div class="file-upload-wrapper">
+                <span class="upload-text">📁 Pilih atau Letakkan file PDF di sini (bisa pilih beberapa sekaligus)</span>
+                <span class="file-name" id="fileName">Belum ada file terpilih</span>
+                <input type="file" id="pdfInput" accept="application/pdf" multiple onchange="handleFileSelect(event)">
+            </div>
+
+            <button id="downloadBtn" onclick="processAndDownloadPDF()" disabled>Unduh PDF Hasil Scan</button>
+            <p id="status"></p>
+        </div>
+
+        <div class="card preview-section">
+            <div class="preview-header">
+                <h2 style="font-size: 1.25rem;">Live Preview (Halaman 1)</h2>
+                <div class="file-nav" id="fileNav" style="display:none;">
+                    <button type="button" class="nav-btn" id="prevFileBtn" onclick="prevFile()">‹</button>
+                    <span id="fileCounter">1 / 1</span>
+                    <button type="button" class="nav-btn" id="nextFileBtn" onclick="nextFile()">›</button>
+                </div>
+            </div>
+            <div class="preview-container">
+                <p class="empty-state" id="emptyState">Pratinjau akan muncul di sini setelah file dipilih.</p>
+                <canvas id="previewCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+        let pdfFiles = [];        // Array of File objects
+        let pdfDocsCache = [];    // Array of loaded pdf.js documents (lazy, same index as pdfFiles)
+        let currentIndex = 0;
+        const RENDER_SCALE = 2.0; // Gunakan resolusi yang sama persis untuk Preview dan Download
+
+        async function handleFileSelect(event) {
+            const files = Array.from(event.target.files || []);
+            if (files.length === 0) return;
+
+            pdfFiles = files;
+            pdfDocsCache = new Array(files.length).fill(null);
+            currentIndex = 0;
+
+            document.getElementById('downloadBtn').disabled = true;
+            updateFileNav();
+
+            document.getElementById('status').innerText = 'Memuat pratinjau resolusi tinggi...';
+            document.getElementById('status').style.color = '#6B7280';
+
+            await showFile(0);
+
+            document.getElementById('status').innerText = 'Pratinjau siap. Silakan unduh.';
+            document.getElementById('status').style.color = '#10B981';
+            document.getElementById('downloadBtn').disabled = false;
+        }
+
+        async function getDocAt(index) {
+            if (!pdfDocsCache[index]) {
+                const fileURL = URL.createObjectURL(pdfFiles[index]);
+                pdfDocsCache[index] = await pdfjsLib.getDocument(fileURL).promise;
+            }
+            return pdfDocsCache[index];
+        }
+
+        async function showFile(index) {
+            currentIndex = index;
+            document.getElementById('fileName').innerText =
+                pdfFiles.length > 1
+                    ? `${pdfFiles[index].name} (${index + 1}/${pdfFiles.length})`
+                    : pdfFiles[index].name;
+
+            const doc = await getDocAt(index);
+            await renderPreview(doc);
+            updateFileNav();
+        }
+
+        function updateFileNav() {
+            const nav = document.getElementById('fileNav');
+            if (pdfFiles.length > 1) {
+                nav.style.display = 'flex';
+                document.getElementById('fileCounter').innerText = `${currentIndex + 1} / ${pdfFiles.length}`;
+                document.getElementById('prevFileBtn').disabled = currentIndex === 0;
+                document.getElementById('nextFileBtn').disabled = currentIndex === pdfFiles.length - 1;
+            } else {
+                nav.style.display = 'none';
+            }
+        }
+
+        async function prevFile() {
+            if (currentIndex > 0) await showFile(currentIndex - 1);
+        }
+
+        async function nextFile() {
+            if (currentIndex < pdfFiles.length - 1) await showFile(currentIndex + 1);
+        }
+
+        async function renderPreview(pdfDoc) {
+            if (!pdfDoc) return;
+
+            const page = await pdfDoc.getPage(1);
+            // Menggunakan scale 2.0 agar jumlah pixel di preview identik dengan download
+            const viewport = page.getViewport({ scale: RENDER_SCALE }); 
+            
+            const canvas = document.getElementById('previewCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+
+            document.getElementById('emptyState').style.display = 'none';
+            canvas.style.display = 'block';
+
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            applyScanEffects(ctx, canvas.width, canvas.height);
+        }
+
+        function applyScanEffects(ctx, width, height) {
+            // Deteksi orientasi halaman berdasarkan dimensi canvas
+            const isLandscape = width > height;
+
+            // 1. Tambah Noise (Kepadatan 22) - resolusi penuh, per-pixel
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+            for (let j = 0; j < data.length; j += 4) {
+                let noise = (Math.random() - 0.5) * 22; 
+                data[j] = Math.min(255, Math.max(0, data[j] + noise));     
+                data[j+1] = Math.min(255, Math.max(0, data[j+1] + noise)); 
+                data[j+2] = Math.min(255, Math.max(0, data[j+2] + noise)); 
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            // 2. Garis Tipis - Vertikal untuk Portrait, Horizontal untuk Landscape
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.15)'; 
+            // Ketebalan dinamis berdasarkan dimensi kertas agar tidak ketipisan saat scale 2.0
+            ctx.lineWidth = Math.min(width, height) * 0.0015; 
+
+            if (isLandscape) {
+                // Garis horizontal di 25% dari bawah
+                const lineY = height * 0.75;
+                ctx.moveTo(0, lineY);
+                ctx.lineTo(width, lineY);
+            } else {
+                // Garis vertikal di 25% dari kiri
+                const lineX = width * 0.25;
+                ctx.moveTo(lineX, 0);
+                ctx.lineTo(lineX, height);
+            }
+            ctx.stroke();
+
+            // 3. Efek Bayangan Kertas Bergelombang
+            // Portrait -> pojok kanan-bawah, Landscape -> pojok kanan-atas
+            const radiusBayangan = Math.min(width, height) * 0.4; 
+            const shadowY = isLandscape ? 0 : height;
+            const gradBayangan = ctx.createRadialGradient(
+                width, shadowY, 0, 
+                width, shadowY, radiusBayangan
+            );
+            
+            gradBayangan.addColorStop(0, 'rgba(35, 38, 45, 0.15)'); 
+            gradBayangan.addColorStop(0.5, 'rgba(35, 38, 45, 0.04)'); 
+            gradBayangan.addColorStop(1, 'rgba(35, 38, 45, 0)'); 
+            
+            ctx.fillStyle = gradBayangan;
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function processOneFile(file, doc_) {
+            const { jsPDF } = window.jspdf;
+
+            const firstPage = await doc_.getPage(1);
+            const firstViewport = firstPage.getViewport({ scale: RENDER_SCALE });
+            const firstOrientation = firstViewport.width > firstViewport.height ? 'l' : 'p';
+
+            const outDoc = new jsPDF({
+                orientation: firstOrientation,
+                format: 'a4',
+                unit: 'mm'
+            });
+
+            for (let i = 1; i <= doc_.numPages; i++) {
+                const page = await doc_.getPage(i);
+                const viewport = page.getViewport({ scale: RENDER_SCALE });
+
+                const currentOrientation = viewport.width > viewport.height ? 'l' : 'p';
+
+                if (i > 1) {
+                    outDoc.addPage('a4', currentOrientation);
+                }
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+
+                await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+                applyScanEffects(ctx, canvas.width, canvas.height);
+
+                const imgWidth = outDoc.internal.pageSize.getWidth();
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                outDoc.addImage(canvas.toDataURL('image/jpeg', 0.75), 'JPEG', 0, 0, imgWidth, imgHeight);
+            }
+
+            outDoc.save(`scanned_${file.name}`);
+        }
+
+        async function processAndDownloadPDF() {
+            if (pdfFiles.length === 0) return alert('Silakan pilih file PDF terlebih dahulu.');
+
+            const btn = document.getElementById('downloadBtn');
+            const statusText = document.getElementById('status');
+
+            btn.disabled = true;
+            statusText.style.color = '#4F46E5';
+
+            for (let idx = 0; idx < pdfFiles.length; idx++) {
+                btn.innerText = pdfFiles.length > 1
+                    ? `Memproses ${idx + 1}/${pdfFiles.length}...`
+                    : 'Sedang Memproses...';
+                statusText.innerText = pdfFiles.length > 1
+                    ? `Memproses file ${idx + 1} dari ${pdfFiles.length}: ${pdfFiles[idx].name}`
+                    : 'Memproses seluruh halaman... Harap tunggu.';
+
+                const doc_ = await getDocAt(idx);
+                await processOneFile(pdfFiles[idx], doc_);
+
+                // Jeda kecil antar unduhan agar browser tidak memblokir multi-download
+                if (idx < pdfFiles.length - 1) await delay(400);
+            }
+
+            btn.innerText = 'Unduh PDF Hasil Scan';
+            btn.disabled = false;
+            statusText.innerText = pdfFiles.length > 1
+                ? `Selesai! ${pdfFiles.length} file berhasil diunduh.`
+                : 'Selesai! File berhasil diunduh.';
+            statusText.style.color = '#10B981';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Agenda Surat (Cloud)</title>    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">    
+    <style>
+        * { box-sizing: border-box; font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+        body { background-color: #f8fafc; color: #334155; padding: 24px; }
+        .container { max-width: 1200px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03); }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .main-title { font-size: 20px; font-weight: 700; color: #2d3748; }
+        .settings-btn { background: none; border: none; color: #4a5568; font-size: 22px; cursor: pointer; transition: color 0.2s, transform 0.2s; }
+        .settings-btn:hover { color: #2d3748; transform: rotate(45deg); }
+        .section-title { font-size: 13px; font-weight: 700; color: #2d3748; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 24px; margin-bottom: 16px; }
+        .required { color: #e53e3e; margin-left: 2px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 12px; }
+		.grid-perihal-pembuat { display: grid; grid-template-columns: 3fr 1fr; gap: 16px; margin-top: 12px; }
+        @media (max-width: 768px) { .grid-perihal-pembuat { grid-template-columns: 1fr; } }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 6px; }
+        input[type="text"], input[type="password"], input[type="date"], select, textarea { width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; background: white; }
+        input:focus, select:focus { border-color: #3182ce; box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15); }
+        .action-buttons { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
+        button { font-family: inherit; }
+        .btn-simpan, .btn-action, .btn-reset, .btn-danger { color: #ffffff; border: none; padding: 10px 28px; font-weight: 700; font-size: 13px; border-radius: 6px; cursor: pointer; }
+        .btn-simpan { background-color: #59d033; } .btn-simpan:hover { background-color: #4eb92b; }
+        .btn-reset { background-color: #2590ff; } .btn-reset:hover { background-color: #1d7ee4; }
+        .btn-danger { background-color: #ef4444; } .btn-danger:hover { background-color: #dc2626; }
+        
+        .table-section { margin-top: 32px; border-top: 1px solid #edf2f7; padding-top: 24px; }
+        .table-responsive { width: 100%; overflow-x: auto; border: 1px solid #edf2f7; border-radius: 6px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 14px; border: 1px solid #edf2f7; }
+        th { background-color: #f8fafc; font-weight: 700; font-size: 12px; text-transform: uppercase; }
+        
+        /* Modal & UI Loading */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .modal-content { background: #ffffff; padding: 32px; border-radius: 12px; width: 400px; max-width: 90%; }
+        .hidden { display: none !important; }
+        .btn-icon { padding: 8px 12px; border-radius: 6px; color: white; cursor: pointer; border: none; font-size: 12px; margin: 0 2px; }
+        .btn-edit { background-color: #f59e0b; } .btn-edit:hover { background-color: #d97706; }
+        .btn-delete { background-color: #ef4444; } .btn-delete:hover { background-color: #dc2626; }
+        .readonly-prefix { font-weight: 700; color: #4a5568; background: #edf2f7; padding: 10px 14px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; }
+
+        #loadingOverlay { background-color: #f4f6f8; }
+        .loading-container { width: 400px; max-width: 90%; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .custom-spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid #104a6e; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 32px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .progress-bar-bg { width: 100%; height: 8px; background-color: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 12px; }
+        .progress-bar-fill { width: 85%; height: 100%; background-color: #104a6e; border-radius: 4px; transition: width 0.3s ease; }
+        .loading-text-row { display: flex; justify-content: space-between; width: 100%; font-size: 14px; color: #718096; margin-bottom: 24px; }
+        .loading-subtext { font-size: 14px; color: #718096; text-align: center; line-height: 1.5; }
+
+        /* OPTIMASI TAMPILAN MOBILE BENTUK KARTU MAMPAT (TANPA LABEL) */
+        @media (max-width: 768px) { 
+            body { padding: 12px; }
+            .container { padding: 16px; }
+            .grid-3, .grid-2 { grid-template-columns: 1fr; } 
+            
+            .table-responsive { border: none; background: transparent; overflow: visible; }
+            table { border: none; }
+            thead { display: none; }
+            
+            tbody tr { 
+                display: flex; 
+                flex-direction: column; 
+                border: 1px solid #e2e8f0; 
+                border-radius: 8px; 
+                margin-bottom: 12px; /* Jarak antar kartu lebih sempit */
+                padding: 12px; 
+                background: #fff;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+                position: relative; /* Agar tanggal bisa ditaruh di pojok */
+            }
+            
+            tbody td { 
+                display: block; 
+                text-align: left; 
+                padding: 2px 0; /* Jarak antar teks sangat mampat */
+                border: none; 
+            }
+
+            /* 1. Tanggal ditaruh di pojok kanan atas */
+            tbody td[data-label="Tanggal"] {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                font-size: 11px;
+                color: #64748b;
+                font-weight: 500;
+            }
+
+            /* 2. Nomor Surat jadi tajuk utama */
+            tbody td[data-label="Nomor"] { 
+                font-size: 14px; 
+                color: #0f172a; 
+                font-weight: 700;
+                padding-right: 75px; /* Supaya tidak menabrak tanggal */
+            }
+
+            /* 3. Perihal */
+            tbody td[data-label="Perihal"] {
+                font-size: 13px;
+                font-weight: 600;
+                color: #334155;
+            }
+
+            /* 4. Tujuan & 5. Pembuat dibuat lebih kecil & menyatu */
+            tbody td[data-label="Tujuan"] {
+                font-size: 12px;
+                color: #475569;
+            }
+            
+            tbody td[data-label="Pembuat"] {
+                font-size: 12px;
+                color: #94a3b8;
+            }
+
+            /* 6. Aksi (Tombol Edit/Hapus) di bawah dengan garis batas tipis */
+            tbody td[data-label="Aksi"] { 
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px dashed #e2e8f0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <h2 class="main-title" style="margin-bottom: 0;">Buku Agenda Surat</h2>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <select id="filterTahun" onchange="loadData()" style="padding: 8px 12px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; font-weight: 600; color: #2d3748; cursor: pointer; background: white;">
+                    <!-- Tahun dimuat otomatis -->
+                </select>
+                <button class="settings-btn" title="Pengaturan Data" onclick="mintaPasswordSettings()">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+        
+        <form id="formSurat">
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Tanggal Surat <span class="required">*</span></label>
+                    <input type="date" id="tglSurat" required>
+                </div>
+                <div class="form-group">
+                    <label>Kode Surat <span class="required">*</span></label>
+                    <input type="text" id="kodeSurat" placeholder="Contoh: /PW.02-Und/3517/2026" required>
+                </div>
+                <div class="form-group">
+                    <label>Alamat Tujuan <span class="required">*</span></label>
+                    <input type="text" id="tujuan" placeholder="Masukkan instansi tujuan" required>
+                </div>
+            </div>
+            <div class="grid-perihal-pembuat">
+                <div class="form-group">
+                    <label>Perihal Surat <span class="required">*</span></label>
+                    <input type="text" id="perihal" placeholder="Masukkan perihal surat" required>
+                </div>
+                <div class="form-group">
+                    <label>Pembuat <span class="required">*</span></label>
+                    <select id="pembuat" required>
+                        <option value="">-- Pilih Pembuat --</option>
+                        <!-- Urutan Tetap -->
+                        <option value="Mochamad Arifuddin">Mochamad Arifuddin</option>
+                        <option value="Heri Subagyo">Heri Subagyo</option>
+                        <option value="Dina Triasmadji">Dina Triasmadji</option>
+                        <option value="Fajar Bayu">Fajar Bayu</option>
+                        <option value="Bintang Fajar">Bintang Fajar</option>
+                        
+                        <!-- Urutan Abjad -->
+                        <option value="Affrianto Syahputra">Affrianto Syahputra</option>
+                        <option value="Agung Sulistiyono">Agung Sulistiyono</option>
+                        <option value="Ahmad Khoiri">Ahmad Khoiri</option>
+                        <option value="Alfan Fadhli">Alfan Fadhli</option>
+                        <option value="Aniisah Eka">Aniisah Eka</option>
+                        <option value="Anisa Prasasti">Anisa Prasasti</option>
+                        <option value="Ayu Putri">Ayu Putri</option>
+                        <option value="Burhani Agus">Burhani Agus</option>
+                        <option value="Dedi Setiawan">Dedi Setiawan</option>
+                        <option value="Deni Bagus">Deni Bagus</option>
+                        <option value="Eka Restu">Eka Restu</option>
+                        <option value="Era Repsi">Era Repsi</option>
+                        <option value="Ermawati Puspita">Ermawati Puspita</option>
+                        <option value="Febry Nur">Febry Nur</option>
+                        <option value="Kuncoro">Kuncoro</option>
+                        <option value="Mochammad Anas">Mochammad Anas</option>
+                        <option value="Muhammad Havian">Muhammad Havian</option>
+                        <option value="Muhammad Henry">Muhammad Henry</option>
+                        <option value="Nila Febri">Nila Febri</option>
+                        <option value="Ninil Anggraini">Ninil Anggraini</option>
+                        <option value="Rifky Eka">Rifky Eka</option>
+                        <!-- <option value="Riswandha Cahyo">Riswandha Cahyo</option> -->
+                        <option value="Rudy Harmoko">Rudy Harmoko</option>
+                        <option value="Septian Tri">Septian Tri</option>
+                        <option value="Soni Ristawan">Soni Ristawan</option>
+                        <option value="Sugiyanto">Sugiyanto</option>
+                        <option value="Syihabur Rodlil">Syihabur Rodlil</option>
+                        <option value="Tatang Aditya">Tatang Aditya</option>
+                    </select>
+                </div>
+            </div>
+			<div class="action-buttons">
+                <button type="submit" class="btn-simpan">Simpan & Ambil Nomor</button>
+            </div>
+        </form>
+
+        <div class="table-section">
+            <h3 class="section-title">Daftar Agenda</h3>
+            <div class="table-responsive">
+                <table id="tabelSurat">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">Tanggal</th>
+                            <th style="width: 18%;">Nomor</th>
+                            <th style="width: 29%;">Perihal</th>
+                            <th style="width: 18%;">Tujuan</th>
+                            <th style="width: 13%;">Pembuat</th>
+                            <th style="width: 12%; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="modal-overlay hidden">
+        <div class="loading-container">
+            <div class="custom-spinner"></div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="loadingProgress"></div>
+            </div>
+            <div class="loading-text-row">
+                <span>Masih memuat, mohon tunggu sebentar...</span>
+                <span id="loadingPercent">85%</span>
+            </div>
+            <p class="loading-subtext">Memuat data dari Google Sheets biasanya perlu beberapa detik. Mohon tunggu sebentar lagi...</p>
+        </div>
+    </div>
+
+    <!-- Modal Settings -->
+    <div id="modalSettings" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="main-title" style="margin-bottom: 8px;">Pengaturan Data</h3>
+            <p style="font-size: 13px; color: #718096; margin-bottom: 24px;">Pilih aksi untuk data pada tahun yang aktif saat ini.</p>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                <button class="btn-action" style="background-color: #3182ce; width: 100%;" onclick="eksportData()">
+                    <i class="fas fa-file-export" style="margin-right: 8px;"></i> Ekspor Data Tahun Ini (JSON)
+                </button>
+                <button class="btn-action" style="background-color: #38a169; width: 100%;" onclick="document.getElementById('importFile').click()">
+                    <i class="fas fa-file-import" style="margin-right: 8px;"></i> Impor Data (Timpa Tahun Ini)
+                </button>
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                <button class="btn-danger" style="width: 100%;" onclick="resetData()">
+                    <i class="fas fa-trash-alt" style="margin-right: 8px;"></i> Reset Data Tahun Ini
+                </button>
+            </div>
+            <div class="action-buttons" style="margin-top: 24px;">
+                <button class="btn-reset" onclick="tutupModal('modalSettings')">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Password -->
+    <div id="modalPass" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="main-title" style="margin-bottom: 16px;">Otorisasi</h3>
+            <div class="form-group">
+                <label id="labelOtorisasi">Masukkan Password</label>
+                <input type="password" id="inputPass">
+            </div>
+            <div class="action-buttons">
+                <button class="btn-reset" onclick="tutupModal('modalPass')">Batal</button>
+                <button class="btn-simpan" onclick="cekPassword()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit -->
+    <div id="modalEdit" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="main-title" style="margin-bottom: 16px;">Edit Data Surat</h3>
+            <div class="form-group">
+                <label>Tanggal</label>
+                <input type="date" id="editTgl">
+            </div>
+            <div class="form-group">
+                <label>Kode Surat</label>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="prefixNomor" class="readonly-prefix">001</span>
+                    <input type="text" id="editKode" style="flex: 1;">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Perihal</label>
+                <input type="text" id="editPerihal">
+            </div>
+            <div class="form-group">
+                <label>Tujuan</label>
+                <input type="text" id="editTujuan">
+            </div>
+            <div class="form-group">
+                <label>Pembuat</label>
+                <select id="editPembuat"></select>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-reset" onclick="tutupModal('modalEdit')">Batal</button>
+                <button class="btn-simpan" onclick="simpanEdit()">Update ke Server</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7kMV0MfoApBF3cDxTYbs7j5CU6oWQPc2vdlFg6KD_8eedN6TRV1xsMYoBseUV12Q/exec'; 
+        const PASS_EDIT = "edit";
+        const PASS_HAPUS = "hps";
+        const PASS_SETTINGS = "data";
+        
+        let agenda = [];
+        let targetId = null, targetAksi = null;
+        let progressInterval;
+
+        function initDropdownTahun() {
+            const select = document.getElementById('filterTahun');
+            const currentYear = new Date().getFullYear();
+            for(let y = currentYear - 3; y <= currentYear + 5; y++) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.text = "Tahun " + y;
+                if(y === currentYear) opt.selected = true; 
+                select.appendChild(opt);
+            }
+            document.getElementById('editPembuat').innerHTML = document.getElementById('pembuat').innerHTML;
+        }
+
+        function mulaiLoading() {
+            bukaModal('loadingOverlay');
+            let progress = 10;
+            document.getElementById('loadingProgress').style.width = progress + '%';
+            document.getElementById('loadingPercent').innerText = progress + '%';
+            
+            progressInterval = setInterval(() => {
+                if(progress < 85) {
+                    progress += Math.floor(Math.random() * 15);
+                    if(progress > 85) progress = 85; 
+                    document.getElementById('loadingProgress').style.width = progress + '%';
+                    document.getElementById('loadingPercent').innerText = progress + '%';
+                }
+            }, 400);
+        }
+
+        function selesaiLoading() {
+            clearInterval(progressInterval);
+            document.getElementById('loadingProgress').style.width = '100%';
+            document.getElementById('loadingPercent').innerText = '100%';
+            setTimeout(() => { tutupModal('loadingOverlay'); }, 300);
+        }
+
+        // loadData menerima parameter untuk menentukan apakah loading perlu ditampilkan
+        async function loadData(showLoading = true) {
+            if (showLoading) mulaiLoading();
+            const thn = document.getElementById('filterTahun').value;
+            try {
+                const response = await fetch(SCRIPT_URL + "?tahun=" + thn);
+                const result = await response.json();
+                
+                agenda = result.data.map(item => {
+                    if(item.tgl && typeof item.tgl === 'string' && item.tgl.includes('T')) {
+                        item.tgl = item.tgl.substring(0, 10);
+                    }
+                    return item;
+                });
+                renderTable();
+            } catch (error) {
+                if (showLoading) alert("Gagal memuat data dari server. Periksa koneksi internet.");
+            }
+            if (showLoading) selesaiLoading();
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#tabelSurat tbody');
+            tbody.innerHTML = '';
+            
+            const maxUrut = agenda.length ? Math.max(...agenda.map(s => s.noUrut)) : 0;
+            agenda.sort((a, b) => b.noUrut - a.noUrut).forEach(surat => {
+                const tombolHapus = (surat.noUrut === maxUrut) 
+                    ? `<button class="btn-icon btn-delete" title="Hapus" onclick="mintaPassword(${surat.noUrut}, 'hapus')"><i class="fas fa-trash"></i></button>`
+                    : '';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td data-label="Tanggal">${surat.tgl}</td>
+                        <td data-label="Nomor" style="font-weight: 700;">${surat.nomorLengkap}</td>
+                        <td data-label="Perihal">${surat.perihal}</td>
+                        <td data-label="Tujuan">${surat.tujuan}</td>
+                        <td data-label="Pembuat">${surat.pembuat || '-'}</td>
+                        <td data-label="Aksi" style="text-align: center; white-space: nowrap;">
+                            <button class="btn-icon btn-edit" title="Edit" onclick="mintaPassword(${surat.noUrut}, 'edit')"><i class="fas fa-edit"></i></button>
+                            ${tombolHapus}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Fungsi kirimKeServer untuk background sync
+        async function kirimKeServer(payload, showLoading = false) {
+            if (showLoading) mulaiLoading();
+            try {
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                
+                if(result.status === 'success') {
+                    document.getElementById('filterTahun').value = result.tahun;
+                    // Lakukan sinkronisasi layar secara silent di latar belakang memastikan data 100% sama dengan server
+                    await loadData(false); 
+                } else {
+                    alert("Error dari server: " + result.message);
+                    await loadData(false); // Rollback tabel jika server gagal
+                }
+            } catch (error) {
+                alert("Gagal terhubung ke server! Data Anda mungkin tidak tersimpan.");
+                await loadData(false); // Rollback tabel jika server gagal
+            }
+            if (showLoading) selesaiLoading();
+        }
+
+        document.getElementById('formSurat').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const btn = this.querySelector('.btn-simpan');
+            const originalText = btn.innerText;
+            btn.innerText = "Menyimpan..."; // Ubah teks agar tombol tidak diklik ganda
+            btn.disabled = true;
+
+            const payload = {
+                action: 'insert',
+                tgl: document.getElementById('tglSurat').value,
+                kodeSurat: document.getElementById('kodeSurat').value,
+                perihal: document.getElementById('perihal').value,
+                tujuan: document.getElementById('tujuan').value,
+                pembuat: document.getElementById('pembuat').value
+            };
+
+            // OPTIMISTIC UPDATE: Perbarui tabel lokal INSTAN tanpa menunggu server
+            const maxUrut = agenda.length ? Math.max(...agenda.map(s => s.noUrut)) : 0;
+            const nextUrut = maxUrut + 1;
+            agenda.push({
+                noUrut: nextUrut,
+                tgl: payload.tgl,
+                kodeSurat: payload.kodeSurat,
+                nomorLengkap: nextUrut + payload.kodeSurat,
+                perihal: payload.perihal,
+                tujuan: payload.tujuan,
+                pembuat: payload.pembuat
+            });
+            renderTable();
+
+            // Lakukan pengiriman data secara background tanpa animasi
+            kirimKeServer(payload).then(() => {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            });
+            
+            this.reset();
+        });
+
+        function bukaModalEdit() {
+            const s = agenda.find(x => x.noUrut === targetId);
+            if (s) {
+                document.getElementById('editTgl').value = s.tgl;
+                document.getElementById('prefixNomor').innerText = s.noUrut;
+                document.getElementById('editKode').value = s.kodeSurat;
+                document.getElementById('editPerihal').value = s.perihal;
+                document.getElementById('editTujuan').value = s.tujuan;
+                document.getElementById('editPembuat').value = s.pembuat || "";
+                bukaModal('modalEdit');
+            }
+        }
+
+        function simpanEdit() {
+            const payload = {
+                action: 'update',
+                noUrut: targetId,
+                tgl: document.getElementById('editTgl').value, 
+                kodeSurat: document.getElementById('editKode').value,
+                perihal: document.getElementById('editPerihal').value,
+                tujuan: document.getElementById('editTujuan').value,
+                pembuat: document.getElementById('editPembuat').value
+            };
+
+            // OPTIMISTIC UPDATE: Update data lokal secara INSTAN
+            const idx = agenda.findIndex(x => x.noUrut === targetId);
+            if (idx > -1) {
+                agenda[idx].tgl = payload.tgl;
+                agenda[idx].kodeSurat = payload.kodeSurat;
+                agenda[idx].nomorLengkap = targetId + payload.kodeSurat;
+                agenda[idx].perihal = payload.perihal;
+                agenda[idx].tujuan = payload.tujuan;
+                agenda[idx].pembuat = payload.pembuat;
+                renderTable();
+            }
+
+            tutupModal('modalEdit');
+            
+            // Proses di latar belakang tanpa animasi loading
+            kirimKeServer(payload); 
+        }
+
+        function jalankanHapus() {
+            if(confirm("Hapus data di server?")) {
+                const s = agenda.find(x => x.noUrut === targetId);
+                
+                // OPTIMISTIC UPDATE: Hapus baris dari tabel INSTAN
+                agenda = agenda.filter(x => x.noUrut !== targetId);
+                renderTable();
+
+                // Hapus dari server di latar belakang
+                kirimKeServer({ action: 'delete', noUrut: targetId, tahun: s.tgl.split('-')[0] });
+            }
+        }
+
+        // RESET dan IMPORT sengaja menggunakan 'true' pada kirimKeServer agar Loading tetap muncul
+        // Karena aksi ini butuh waktu merombak semua data
+        function resetData() {
+            if(confirm("PERINGATAN!\nData TAHUN INI akan dihapus dari Google Sheets. Lanjutkan?")) {
+                tutupModal('modalSettings');
+                kirimKeServer({ action: 'reset', tahun: document.getElementById('filterTahun').value }, true);
+            }
+        }
+
+        function eksportData() {
+            if (agenda.length === 0) { alert("Tidak ada data!"); return; }
+            const dataStr = JSON.stringify(agenda, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Agenda_Surat_${document.getElementById('filterTahun').value}.json`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+            tutupModal('modalSettings');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        if(confirm("PERINGATAN: Impor akan MENGHAPUS data tahun ini. Lanjutkan?")) {
+                            tutupModal('modalSettings');
+                            kirimKeServer({ action: 'import', tahun: document.getElementById('filterTahun').value, data: importedData }, true);
+                        }
+                    } else { alert("Format tidak valid!"); }
+                } catch (error) { alert("File error!"); }
+                event.target.value = ""; 
+            };
+            reader.readAsText(file);
+        }
+
+        function bukaModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function tutupModal(id) { document.getElementById(id).classList.add('hidden'); }
+        
+        function mintaPasswordSettings() { targetAksi = 'settings'; document.getElementById('labelOtorisasi').innerText = 'Masukkan Kode Akses'; document.getElementById('inputPass').value = ''; bukaModal('modalPass'); }
+        function mintaPassword(id, aksi) { targetId = id; targetAksi = aksi; document.getElementById('labelOtorisasi').innerText = (aksi === 'edit') ? 'Masukkan Password Edit' : 'Masukkan Password Hapus'; document.getElementById('inputPass').value = ''; bukaModal('modalPass'); }
+        
+        function cekPassword() {
+            const val = document.getElementById('inputPass').value;
+            if (targetAksi === 'settings') { if (val === PASS_SETTINGS) { tutupModal('modalPass'); bukaModal('modalSettings'); } else { alert("Kode akses salah!"); } }
+            else if (targetAksi === 'hapus') { if (val === PASS_HAPUS) { tutupModal('modalPass'); jalankanHapus(); } else { alert("Password salah!"); } }
+            else if (targetAksi === 'edit') { if (val === PASS_EDIT) { tutupModal('modalPass'); bukaModalEdit(); } else { alert("Password salah!"); } }
+        }
+
+        window.onload = () => { initDropdownTahun(); loadData(); };
+    </script>
+</body>
+</html>

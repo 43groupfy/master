@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Buku Agenda Surat (Cloud)</title>    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">    
@@ -130,6 +130,72 @@
                 border-top: 1px dashed #e2e8f0;
             }
         }
+
+        /* ===== TAB & HALAMAN TEMPLATE ===== */
+        :root { --safe-b: env(safe-area-inset-bottom, 0px); }
+        html { -webkit-text-size-adjust: 100%; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 8px; border-bottom: 1px solid #edf2f7; }
+        .tab { background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 16px; font-size: 13px; font-weight: 600; color: #64748b; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .tab.active { color: #104a6e; border-bottom-color: #104a6e; }
+        .tpl-note { font-size: 13px; color: #64748b; margin-bottom: 4px; }
+        .tpl-group { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin: 20px 0 10px; }
+        .tpl-groups { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 32px; }
+        .tpl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media (max-width: 1000px) { .tpl-groups { grid-template-columns: 1fr; } }
+        .tpl-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .tpl-top { display: flex; align-items: center; gap: 12px; }
+        .tpl-ico { width: 44px; height: 44px; border-radius: 10px; background: #e6f0f7; color: #104a6e; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .tpl-title { font-size: 14px; font-weight: 700; color: #0f172a; line-height: 1.3; }
+        .tpl-badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 99px; margin-top: 4px; }
+        .badge-ketua { background: #dbeafe; color: #1d4ed8; } .badge-sekretaris { background: #dcfce7; color: #15803d; }
+        .tpl-desc { font-size: 12px; color: #64748b; line-height: 1.5; }
+        .btn-unduh { background: #104a6e; color: #fff; border: none; border-radius: 8px; padding: 11px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-unduh { text-decoration: none; }
+        .btn-unduh:hover { background: #0c3a57; }
+        .tab { white-space: nowrap; }
+        tbody td { overflow-wrap: anywhere; }
+        #tabelKode td:first-child { white-space: nowrap; color: #104a6e; font-weight: 600; }
+        #tabelKode .kode-grp td { background: #104a6e; color: #fff; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; }
+        #tabelKode .kode-l2 td { background: #f1f5f9; }
+        #tabelKode tbody tr[data-s] td:first-child { padding-left: 34px; font-weight: 500; color: #475569; position: relative; }
+        #tabelKode tbody tr[data-s] td:first-child::before { content: ''; position: absolute; left: 18px; top: 50%; width: 8px; height: 8px; border-left: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8; transform: translateY(-75%); }
+        #tabelKode .kode-l2 td:last-child { font-weight: 600; }
+
+        /* ===== PERBAIKAN MOBILE ===== */
+        @media (max-width: 768px) {
+            body { padding: 0; background: #fff; }
+            .container { border-radius: 0; box-shadow: none; padding: 0 14px calc(20px + var(--safe-b)); min-height: 100vh; }
+            .header-container { position: sticky; top: 0; z-index: 20; background: #fff; margin: 0 -14px 4px; padding: 12px 14px; border-bottom: 1px solid #edf2f7; gap: 8px; }
+            .header-container > div { gap: 6px !important; }
+            .main-title { font-size: 17px; }
+            #filterTahun { padding: 8px 10px !important; font-size: 13px !important; }
+            .settings-btn { width: 40px; height: 40px; }
+            .tabs { margin: 0 -14px 12px; padding: 0 14px; }
+            .tab { flex: 1; justify-content: center; padding: 12px 4px; font-size: 12px; gap: 6px; }
+            input[type="text"], input[type="password"], input[type="date"], select, textarea { font-size: 16px; padding: 12px 14px; min-height: 46px; }
+            label { font-size: 13px; }
+            .grid-3, .grid-2, .grid-perihal-pembuat { gap: 0; margin-top: 0; }
+            #formSurat .action-buttons { margin-top: 8px; }
+            #formSurat .btn-simpan { width: 100%; padding: 14px; font-size: 14px; }
+            .table-section { margin-top: 20px; padding-top: 16px; }
+            .tpl-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .tpl-card { padding: 12px; gap: 10px; }
+            .tpl-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .tpl-ico { width: 38px; height: 38px; font-size: 17px; }
+            .tpl-title { font-size: 13px; }
+            .tpl-desc { font-size: 11px; }
+            #halamanKode .table-responsive { border: 1px solid #edf2f7; overflow-x: auto; }
+            #tabelKode thead { display: table-header-group; }
+            #tabelKode tbody tr { display: table-row; border: none; margin: 0; padding: 0; box-shadow: none; border-radius: 0; }
+            #tabelKode tbody td { display: table-cell; padding: 12px 14px; border: 1px solid #edf2f7; font-size: 13px; }
+            .btn-unduh { padding: 13px; }
+            .btn-icon { min-width: 42px; min-height: 40px; }
+            .modal-overlay { align-items: flex-end; }
+            #loadingOverlay { align-items: center; }
+            .modal-content { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; padding: 22px 18px calc(18px + var(--safe-b)); max-height: 92vh; overflow-y: auto; }
+            .modal-content .action-buttons button { flex: 1; padding: 13px; }
+            .btn-action, .btn-danger { padding: 13px; }
+        }
     </style>
 </head>
 <body>
@@ -146,6 +212,13 @@
             </div>
         </div>
         
+        <nav class="tabs">
+            <button class="tab active" id="tabAgenda" onclick="bukaHalaman('agenda')"><i class="fas fa-book"></i> Nomor Surat</button>
+            <button class="tab" id="tabTemplate" onclick="bukaHalaman('template')"><i class="fas fa-file-arrow-down"></i> Template Surat</button>
+            <button class="tab" id="tabKode" onclick="bukaHalaman('kode')"><i class="fas fa-hashtag"></i> Kode Surat</button>
+        </nav>
+
+        <div id="halamanAgenda">
         <form id="formSurat">
             <div class="grid-3">
                 <div class="form-group">
@@ -158,13 +231,13 @@
                 </div>
                 <div class="form-group">
                     <label>Alamat Tujuan <span class="required">*</span></label>
-                    <input type="text" id="tujuan" placeholder="Masukkan instansi tujuan" required>
+                    <input type="text" id="tujuan" placeholder="Contoh: Bawaslu Kabupaten Jombang" required>
                 </div>
             </div>
             <div class="grid-perihal-pembuat">
                 <div class="form-group">
-                    <label>Perihal Surat <span class="required">*</span></label>
-                    <input type="text" id="perihal" placeholder="Masukkan perihal surat" required>
+                    <label>Perihal Isi Surat <span class="required">*</span></label>
+                    <input type="text" id="perihal" placeholder="Contoh: Undangan Rapat Pleno PDPB Triwulan IV Tahun 2026" required>
                 </div>
                 <div class="form-group">
                     <label>Pembuat <span class="required">*</span></label>
@@ -232,6 +305,428 @@
                 </table>
             </div>
         </div>
+        </div><!-- /halamanAgenda -->
+
+        <div id="halamanTemplate" class="hidden">
+            <!-- CARA EDIT: ganti href="#" dengan link file template (mis. link unduh Google Drive).
+                 Jika href tetap "#", template dasar Arial dibuat otomatis. Salin satu blok .tpl-card untuk menambah card baru. -->
+            <div class="tpl-groups">
+                <div class="tpl-group-box">
+                    <div class="tpl-group">Naskah Dinas</div>
+                    <div class="tpl-grid">
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-file-lines"></i></div>
+                        <div><div class="tpl-title">Naskah Dinas Ketua</div><span class="tpl-badge badge-ketua">Ketua</span></div>
+                    </div>
+                    <div class="tpl-desc">Surat dinas umum.</div>
+                    <a class="btn-unduh" data-tpl="naskah-ketua" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-file-lines"></i></div>
+                        <div><div class="tpl-title">Naskah Dinas Sekretaris</div><span class="tpl-badge badge-sekretaris">Sekretaris</span></div>
+                    </div>
+                    <div class="tpl-desc">Surat dinas umum.</div>
+                    <a class="btn-unduh" data-tpl="naskah-sekretaris" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                    </div>
+                </div>
+                <div class="tpl-group-box">
+                    <div class="tpl-group">Surat Undangan</div>
+                    <div class="tpl-grid">
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-envelope-open-text"></i></div>
+                        <div><div class="tpl-title">Surat Undangan Ketua</div><span class="tpl-badge badge-ketua">Ketua</span></div>
+                    </div>
+                    <div class="tpl-desc">Undangan rapat/kegiatan.</div>
+                    <a class="btn-unduh" data-tpl="undangan-ketua" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-envelope-open-text"></i></div>
+                        <div><div class="tpl-title">Surat Undangan Sekretaris</div><span class="tpl-badge badge-sekretaris">Sekretaris</span></div>
+                    </div>
+                    <div class="tpl-desc">Undangan rapat/kegiatan.</div>
+                    <a class="btn-unduh" data-tpl="undangan-sekretaris" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                    </div>
+                </div>
+                <div class="tpl-group-box">
+                    <div class="tpl-group">Surat Tugas</div>
+                    <div class="tpl-grid">
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-user-check"></i></div>
+                        <div><div class="tpl-title">Surat Tugas Ketua</div><span class="tpl-badge badge-ketua">Ketua</span></div>
+                    </div>
+                    <div class="tpl-desc">Penugasan pegawai.</div>
+                    <a class="btn-unduh" data-tpl="tugas-ketua" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                <div class="tpl-card">
+                    <div class="tpl-top">
+                        <div class="tpl-ico"><i class="fas fa-user-check"></i></div>
+                        <div><div class="tpl-title">Surat Tugas Sekretaris</div><span class="tpl-badge badge-sekretaris">Sekretaris</span></div>
+                    </div>
+                    <div class="tpl-desc">Penugasan pegawai.</div>
+                    <a class="btn-unduh" data-tpl="tugas-sekretaris" href="#"><i class="fas fa-download"></i> Unduh</a>
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="halamanKode" class="hidden">
+            <h3 class="section-title" style="margin-top: 8px;">Kode Klasifikasi Arsip</h3>
+            <input type="text" id="cariKode" placeholder="Cari kode atau keterangan..." oninput="cariKode()" style="margin-bottom: 12px;">
+            <div class="table-responsive">
+                <table id="tabelKode">
+                    <thead><tr><th style="width: 30%;">Kode</th><th>Keterangan</th></tr></thead>
+                    <tbody>
+                        <!-- Sumber: Keputusan KPU No. 1257 Tahun 2024, Lampiran I. Salin satu baris untuk menambah kode -->
+                        <tr class="kode-grp"><td colspan="2">PP &ndash; Persiapan Pemilu atau Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.01</td><td>Perencanaan Program dan Anggaran</td></tr>
+                        <tr data-s="Perencanaan Program dan Anggaran"><td>PP.01.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Perencanaan Program dan Anggaran"><td>PP.01.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.02</td><td>Penataan Organisasi</td></tr>
+                        <tr data-s="Penataan Organisasi"><td>PP.02.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Penataan Organisasi"><td>PP.02.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.03</td><td>Pendaftaran Pemantau dan Pemantauan</td></tr>
+                        <tr data-s="Pendaftaran Pemantau dan Pemantauan"><td>PP.03.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Pendaftaran Pemantau dan Pemantauan"><td>PP.03.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.04</td><td>Pembentukan Badan Penyelenggara</td></tr>
+                        <tr data-s="Pembentukan Badan Penyelenggara"><td>PP.04.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Pembentukan Badan Penyelenggara"><td>PP.04.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.05</td><td>Rapat Kerja dan Rapat Koordinasi di Setiap Tingkatan</td></tr>
+                        <tr data-s="Rapat Kerja dan Rapat Koordinasi di Setiap Tingkatan"><td>PP.05.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Rapat Kerja dan Rapat Koordinasi di Setiap Tingkatan"><td>PP.05.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.06</td><td>Sosialisasi, Bimbingan Teknis, Penyuluhan, Publikasi, dan Pendidikan Pemilih</td></tr>
+                        <tr data-s="Sosialisasi, Bimbingan Teknis, Penyuluhan, Publikasi, dan Pendidikan Pemilih"><td>PP.06.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Sosialisasi, Bimbingan Teknis, Penyuluhan, Publikasi, dan Pendidikan Pemilih"><td>PP.06.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.07</td><td>Pengelolaan Data dan Informasi</td></tr>
+                        <tr data-s="Pengelolaan Data dan Informasi"><td>PP.07.1</td><td>Pemilu</td></tr>
+                        <tr data-s="Pengelolaan Data dan Informasi"><td>PP.07.2</td><td>Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PP.08</td><td>Logistik Penyelenggaraan Pemilu</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilu"><td>PP.08.1</td><td>Pengelolaan Data dan Dokumentasi Kebutuhan Sarana Pemilu</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilu"><td>PP.08.2</td><td>Standar Barang/Jasa Sarana dan Prasarana Pemilu</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilu"><td>PP.08.3</td><td>Administrasi dan Alokasi Sarana dan Prasarana Pemilu</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilu"><td>PP.08.4</td><td>Distribusi Sarana dan Prasarana Pemilu (Angkutan Reguler/Non Reguler)</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilu"><td>PP.08.5</td><td>Penyimpanan Sarana Pemilu</td></tr>
+                        <tr class="kode-l2"><td>PP.09</td><td>Logistik Penyelenggaraan Pemilihan</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilihan"><td>PP.09.1</td><td>Pengelolaan Data dan Dokumentasi Kebutuhan Sarana Pemilihan</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilihan"><td>PP.09.2</td><td>Standar Barang/Jasa Sarana dan Prasarana Pemilihan</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilihan"><td>PP.09.3</td><td>Administrasi dan Alokasi Sarana dan Prasarana Pemilihan</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilihan"><td>PP.09.4</td><td>Distribusi Sarana dan Prasarana Pemilihan (Angkutan Reguler/Non Reguler)</td></tr>
+                        <tr data-s="Logistik Penyelenggaraan Pemilihan"><td>PP.09.5</td><td>Penyimpanan Sarana Pemilihan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PL &ndash; Pelaksanaan Pemilu atau Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PL.01</td><td>Pelaksanaan Pemilu</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.1</td><td>Pendaftaran, Verifikasi dan Penetapan Peserta Pemilu</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.2</td><td>Pemutakhiran Data Pemilih dan Penyusunan Daftar Pemilih</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.3</td><td>Penetapan Jumlah Kursi dan Penetapan Daerah Pemilihan</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.4</td><td>Pencalonan</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.5</td><td>Penetapan Calon Anggota DPR, DPD, DPRD dan Pasangan Calon Presiden dan Wakil Presiden serta Penetapan Nomor Urut</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.6</td><td>Kampanye</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.7</td><td>Dana Kampanye</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.8</td><td>Pemungutan, Penghitungan, dan Rekapitulasi Hasil Penghitungan Perolehan Suara</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.9</td><td>Penetapan Calon Terpilih</td></tr>
+                        <tr data-s="Pelaksanaan Pemilu"><td>PL.01.10</td><td>Sumpah/Janji Anggota DPR, DPD, DPRD, Presiden dan Wakil Presiden</td></tr>
+                        <tr class="kode-l2"><td>PL.02</td><td>Pelaksanaan Pemilihan</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.1</td><td>Pemutakhiran dan Penyusunan Daftar Pemilih</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.2</td><td>Pencalonan</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.3</td><td>Penetapan Pasangan Calon Gubernur dan Wakil Gubernur, Bupati dan Wakil Bupati, serta Walikota dan Wakil Walikota dan Penetapan Nomor Urut</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.4</td><td>Kampanye</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.5</td><td>Dana Kampanye</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.6</td><td>Pemungutan, Penghitungan Suara, dan Rekapitulasi Hasil Penghitungan Perolehan Suara</td></tr>
+                        <tr data-s="Pelaksanaan Pemilihan"><td>PL.02.7</td><td>Penetapan Calon Terpilih</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PY &ndash; Penyelesaian Pemilu atau Pemilihan</td></tr>
+                        <tr class="kode-l2"><td>PY.01</td><td>Penyelesaian Pemilu</td></tr>
+                        <tr data-s="Penyelesaian Pemilu"><td>PY.01.1</td><td>Sengketa Pemilu</td></tr>
+                        <tr data-s="Penyelesaian Pemilu"><td>PY.01.2</td><td>Penyusunan Laporan Keuangan Penyelenggaraan Pemilu</td></tr>
+                        <tr data-s="Penyelesaian Pemilu"><td>PY.01.3</td><td>Pengelolaan Arsip Penyelenggaraan Pemilu</td></tr>
+                        <tr data-s="Penyelesaian Pemilu"><td>PY.01.4</td><td>Penyusunan Dokumentasi Penyelenggaraan Pemilu</td></tr>
+                        <tr data-s="Penyelesaian Pemilu"><td>PY.01.5</td><td>Evaluasi dan Pelaporan Penyelenggaraan Pemilu</td></tr>
+                        <tr class="kode-l2"><td>PY.02</td><td>Penyelesaian Pemilihan</td></tr>
+                        <tr data-s="Penyelesaian Pemilihan"><td>PY.02.1</td><td>Sengketa Pemilihan</td></tr>
+                        <tr data-s="Penyelesaian Pemilihan"><td>PY.02.2</td><td>Evaluasi dan Pelaporan Penyelenggaraan Pemilihan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PAW &ndash; Penggantian Antar Waktu</td></tr>
+                        <tr class="kode-l2"><td>PAW.01</td><td>Penggantian Antar Waktu dan Pengisian Anggota DPR, DPD, dan DPRD</td></tr>
+                        <tr data-s="Penggantian Antar Waktu dan Pengisian Anggota DPR, DPD, dan DPRD"><td>PAW.01.1</td><td>Penggantian Antar Waktu</td></tr>
+                        <tr data-s="Penggantian Antar Waktu dan Pengisian Anggota DPR, DPD, dan DPRD"><td>PAW.01.2</td><td>Pengisian Keanggotaan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PR &ndash; Perencanaan</td></tr>
+                        <tr class="kode-l2"><td>PR.01</td><td>Pokok-Pokok Kebijakan</td></tr>
+                        <tr data-s="Pokok-Pokok Kebijakan"><td>PR.01.1</td><td>Rencana Pembangunan Jangka Panjang (RPJP)</td></tr>
+                        <tr data-s="Pokok-Pokok Kebijakan"><td>PR.01.2</td><td>Rencana Pembangunan Jangka Menengah (RPJM)</td></tr>
+                        <tr data-s="Pokok-Pokok Kebijakan"><td>PR.01.3</td><td>Rencana Strategis (Renstra)</td></tr>
+                        <tr class="kode-l2"><td>PR.02</td><td>Rencana Kerja Tahunan</td></tr>
+                        <tr data-s="Rencana Kerja Tahunan"><td>PR.02.1</td><td>Naskah usulan unit kerja termasuk KAK/RAB dan Satuan Kerja beserta data pendukung</td></tr>
+                        <tr data-s="Rencana Kerja Tahunan"><td>PR.02.2</td><td>Usulan Kegiatan Lembaga</td></tr>
+                        <tr data-s="Rencana Kerja Tahunan"><td>PR.02.3</td><td>Rencana Kerja Tahunan (sejak Pagu Indikatif sampai Rencana Kerja)</td></tr>
+                        <tr data-s="Rencana Kerja Tahunan"><td>PR.02.4</td><td>Rencana kerja berdasarkan Pagu Indikatif</td></tr>
+                        <tr class="kode-l2"><td>PR.03</td><td>Penetapan/Kontrak Kinerja (TAPKIN dan LAKIP)</td></tr>
+                        <tr data-s="Penetapan/Kontrak Kinerja (TAPKIN dan LAKIP)"><td>PR.03.1</td><td>Lembaga/KPU</td></tr>
+                        <tr data-s="Penetapan/Kontrak Kinerja (TAPKIN dan LAKIP)"><td>PR.03.2</td><td>Pimpinan Tinggi Utama dan Madya</td></tr>
+                        <tr data-s="Penetapan/Kontrak Kinerja (TAPKIN dan LAKIP)"><td>PR.03.3</td><td>Pimpinan Tinggi Pratama</td></tr>
+                        <tr class="kode-l2"><td>PR.04</td><td>Laporan</td></tr>
+                        <tr data-s="Laporan"><td>PR.04.1</td><td>Laporan berkala (Triwulan, Semester, Tahunan)</td></tr>
+                        <tr data-s="Laporan"><td>PR.04.2</td><td>Laporan Insidental</td></tr>
+                        <tr class="kode-l2"><td>PR.05</td><td>Dokumen Rapat Dengar Pendapat</td></tr>
+                        <tr class="kode-l2"><td>PR.06</td><td>Evaluasi Program (Unit Kerja dan Lembaga)</td></tr>
+                        <tr class="kode-grp"><td colspan="2">HK &ndash; Hukum</td></tr>
+                        <tr class="kode-l2"><td>HK.01</td><td>Program Legislasi</td></tr>
+                        <tr class="kode-l2"><td>HK.02</td><td>Peraturan KPU</td></tr>
+                        <tr class="kode-l2"><td>HK.03</td><td>Keputusan</td></tr>
+                        <tr data-s="Keputusan"><td>HK.03.1</td><td>Keputusan KPU, KPU Provinsi, dan KPU Kabupaten/Kota</td></tr>
+                        <tr data-s="Keputusan"><td>HK.03.2</td><td>Keputusan Sekretaris Jenderal KPU, Sekretaris KPU Provinsi, dan Sekretaris KPU Kabupaten/Kota</td></tr>
+                        <tr class="kode-l2"><td>HK.04</td><td>Instruksi/Surat Edaran</td></tr>
+                        <tr data-s="Instruksi/Surat Edaran"><td>HK.04.1</td><td>Instruksi/Surat Edaran KPU, KPU Provinsi, dan KPU Kabupaten/Kota</td></tr>
+                        <tr data-s="Instruksi/Surat Edaran"><td>HK.04.2</td><td>Surat Edaran Sekretaris Jenderal KPU, Sekretaris KPU Provinsi, dan Sekretaris KPU Kabupaten/Kota</td></tr>
+                        <tr class="kode-l2"><td>HK.05</td><td>Nota Kesepahaman/MoU dan Perjanjian Kerja Sama</td></tr>
+                        <tr data-s="Nota Kesepahaman/MoU dan Perjanjian Kerja Sama"><td>HK.05.1</td><td>Dalam Negeri</td></tr>
+                        <tr data-s="Nota Kesepahaman/MoU dan Perjanjian Kerja Sama"><td>HK.05.2</td><td>Luar Negeri</td></tr>
+                        <tr class="kode-l2"><td>HK.06</td><td>Sosialisasi/Penyuluhan Pembinaan Hukum</td></tr>
+                        <tr class="kode-l2"><td>HK.07</td><td>Bantuan/Konsultasi Hukum/Advokasi</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.1</td><td>Pengadilan Negeri/Pengadilan Tinggi/Mahkamah Agung (Pidana)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.2</td><td>Pengadilan Negeri/Pengadilan Tinggi/Mahkamah Agung (Perdata)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.3</td><td>PTUN/PT TUN/Mahkamah Agung (Tata Usaha Negara)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.4</td><td>Dewan Kehormatan Penyelenggara Pemilu (Kode Etik)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.5</td><td>Mahkamah Konstitusi (hasil Pemilu/Pemilihan)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.6</td><td>Badan Pengawas Pemilu (Pelanggaran Administrasi/Sengketa Pemilu/Pemilihan)</td></tr>
+                        <tr data-s="Bantuan/Konsultasi Hukum/Advokasi"><td>HK.07.7</td><td>Pendampingan Kepolisian, Kejaksaan, Komisi Pemberantasan Korupsi</td></tr>
+                        <tr class="kode-grp"><td colspan="2">ORT &ndash; Organisasi dan Ketatalaksanaan</td></tr>
+                        <tr class="kode-l2"><td>ORT.01</td><td>Struktur Organisasi di Lingkungan Lembaga Negara dan Badan Pemerintah/Instansi</td></tr>
+                        <tr data-s="Struktur Organisasi di Lingkungan Lembaga Negara dan Badan Pemerintah/Instansi"><td>ORT.01.1</td><td>Pembentukan (SOTK Tipologi KPU Provinsi)</td></tr>
+                        <tr data-s="Struktur Organisasi di Lingkungan Lembaga Negara dan Badan Pemerintah/Instansi"><td>ORT.01.2</td><td>Pengubahan (SOTK Tipologi KPU Provinsi)</td></tr>
+                        <tr class="kode-l2"><td>ORT.02</td><td>Uraian Jabatan dan Tata Kerja</td></tr>
+                        <tr class="kode-l2"><td>ORT.03</td><td>Standar Kompetensi Jabatan Manajerial dan Fungsional</td></tr>
+                        <tr class="kode-l2"><td>ORT.04</td><td>Evaluasi Kelembagaan</td></tr>
+                        <tr class="kode-l2"><td>ORT.05</td><td>Peta Proses Bisnis</td></tr>
+                        <tr class="kode-l2"><td>ORT.06</td><td>Standar Operasional Prosedur (nasional/regional/internasional) termasuk rancangan awal sampai akhir</td></tr>
+                        <tr class="kode-l2"><td>ORT.07</td><td>Reformasi Birokrasi</td></tr>
+                        <tr class="kode-l2"><td>ORT.08</td><td>Pelayanan Publik di Lingkungan Negara dan Badan Pemerintah/Instansi</td></tr>
+                        <tr data-s="Pelayanan Publik di Lingkungan Negara dan Badan Pemerintah/Instansi"><td>ORT.08.1</td><td>Pedoman Standar Pelayanan</td></tr>
+                        <tr data-s="Pelayanan Publik di Lingkungan Negara dan Badan Pemerintah/Instansi"><td>ORT.08.2</td><td>Hasil Evaluasi Pelayanan Publik</td></tr>
+                        <tr class="kode-l2"><td>ORT.09</td><td>Sertifikat Manajemen Mutu Organisasi (ISO)</td></tr>
+                        <tr class="kode-l2"><td>ORT.10</td><td>Analisis Jabatan dan Beban Kerja KPU, KPU Provinsi, dan KPU Kabupaten/Kota</td></tr>
+                        <tr data-s="Analisis Jabatan dan Beban Kerja KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>ORT.10.1</td><td>Analisis jabatan (Anjab)</td></tr>
+                        <tr data-s="Analisis Jabatan dan Beban Kerja KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>ORT.10.2</td><td>Analisis Beban Kerja (ABK)</td></tr>
+                        <tr data-s="Analisis Jabatan dan Beban Kerja KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>ORT.10.3</td><td>Peta Jabatan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">TU &ndash; Ketatausahaan dan Kearsipan</td></tr>
+                        <tr class="kode-l2"><td>TU.01</td><td>Administrasi Persuratan</td></tr>
+                        <tr data-s="Administrasi Persuratan"><td>TU.01.1</td><td>Buku Agenda</td></tr>
+                        <tr data-s="Administrasi Persuratan"><td>TU.01.2</td><td>Lembar Pengantar/Buku Ekspedisi</td></tr>
+                        <tr class="kode-l2"><td>TU.02</td><td>Penyimpanan dan Pemeliharaan Arsip</td></tr>
+                        <tr class="kode-l2"><td>TU.03</td><td>Persetujuan Jadwal Retensi Arsip (JRA)</td></tr>
+                        <tr class="kode-l2"><td>TU.04</td><td>Layanan Arsip</td></tr>
+                        <tr class="kode-l2"><td>TU.05</td><td>Penyusutan Arsip</td></tr>
+                        <tr data-s="Penyusutan Arsip"><td>TU.05.1</td><td>Pemindahan Arsip Inaktif</td></tr>
+                        <tr data-s="Penyusutan Arsip"><td>TU.05.2</td><td>Pemusnahan Arsip yang tidak bernilai guna</td></tr>
+                        <tr data-s="Penyusutan Arsip"><td>TU.05.3</td><td>Penyerahan Arsip Statis</td></tr>
+                        <tr class="kode-l2"><td>TU.06</td><td>Pembinaan Kearsipan</td></tr>
+                        <tr data-s="Pembinaan Kearsipan"><td>TU.06.1</td><td>Apresiasi/Sosialisasi/Penyuluhan Kearsipan</td></tr>
+                        <tr data-s="Pembinaan Kearsipan"><td>TU.06.2</td><td>Bimbingan Teknis</td></tr>
+                        <tr data-s="Pembinaan Kearsipan"><td>TU.06.3</td><td>Supervisi dan Monitoring</td></tr>
+                        <tr class="kode-grp"><td colspan="2">RT &ndash; Kerumahtanggaan</td></tr>
+                        <tr class="kode-l2"><td>RT.01</td><td>Inventarisasi Aset</td></tr>
+                        <tr data-s="Inventarisasi Aset"><td>RT.01.1</td><td>Administrasi Pengadaan Aset dan Persediaan</td></tr>
+                        <tr data-s="Inventarisasi Aset"><td>RT.01.2</td><td>Administrasi Pengelolaan Aset dan Persediaan</td></tr>
+                        <tr data-s="Inventarisasi Aset"><td>RT.01.3</td><td>Administrasi Penghapusan Aset dan Persediaan</td></tr>
+                        <tr class="kode-l2"><td>RT.02</td><td>Perjalanan Dinas</td></tr>
+                        <tr data-s="Perjalanan Dinas"><td>RT.02.1</td><td>Perjalanan Dinas Dalam Negeri</td></tr>
+                        <tr data-s="Perjalanan Dinas"><td>RT.02.2</td><td>Perjalanan Dinas Luar Negeri</td></tr>
+                        <tr class="kode-l2"><td>RT.03</td><td>Pengurusan Kendaraan Dinas</td></tr>
+                        <tr data-s="Pengurusan Kendaraan Dinas"><td>RT.03.1</td><td>Pengurusan surat-surat kendaraan dinas</td></tr>
+                        <tr data-s="Pengurusan Kendaraan Dinas"><td>RT.03.2</td><td>Pemeliharaan dan Perbaikan</td></tr>
+                        <tr data-s="Pengurusan Kendaraan Dinas"><td>RT.03.3</td><td>Peminjaman Kendaraan Dinas</td></tr>
+                        <tr data-s="Pengurusan Kendaraan Dinas"><td>RT.03.4</td><td>Pengurusan kehilangan dan masalah kendaraan</td></tr>
+                        <tr class="kode-l2"><td>RT.04</td><td>Pemeliharaan Gedung dan Taman</td></tr>
+                        <tr class="kode-l2"><td>RT.05</td><td>Telekomunikasi</td></tr>
+                        <tr class="kode-l2"><td>RT.06</td><td>Pengelolaan Jaringan Listrik, Air, Telepon dan Peralatan Kantor Lainnya</td></tr>
+                        <tr data-s="Pengelolaan Jaringan Listrik, Air, Telepon dan Peralatan Kantor Lainnya"><td>RT.06.1</td><td>Perbaikan/pemeliharaan</td></tr>
+                        <tr data-s="Pengelolaan Jaringan Listrik, Air, Telepon dan Peralatan Kantor Lainnya"><td>RT.06.2</td><td>Pemasangan</td></tr>
+                        <tr data-s="Pengelolaan Jaringan Listrik, Air, Telepon dan Peralatan Kantor Lainnya"><td>RT.06.3</td><td>Peminjaman peralatan kantor</td></tr>
+                        <tr class="kode-l2"><td>RT.07</td><td>Administrasi Penggunaan Fasilitas Kantor</td></tr>
+                        <tr class="kode-l2"><td>RT.08</td><td>Administrasi Penyediaan Konsumsi dan Akomodasi di Lingkungan Kantor KPU</td></tr>
+                        <tr class="kode-l2"><td>RT.09</td><td>Ketertiban dan Keamanan</td></tr>
+                        <tr data-s="Ketertiban dan Keamanan"><td>RT.09.1</td><td>Pengamanan, penjagaan, dan pengawalan terhadap pejabat, kantor, dan rumah dinas</td></tr>
+                        <tr data-s="Ketertiban dan Keamanan"><td>RT.09.2</td><td>Laporan ketertiban dan keamanan</td></tr>
+                        <tr class="kode-l2"><td>RT.10</td><td>Administrasi Pengelolaan Parkir</td></tr>
+                        <tr class="kode-l2"><td>RT.11</td><td>Administrasi Pakaian Dinas Pegawai, Satpam, Petugas Kebersihan dan Pegawai Lainnya</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PK &ndash; Persidangan dan Keprotokolan</td></tr>
+                        <tr class="kode-l2"><td>PK.01</td><td>Persidangan (Undangan Rapat Pleno, Risalah, Berita Acara, Transkrip, Rekaman Rapat)</td></tr>
+                        <tr class="kode-l2"><td>PK.02</td><td>Keprotokolan</td></tr>
+                        <tr data-s="Keprotokolan"><td>PK.02.1</td><td>Upacara/Acara Kedinasan</td></tr>
+                        <tr data-s="Keprotokolan"><td>PK.02.2</td><td>Kunjungan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">HM &ndash; Kehumasan</td></tr>
+                        <tr class="kode-l2"><td>HM.01</td><td>Dokumentasi/Liputan Kegiatan Dinas Pimpinan, Acara Kedinasan dan Peristiwa lain</td></tr>
+                        <tr class="kode-l2"><td>HM.02</td><td>Pengumpulan, Pengolahan, dan Penyajian Informasi Kelembagaan</td></tr>
+                        <tr class="kode-l2"><td>HM.03</td><td>Hubungan KPU dengan Badan Pemerintahan/Instansi</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.1</td><td>Hubungan dengan lembaga pemerintah</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.2</td><td>Hubungan dengan organisasi sosial dan LSM</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.3</td><td>Hubungan dengan perusahaan</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.4</td><td>Hubungan dengan lembaga pendidikan (magang, PSG, PKL)</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.5</td><td>Forum kehumasan</td></tr>
+                        <tr data-s="Hubungan KPU dengan Badan Pemerintahan/Instansi"><td>HM.03.6</td><td>Hubungan dengan media massa</td></tr>
+                        <tr class="kode-l2"><td>HM.04</td><td>Master Publikasi Melalui Media Cetak dan Elektronik</td></tr>
+                        <tr class="kode-l2"><td>HM.05</td><td>Duplikasi Publikasi Melalui Media Cetak dan Elektronik</td></tr>
+                        <tr class="kode-l2"><td>HM.06</td><td>Pameran/Sayembara/Lomba, Festival, Pembuatan Spanduk, dan Iklan</td></tr>
+                        <tr class="kode-l2"><td>HM.07</td><td>Penghargaan/Tanda Kenang-Kenangan dan Administrasi Pemberiannya kepada Masyarakat</td></tr>
+                        <tr class="kode-l2"><td>HM.08</td><td>Ucapan Terima Kasih, Ucapan Selamat, Bela Sungkawa, dan Permohonan Maaf</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PUS &ndash; Kepustakaan</td></tr>
+                        <tr class="kode-l2"><td>PUS.01</td><td>Penyimpanan Deposit Bahan Pustaka</td></tr>
+                        <tr data-s="Penyimpanan Deposit Bahan Pustaka"><td>PUS.01.1</td><td>Bukti penerimaan koleksi bahan pustaka deposit</td></tr>
+                        <tr data-s="Penyimpanan Deposit Bahan Pustaka"><td>PUS.01.2</td><td>Administrasi pengolahan deposit bahan pustaka</td></tr>
+                        <tr class="kode-l2"><td>PUS.02</td><td>Pengadaan dan Pengelolaan Bahan Pustaka</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.1</td><td>Buku induk koleksi</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.2</td><td>Daftar buku terseleksi</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.3</td><td>Daftar buku dalam pemesanan</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.4</td><td>Daftar buku dalam permintaan</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.5</td><td>Daftar penerimaan bahan pustaka (pembelian, hadiah, deposit, hibah)</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.6</td><td>Daftar pengiriman bahan pustaka surplus</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.7</td><td>Lembar kerja pengolahan Buram dan Pengkatalogan (BP)</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.8</td><td>Shelf List/Jajaran Kartu Utama (Master List)</td></tr>
+                        <tr data-s="Pengadaan dan Pengelolaan Bahan Pustaka"><td>PUS.02.9</td><td>Daftar tambahan buku (Accession List)</td></tr>
+                        <tr class="kode-l2"><td>PUS.03</td><td>Pembentukan Keanggotaan Perpustakaan</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PLB &ndash; Penelitian, Pengembangan, Pendidikan, dan Pelatihan</td></tr>
+                        <tr class="kode-l2"><td>PLB.01</td><td>Penelitian dan Pengembangan</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.1</td><td>Jurnal Kepemiluan</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.2</td><td>Buku Bunga Rampai Kepemiluan</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.3</td><td>Riset Nasional Kepemiluan</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.4</td><td>Hasil Kajian/Analisis Kepemiluan Pusat dan Daerah</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.5</td><td>Hasil Seminar Nasional dan Internasional</td></tr>
+                        <tr data-s="Penelitian dan Pengembangan"><td>PLB.01.6</td><td>Izin Penelitian Kepemiluan</td></tr>
+                        <tr class="kode-l2"><td>PLB.02</td><td>Pendidikan dan Pelatihan (Diklat)</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.1</td><td>Perencanaan Diklat</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.2</td><td>Kelengkapan Diklat</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.3</td><td>Penyelenggaraan Diklat</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.4</td><td>Registrasi Sertifikat/STTPL Peserta Diklat</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.5</td><td>Akreditasi Lembaga Diklat</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.6</td><td>Sertifikasi Sumber Daya Manusia Kediklatan</td></tr>
+                        <tr data-s="Pendidikan dan Pelatihan (Diklat)"><td>PLB.02.7</td><td>Sistem Informasi Diklat</td></tr>
+                        <tr class="kode-grp"><td colspan="2">TIK &ndash; Teknologi Informasi dan Komunikasi</td></tr>
+                        <tr class="kode-l2"><td>TIK.01</td><td>Rencana Strategis/Master Plan Pembangunan Sistem Informasi Manajemen (SIM)</td></tr>
+                        <tr class="kode-l2"><td>TIK.02</td><td>Dokumen Arsitektur (sistem informasi, sistem aplikasi, infrastruktur)</td></tr>
+                        <tr class="kode-l2"><td>TIK.03</td><td>Dokumentasi Implementasi (sistem informasi, sistem aplikasi, infrastruktur)</td></tr>
+                        <tr class="kode-l2"><td>TIK.04</td><td>Laporan Hasil Perekaman dan Pemutakhiran Data</td></tr>
+                        <tr class="kode-l2"><td>TIK.05</td><td>Migrasi Sistem Aplikasi, Data, dan Dokumen Hosting</td></tr>
+                        <tr class="kode-l2"><td>TIK.06</td><td>Dokumen Hosting</td></tr>
+                        <tr class="kode-l2"><td>TIK.07</td><td>Layanan Back Up Data Digital</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PW &ndash; Pengawasan</td></tr>
+                        <tr class="kode-l2"><td>PW.01</td><td>Rencana Pengawasan</td></tr>
+                        <tr data-s="Rencana Pengawasan"><td>PW.01.1</td><td>Rencana Strategis Pengawasan</td></tr>
+                        <tr data-s="Rencana Pengawasan"><td>PW.01.2</td><td>Rencana Kerja Tahunan</td></tr>
+                        <tr data-s="Rencana Pengawasan"><td>PW.01.3</td><td>Rencana Kinerja Tahunan</td></tr>
+                        <tr data-s="Rencana Pengawasan"><td>PW.01.4</td><td>Penetapan Kinerja Tahunan</td></tr>
+                        <tr class="kode-l2"><td>PW.02</td><td>Pelaksanaan Pengawasan</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.1</td><td>Laporan hasil pemeriksaan non keuangan</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.2</td><td>Laporan Perkembangan Penanganan Surat Pengaduan Masyarakat tentang Keuangan</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.3</td><td>Laporan Pemutakhiran Data Tindak Lanjut Temuan yang Bermasalah</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.4</td><td>Laporan Kegiatan Pendampingan Penyusunan Laporan Keuangan</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.5</td><td>Good Corporate Governance (Dokumen Pakta Integritas)</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.6</td><td>Kertas Kerja Audit</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.7</td><td>Kertas Kerja Evaluasi</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.8</td><td>Kertas Kerja Verifikasi</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.9</td><td>Laporan Hasil Evaluasi</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.10</td><td>Laporan Verifikasi</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.11</td><td>Laporan Hasil Pemeriksaan atas Laporan Keuangan oleh BPK RI</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.12</td><td>Hasil Pengawasan dan Pelaksanaan Internal oleh Inspektorat</td></tr>
+                        <tr data-s="Pelaksanaan Pengawasan"><td>PW.02.13</td><td>Laporan Aparat Pemeriksa Fungsional (LHP, MHP, Tindak Lanjut/Tanggapan LHP)</td></tr>
+                        <tr class="kode-l2"><td>PW.03</td><td>Evaluasi Laporan Akuntabilitas Kinerja Instansi Pemerintah</td></tr>
+                        <tr class="kode-l2"><td>PW.04</td><td>Piagam Internal Audit Charter</td></tr>
+                        <tr class="kode-grp"><td colspan="2">PBJ &ndash; Pengadaan Barang dan Jasa</td></tr>
+                        <tr class="kode-l2"><td>PBJ.01</td><td>Layanan Pengadaan Barang/Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.1</td><td>Telaah/Kajian Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.2</td><td>Penyusunan Kebijakan/Regulasi/Edaran Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.3</td><td>Rencana Umum Pengadaan</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.4</td><td>Pembuatan Dokumen Surat Tugas Penunjukan Pokja Pemilihan</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.5</td><td>Analisis/Survey Pasar Barang/Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.6</td><td>Penyusunan Dokumen Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.7</td><td>Dokumen Kontrak Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Layanan Pengadaan Barang/Jasa"><td>PBJ.01.8</td><td>Laporan Monitoring dan Evaluasi Pengadaan Barang dan Jasa</td></tr>
+                        <tr class="kode-l2"><td>PBJ.02</td><td>Laporan Pengadaan Barang dan Jasa</td></tr>
+                        <tr class="kode-l2"><td>PBJ.03</td><td>Bimbingan dan Pendampingan Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Bimbingan dan Pendampingan Pengadaan Barang dan Jasa"><td>PBJ.03.1</td><td>Pendampingan Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Bimbingan dan Pendampingan Pengadaan Barang dan Jasa"><td>PBJ.03.2</td><td>Petunjuk Pelaksanaan Bimbingan Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Bimbingan dan Pendampingan Pengadaan Barang dan Jasa"><td>PBJ.03.3</td><td>Pendampingan/Konsultasi Hukum Pengadaan Barang dan Jasa</td></tr>
+                        <tr data-s="Bimbingan dan Pendampingan Pengadaan Barang dan Jasa"><td>PBJ.03.4</td><td>Sosialisasi/Bimbingan Teknis Pengadaan Barang dan Jasa</td></tr>
+                        <tr class="kode-grp"><td colspan="2">LPSE &ndash; Layanan Pengadaan Secara Elektronik</td></tr>
+                        <tr class="kode-l2"><td>LPSE.01</td><td>Pengelolaan Layanan Pengadaan Secara Elektronik (LPSE)</td></tr>
+                        <tr data-s="Pengelolaan Layanan Pengadaan Secara Elektronik (LPSE)"><td>LPSE.01.1</td><td>Permintaan Update Aplikasi SPSE</td></tr>
+                        <tr data-s="Pengelolaan Layanan Pengadaan Secara Elektronik (LPSE)"><td>LPSE.01.2</td><td>Pemeliharaan Aplikasi SPSE</td></tr>
+                        <tr class="kode-l2"><td>LPSE.02</td><td>Registrasi dan Verifikasi Akun Pengguna LPSE dan SIRUP</td></tr>
+                        <tr data-s="Registrasi dan Verifikasi Akun Pengguna LPSE dan SIRUP"><td>LPSE.02.1</td><td>Verifikasi Penyedia</td></tr>
+                        <tr data-s="Registrasi dan Verifikasi Akun Pengguna LPSE dan SIRUP"><td>LPSE.02.2</td><td>Permohonan Akun Pengguna LPSE dan SIRUP</td></tr>
+                        <tr class="kode-l2"><td>LPSE.03</td><td>Layanan Helpdesk</td></tr>
+                        <tr data-s="Layanan Helpdesk"><td>LPSE.03.1</td><td>Pelayanan Layanan Pengadaan Secara Elektronik (LPSE)</td></tr>
+                        <tr data-s="Layanan Helpdesk"><td>LPSE.03.2</td><td>Penyusunan Laporan Sosialisasi Aplikasi dan Pedoman Rencana Umum Pengadaan</td></tr>
+                        <tr data-s="Layanan Helpdesk"><td>LPSE.03.3</td><td>Penyusunan Laporan Monitoring dan Evaluasi LPSE</td></tr>
+                        <tr data-s="Layanan Helpdesk"><td>LPSE.03.4</td><td>Survey Layanan Pengadaan Secara Elektronik</td></tr>
+                        <tr class="kode-grp"><td colspan="2">SDM &ndash; Kepegawaian</td></tr>
+                        <tr class="kode-l2"><td>SDM.01</td><td>Formasi Pegawai</td></tr>
+                        <tr class="kode-l2"><td>SDM.02</td><td>Pengadaan Pegawai</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.1</td><td>Proses Penerimaan Pegawai</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.2</td><td>Penetapan Pengumuman Kelulusan</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.3</td><td>Berkas Lamaran yang Tidak Diterima</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.4</td><td>Pengadaan Pegawai non PNS/ASN</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.5</td><td>Penetapan Pengumuman Kelulusan (non PNS/ASN)</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.6</td><td>Seleksi Anggota KPU</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.7</td><td>Seleksi Anggota KPU Provinsi dan KPU Kabupaten/Kota</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.8</td><td>Pengunduran diri Anggota KPU dan Tindak Lanjut Putusan DKPP</td></tr>
+                        <tr data-s="Pengadaan Pegawai"><td>SDM.02.9</td><td>Pemberian Sanksi atas Pengawasan Internal</td></tr>
+                        <tr class="kode-l2"><td>SDM.03</td><td>Pembinaan Karir Pegawai</td></tr>
+                        <tr data-s="Pembinaan Karir Pegawai"><td>SDM.03.1</td><td>Pendidikan dan Pelatihan/Kursus/Tugas Belajar/Ujian Dinas/Izin Belajar Pegawai</td></tr>
+                        <tr data-s="Pembinaan Karir Pegawai"><td>SDM.03.2</td><td>Ujian Kompetensi</td></tr>
+                        <tr data-s="Pembinaan Karir Pegawai"><td>SDM.03.3</td><td>Penghargaan dan Tanda Jasa</td></tr>
+                        <tr data-s="Pembinaan Karir Pegawai"><td>SDM.03.4</td><td>Pembinaan Mental Kepegawaian</td></tr>
+                        <tr class="kode-l2"><td>SDM.04</td><td>Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.1</td><td>Disiplin Pegawai</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.2</td><td>Berkas Hukuman Disiplin</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.3</td><td>Pemberhentian Pegawai Tanpa Hak Pensiun</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.4</td><td>Pengaduan/Permasalahan Kepegawaian</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.5</td><td>Perselisihan/Sengketa Kepegawaian</td></tr>
+                        <tr data-s="Kode Etik, Disiplin, Pemberhentian, dan Pensiun ASN"><td>SDM.04.6</td><td>Usul Pemberhentian dan Penetapan Pensiun Pegawai/Janda/Dudanya dan PNS yang Tewas</td></tr>
+                        <tr class="kode-l2"><td>SDM.05</td><td>Mutasi Pegawai</td></tr>
+                        <tr data-s="Mutasi Pegawai"><td>SDM.05.1</td><td>Alih Status, Pindah Instansi, Pindah Wilayah Kerja, Dipekerjakan, dan Mutasi Antar Unit</td></tr>
+                        <tr data-s="Mutasi Pegawai"><td>SDM.05.2</td><td>Badan Pertimbangan Jabatan dan Kepangkatan (Baperjakat)</td></tr>
+                        <tr class="kode-l2"><td>SDM.06</td><td>Administrasi Pegawai</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.1</td><td>Surat Perintah Dinas/Surat Tugas</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.2</td><td>Cuti Besar</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.3</td><td>Cuti Sakit, Cuti Bersalin, dan Cuti Tahunan</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.4</td><td>Cuti Alasan Penting</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.5</td><td>Cuti Diluar Tanggungan Negara (CLTN)</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.6</td><td>Dokumentasi Identitas Pegawai</td></tr>
+                        <tr data-s="Administrasi Pegawai"><td>SDM.06.7</td><td>Kesejahteraan Pegawai</td></tr>
+                        <tr class="kode-l2"><td>SDM.07</td><td>Laporan Harta Kekayaan Aparatur Sipil Negara (LHKASN)</td></tr>
+                        <tr class="kode-l2"><td>SDM.08</td><td>Laporan Harta Kekayaan Penyelenggara Negara (LHKPN) Ketua dan Anggota KPU</td></tr>
+                        <tr class="kode-l2"><td>SDM.09</td><td>Berkas Perseorangan ASN</td></tr>
+                        <tr class="kode-l2"><td>SDM.10</td><td>Berkas Perseorangan Anggota KPU, KPU Provinsi, dan KPU Kabupaten/Kota</td></tr>
+                        <tr data-s="Berkas Perseorangan Anggota KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>SDM.10.1</td><td>Ketua dan Anggota KPU</td></tr>
+                        <tr data-s="Berkas Perseorangan Anggota KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>SDM.10.2</td><td>Ketua dan Anggota KPU Provinsi</td></tr>
+                        <tr data-s="Berkas Perseorangan Anggota KPU, KPU Provinsi, dan KPU Kabupaten/Kota"><td>SDM.10.3</td><td>Ketua dan Anggota KPU Kabupaten/Kota</td></tr>
+                        <tr class="kode-grp"><td colspan="2">KU &ndash; Keuangan</td></tr>
+                        <tr class="kode-l2"><td>KU.01</td><td>Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)</td></tr>
+                        <tr data-s="Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)"><td>KU.01.1</td><td>Penyusunan RAPBN</td></tr>
+                        <tr data-s="Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)"><td>KU.01.2</td><td>Penyampaian RAPBN kepada DPR</td></tr>
+                        <tr data-s="Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)"><td>KU.01.3</td><td>Pembahasan RAPBN oleh Komisi DPR</td></tr>
+                        <tr data-s="Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)"><td>KU.01.4</td><td>Nota Jawaban Pemerintah atas Pertanyaan DPR</td></tr>
+                        <tr data-s="Rencana Anggaran Pendapatan dan Belanja Negara (RAPBN)"><td>KU.01.5</td><td>Undang-Undang terkait APBN dan Rencana Pembangunan Tahunan</td></tr>
+                        <tr class="kode-l2"><td>KU.02</td><td>Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)</td></tr>
+                        <tr data-s="Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)"><td>KU.02.1</td><td>Ketetapan Pagu Indikatif/Pagu Sementara</td></tr>
+                        <tr data-s="Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)"><td>KU.02.2</td><td>Ketetapan Pagu Definitif</td></tr>
+                        <tr data-s="Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)"><td>KU.02.3</td><td>Rencana Kerja Anggaran (RKA) Lembaga Negara dan Badan Pemerintahan</td></tr>
+                        <tr data-s="Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)"><td>KU.02.4</td><td>DIPA, POK dan Revisinya</td></tr>
+                        <tr data-s="Penyusunan Anggaran Pendapatan dan Belanja Negara (APBN)"><td>KU.02.5</td><td>Ketentuan/Peraturan Penatausahaan dan Pertanggungjawaban Anggaran</td></tr>
+                        <tr class="kode-l2"><td>KU.03</td><td>Pelaksanaan Anggaran</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.1</td><td>Keputusan Penetapan KPA/PPK/PjSPM/PBJ</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.2</td><td>Pendapatan</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.3</td><td>Belanja</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.4</td><td>Reviu Laporan Keuangan</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.5</td><td>Dana Hibah Dalam Negeri</td></tr>
+                        <tr data-s="Pelaksanaan Anggaran"><td>KU.03.6</td><td>Pertanggungjawaban Keuangan Negara</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Loading Overlay -->
@@ -245,7 +740,7 @@
                 <span>Masih memuat, mohon tunggu sebentar...</span>
                 <span id="loadingPercent">85%</span>
             </div>
-            <p class="loading-subtext">Memuat data dari Google Sheets biasanya perlu beberapa detik. Mohon tunggu sebentar lagi...</p>
+            <p class="loading-subtext">Memuat data dari Database biasanya perlu beberapa detik. Mohon tunggu sebentar lagi...</p>
         </div>
     </div>
 
@@ -583,7 +1078,67 @@
             else if (targetAksi === 'edit') { if (val === PASS_EDIT) { tutupModal('modalPass'); bukaModalEdit(); } else { alert("Password salah!"); } }
         }
 
-        window.onload = () => { initDropdownTahun(); loadData(); };
+        // ===== TEMPLATE SURAT =====
+        // Card ada di HTML (#halamanTemplate). Klik "Unduh": jika href berisi link -> dibuka; jika "#" -> template dasar Arial dibuat otomatis.
+        const TPL_NAMA = { naskah: 'Naskah Dinas', undangan: 'Surat Undangan', tugas: 'Surat Tugas' };
+
+        function bukaHalaman(h) {
+            ['agenda', 'template', 'kode'].forEach(p => {
+                const id = p.charAt(0).toUpperCase() + p.slice(1);
+                document.getElementById('halaman' + id).classList.toggle('hidden', p !== h);
+                document.getElementById('tab' + id).classList.toggle('active', p === h);
+            });
+            document.getElementById('filterTahun').style.display = (h === 'agenda') ? '' : 'none';
+            history.replaceState(null, '', h === 'agenda' ? location.pathname + location.search : '#' + h);
+            window.scrollTo(0, 0);
+        }
+
+        document.querySelectorAll('.btn-unduh').forEach(a => a.addEventListener('click', e => {
+            e.preventDefault();
+            const h = a.getAttribute('href');
+            if (h && h !== '#') window.open(h, '_blank'); else buatTemplate(a.dataset.tpl);
+        }));
+
+        function buatTemplate(key) {
+            const [jenis, p] = key.split('-'), peran = p.charAt(0).toUpperCase() + p.slice(1), nama = `Template ${TPL_NAMA[jenis]} ${peran}`;
+            const kv = rows => '<table style="width:100%">' + rows.map(r => `<tr><td style="width:28%">${r[0]}</td><td style="width:3%">:</td><td>${r[1]}</td></tr>`).join('') + '</table>';
+            const ttd = `<p style="margin-left:55%;margin-top:24pt">[Kota], [Tanggal Surat]<br>${peran},<br><br><br><br><b>[Nama Lengkap]</b>${peran === 'Sekretaris' ? '<br>NIP. [NIP]' : ''}</p>`;
+            const yth = '<p>Yth. [Nama/Jabatan Tujuan]<br>di [Tempat]</p>';
+            const kop = '<p align="center"><b>[KOP SURAT INSTANSI]</b></p><hr>';
+            let isi = '';
+            if (jenis === 'naskah') {
+                isi = kv([['Nomor', '[Nomor Surat]'], ['Sifat', '[Biasa/Penting/Segera]'], ['Lampiran', '[Jumlah lampiran]'], ['Hal', '[Perihal surat]']]) + yth +
+                    '<p style="text-align:justify">Dengan hormat,<br>[Isi surat]</p><p style="text-align:justify">Demikian disampaikan, atas perhatian dan kerja sama Saudara kami ucapkan terima kasih.</p>' + ttd;
+            } else if (jenis === 'undangan') {
+                isi = kv([['Nomor', '[Nomor Surat]'], ['Sifat', '[Biasa/Penting/Segera]'], ['Lampiran', '[Jumlah lampiran]'], ['Hal', 'Undangan [nama kegiatan]']]) + yth +
+                    '<p style="text-align:justify">Dengan hormat,<br>Sehubungan dengan [latar belakang kegiatan], kami mengundang Saudara untuk hadir pada:</p>' +
+                    kv([['Hari/Tanggal', '[Hari, tanggal bulan tahun]'], ['Waktu', '[Pukul ... WIB s.d. selesai]'], ['Tempat', '[Tempat kegiatan]'], ['Acara', '[Nama acara]']]) +
+                    '<p style="text-align:justify">Demikian undangan ini disampaikan, atas kehadiran Saudara kami ucapkan terima kasih.</p>' + ttd;
+            } else {
+                isi = '<p align="center"><b><u>SURAT TUGAS</u></b><br>Nomor: [Nomor Surat]</p>' + kv([['Dasar', '[Dasar penugasan]']]) +
+                    `<p>Yang bertanda tangan di bawah ini ${peran} [Nama Instansi], menugaskan kepada:</p>` +
+                    kv([['Nama', '[Nama Pegawai]'], ['NIP', '[NIP]'], ['Pangkat/Golongan', '[Pangkat/Gol.]'], ['Jabatan', '[Jabatan]']]) +
+                    '<p>Untuk:</p>' + kv([['Kegiatan', '[Nama kegiatan]'], ['Hari/Tanggal', '[Hari, tanggal bulan tahun]'], ['Tempat', '[Tempat kegiatan]']]) +
+                    '<p style="text-align:justify">Demikian surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab dan melaporkan hasilnya.</p>' + ttd;
+            }
+            const doc = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + nama + '</title>' +
+                '<style>@page{size:21.5cm 33cm;margin:2cm 2.5cm}body{font-family:Arial,sans-serif;font-size:12pt}p{margin:0 0 10pt}td{font-family:Arial,sans-serif;font-size:12pt;vertical-align:top}</style></head><body>' + kop + isi + '</body></html>';
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob(['\ufeff', doc], { type: 'application/msword' }));
+            a.download = nama + '.doc';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }
+
+        function cariKode() {
+            const q = document.getElementById('cariKode').value.toLowerCase().trim();
+            document.querySelectorAll('#tabelKode tbody tr').forEach(r => {
+                if (r.classList.contains('kode-grp')) { r.classList.toggle('hidden', !!q); return; }
+                r.classList.toggle('hidden', !!q && !(r.textContent + ' ' + (r.dataset.s || '')).toLowerCase().includes(q));
+            });
+        }
+
+        window.onload = () => { initDropdownTahun(); if (['#template', '#kode'].includes(location.hash)) bukaHalaman(location.hash.slice(1)); loadData(); };
     </script>
 </body>
 </html>
